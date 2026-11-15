@@ -23,3 +23,59 @@
 
 .book-cover-image{display:block;width:calc(100% - 26px);height:195px;object-fit:cover;margin:13px;border-radius:5px}.admin-file-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.admin-file-links a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);border-radius:7px;color:var(--navy);font-size:12px;font-weight:700}
 @media(max-width:800px){.book-cover-image{height:160px;width:calc(100% - 18px);margin:9px}}
+
+/* MaarifaBooks dark storefront interface */
+body{background:#050505;color:#f8f9fc}
+.site-header{min-height:76px;padding:10px clamp(18px,5vw,64px);display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:18px;background:#07090f;border-bottom:1px solid #252a38}
+.brand-wordmark{width:auto;gap:9px;color:#fff;font-size:23px;font-weight:800;white-space:nowrap}
+.brand-wordmark>span:last-child>span{color:#e6b94f}
+.brand-symbol{font-size:25px}
+.site-header nav{justify-content:flex-end;gap:clamp(10px,2vw,24px);font-size:14px;color:#e5e8f0}
+.site-header nav>a{min-height:44px;display:inline-flex;align-items:center}
+.nav-cta{background:#e7b84b;color:#101827!important;border-radius:9px;padding:10px 16px}
+.home-shell{background:#050505;color:#f8f9fc;min-height:100vh}
+.home-hero{margin:0 auto;padding:30px 22px 34px;max-width:1120px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#26345e 0%,#141d38 52%,#0d1428 100%);border:1px solid #283451;border-top:0;border-radius:0 0 28px 28px}
+.home-brand-art{width:min(300px,76vw);margin:0 auto 10px;padding:8px;background:#fff;border-radius:15px;box-shadow:0 10px 32px #0007}
+.home-brand-art img{display:block;width:100%;height:auto;object-fit:contain}
+.home-kicker{margin:9px 0;color:#e5bd62;font-size:12px;letter-spacing:2px;font-weight:800}
+.home-hero h1{max-width:760px;margin:18px auto 10px;color:#fff;font-size:clamp(30px,5vw,46px);line-height:1.13;font-weight:800}
+.home-intro{max-width:650px;margin:0 auto 23px;color:#c7cede;font-size:16px;line-height:1.65}
+.book-search{width:min(720px,100%);margin:0 auto;display:flex;align-items:center;gap:10px;background:#fff;border-radius:18px;padding:7px 8px 7px 17px;color:#17213a}
+.book-search>span{font-size:30px;line-height:1;color:#25314d}
+.book-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#17213a;font-size:16px;padding:12px 2px;font-weight:500}
+.book-search input::placeholder{color:#69758c}
+.book-search button{min-height:44px;border:0;border-radius:12px;background:#e6b84f;color:#111a2d;padding:0 18px;font-weight:800;cursor:pointer}
+.hero-links{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:20px}
+.hero-links a{color:#f0d58f;font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.home-section{max-width:1120px;margin:0 auto;padding:32px 22px 56px}
+.home-section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:17px}
+.home-section-head h2{margin:5px 0 0;font-size:clamp(25px,4vw,34px);color:#fff}
+.book-count{color:#aab2c2;font-size:13px;white-space:nowrap}
+.category-chips{display:flex;gap:9px;overflow-x:auto;padding:3px 0 20px}
+.category-chips a{white-space:nowrap;border:1px solid #343b4c;border-radius:30px;padding:9px 14px;color:#d6dbe5;font-size:13px}
+.category-chips a.active{background:#e6b84f;color:#111a2d;border-color:#e6b84f;font-weight:800}
+.home-book-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.home-book-card{overflow:hidden;border:1px solid #272d3a;border-radius:17px;background:#11141c;min-width:0}
+.home-book-cover,.home-book-placeholder{display:block;width:100%;height:230px;object-fit:cover;background:#20283d}
+.home-book-placeholder{padding:17px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#26365d,#111a32);color:#eac66d}
+.home-book-placeholder strong{color:#fff;font-size:20px;line-height:1.2}
+.home-book-placeholder span,.home-book-placeholder small{font-size:10px;letter-spacing:1px}
+.home-book-info{padding:13px 14px 15px}
+.home-book-info h3{margin:0 0 7px;color:#fff;font-size:16px;line-height:1.3}
+.home-book-info p{margin:0 0 12px;color:#aeb6c6;font-size:13px}
+.home-book-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.home-book-meta span{font-size:10px;color:#e8c66f;letter-spacing:1px}
+.home-book-meta strong{font-size:13px;color:#fff}
+.home-empty{padding:38px 20px;text-align:center;border:1px dashed #41495c;border-radius:18px;color:#bac2d1}
+.home-empty h3{margin:12px 0 7px;color:#fff;font-size:21px}
+.home-empty p{max-width:530px;margin:0 auto;line-height:1.6}
+.home-empty a{display:inline-block;margin-top:15px;color:#eac66d;text-decoration:underline}
+.empty-book-icon{font-size:40px;color:#eac66d}
+.home-seller{max-width:1076px;margin:0 auto 35px;padding:30px 32px;display:flex;align-items:center;justify-content:space-between;gap:25px;border:1px solid #343b4c;border-radius:20px;background:#111a30}
+.home-seller h2{max-width:600px;margin:8px 0;color:#fff;font-size:clamp(22px,3vw,30px)}
+.home-seller p:not(.home-kicker){max-width:620px;margin:0;color:#c1c9d8;line-height:1.65}
+.home-seller>a{display:inline-flex;align-items:center;gap:10px;white-space:nowrap;background:#e6b84f;color:#101827;padding:13px 17px;border-radius:11px;font-weight:800}
+.home-footer{padding:25px 20px 35px;text-align:center;color:#8993a6;font-size:13px}
+.home-footer span{color:#e5bd62}
+@media(max-width:800px){.home-book-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.home-book-cover,.home-book-placeholder{height:210px}.home-seller{margin:0 16px 25px;display:block;padding:24px}.home-seller>a{margin-top:18px}.site-header{align-items:center}.site-header nav{gap:9px;font-size:12px}.brand-wordmark{font-size:20px}.nav-cta{padding:8px 10px}}
+@media(max-width:480px){.site-header{padding:9px 12px;gap:7px}.brand-wordmark{font-size:18px;gap:5px}.brand-symbol{font-size:21px}.site-header nav{gap:8px;font-size:11px}.site-header nav>a:first-child{display:none}.nav-cta{padding:8px 9px}.home-hero{padding:24px 15px 27px;border-radius:0 0 22px 22px}.home-brand-art{width:min(270px,78vw)}.home-intro{font-size:14px}.book-search{gap:6px;padding-left:12px}.book-search input{font-size:14px}.book-search button{padding:0 12px}.home-section{padding:27px 15px 40px}.home-book-cover,.home-book-placeholder{height:180px}.home-book-info{padding:11px}.home-book-info h3{font-size:14px}.home-book-meta strong{font-size:11px}}
