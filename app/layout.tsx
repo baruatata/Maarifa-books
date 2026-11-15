@@ -5,6 +5,11 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
   title: "MaarifaBooks | Vitabu vya Kidijitali",
   description: "Soma, sikiliza na uza vitabu vya kidijitali kwa Kiswahili na Kiingereza.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
