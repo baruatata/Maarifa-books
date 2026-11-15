@@ -3,7 +3,7 @@ import { PasswordField } from "@/components/password-field";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
   const params = await searchParams;
-  return <main className="page"><p className="eyebrow">KARIBU MAARIFABOOKS</p><h1>Ingia au fungua akaunti</h1>
+  return <main className="page"><p className="eyebrow">KARIBU MAARIFABOOKS</p><h1>Ingia au fungua akaunti</h1><p className="muted seller-login-entry">Tayari ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
     {params.error && <p className="message">{params.error}</p>}{params.success && <p className="notice">{params.success}</p>}
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(270px,1fr))", gap: 20 }}>
       <form className="panel form" action={signIn}><h2>Ingia</h2><div className="field"><label htmlFor="login-email">Barua pepe</label><input id="login-email" name="email" type="email" autoComplete="email" required /></div><PasswordField name="password" label="Nenosiri" /><button className="btn">Ingia</button></form>
