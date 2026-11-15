@@ -13,6 +13,8 @@ Marketplace ya vitabu vya kidijitali chini ya Lumbwa Digital.
 - Dashibodi ya mtumiaji
 - Maombi ya wauzaji
 - Fomu ya kuwasilisha metadata ya kitabu kwa ukaguzi
+- Admin dashboard: kuidhinisha/kukataa wauzaji na vitabu
+- Ulinzi wa admin kupitia role ya database na RLS
 - Lugha: Kiswahili na Kiingereza
 - Miundo: PDF, EPUB na Audiobook
 
@@ -36,7 +38,7 @@ URL: https://qsbyvztxrlnpujjakrfh.supabase.co
 Usiweke Supabase secret/service-role key kwenye GitHub wala variable yenye `NEXT_PUBLIC_`. Tumia publishable key kwenye browser/server client na RLS kulinda data.
 
 ## Kazi zilizobaki kabla ya production
-- Admin dashboard na utaratibu salama wa kuweka admin wa kwanza
+- Kuweka akaunti ya kwanza ya admin kwa kutumia `docs/admin-bootstrap.sql`
 - Private Storage buckets, upload ya PDF/EPUB/audio na cover
 - Signed download links baada ya malipo kuthibitishwa
 - Checkout na integration ya Selcom, ikiwa credentials na payout model vitathibitishwa
