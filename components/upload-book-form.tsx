@@ -32,7 +32,9 @@ export function UploadBookForm() {
         throw new Error("Aina ya faili haiendani na muundo uliochagua.");
       }
       if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type)) throw new Error("Jalada liwe JPG, PNG au WebP.");
-      const draft = await createBookDraft(formData);
+      const metadata = new FormData();
+      ["title", "author_name", "description", "category", "format", "language", "price_tzs"].forEach((key) => metadata.set(key, String(formData.get(key) ?? "")));
+      const draft = await createBookDraft(metadata);
       if (!draft.ok) throw new Error(draft.error);
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,7 +42,9 @@ export function UploadBookForm() {
       );
       const ext = bookFile.name.split(".").pop()?.toLowerCase() || (format === "audiobook" ? "mp3" : format);
       const coverExt = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const base = `${draft.bookId}/`;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Ingia tena ili kuendelea.");
+      const base = `${user.id}/${draft.bookId}/`;
       const filePath = `${base}book.${ext}`;
       const coverPath = `${base}cover.${coverExt}`;
       setProgress("Inapakia faili la kitabu...");
