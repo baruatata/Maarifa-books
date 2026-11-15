@@ -20,3 +20,6 @@
 .upload-form{max-width:680px;margin-top:24px}.upload-form input[type=file]{background:#faf9f6;padding:11px}.upload-note{font-size:12px;line-height:1.6}
 .site-header{padding:17px 5vw 16px;gap:13px}.brand img{width:min(340px,78vw);max-height:100px}.site-header nav{gap:18px}
 @media(max-width:650px){.site-header{padding:13px 4vw 14px}.brand img{width:min(300px,82vw);max-height:88px}.site-header nav{gap:11px;font-size:12px}}
+
+.book-cover-image{display:block;width:calc(100% - 26px);height:195px;object-fit:cover;margin:13px;border-radius:5px}.admin-file-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.admin-file-links a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);border-radius:7px;color:var(--navy);font-size:12px;font-weight:700}
+@media(max-width:800px){.book-cover-image{height:160px;width:calc(100% - 18px);margin:9px}}
