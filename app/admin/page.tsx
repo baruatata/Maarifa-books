@@ -28,7 +28,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     ? await supabase.from("profiles").select("id,full_name,email,phone").in("id", profileIds)
     : { data: [] as { id: string; full_name: string | null; email: string | null; phone: string | null }[] };
   const profileMap = new Map((profiles ?? []).map(profile => [profile.id, profile]));
-  const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);\n  const bookLinks = new Map(await Promise.all(bookRows.map(async book => {\n    const [file, cover] = await Promise.all([\n      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 300) : Promise.resolve({data:null}),\n      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300) : Promise.resolve({data:null}),\n    ]);\n    return [book.id, {fileUrl:file.data?.signedUrl ?? null, coverUrl:cover.data?.signedUrl ?? null}] as const;\n  })));
+  const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
+  const bookLinks = new Map(await Promise.all(bookRows.map(async book => {
+    const [file, cover] = await Promise.all([
+      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 300) : Promise.resolve({data:null}),
+      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300) : Promise.resolve({data:null}),
+    ]);
+    return [book.id, {fileUrl:file.data?.signedUrl ?? null, coverUrl:cover.data?.signedUrl ?? null}] as const;
+  })));
 
   return <main className="page admin-page">
     <div className="admin-top"><div><p className="eyebrow">LUMBWA DIGITAL · MAARIFABOOKS</p><h1>Admin Dashboard</h1><p className="muted">Karibu {me.full_name || user.email}. Dhibiti maombi ya wauzaji na vitabu kabla havijaonekana hadharani.</p></div><span className="admin-tag">ADMIN</span></div>
