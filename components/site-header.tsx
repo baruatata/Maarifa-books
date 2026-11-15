@@ -8,10 +8,17 @@ export async function SiteHeader() {
   const { data: profile } = user
     ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
     : { data: null };
+  const isAdmin = profile?.role === "admin";
+
   return <header className="site-header">
     <Link className="brand" href="/" aria-label="MaarifaBooks mwanzo">
       <Image src="/maarifabooks-logo.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width={620} height={132} priority />
     </Link>
-    <nav><Link href="/#vitabu">Vitabu</Link><Link href="/wauzaji">Uza vitabu</Link>{profile?.role === "admin" && <Link href="/admin">Admin</Link>}<Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? "Dashibodi" : "Ingia / Jisajili"}</Link></nav>
+    <nav>
+      <Link href="/#vitabu">Vitabu</Link>
+      <Link href="/wauzaji">Uza vitabu</Link>
+      {isAdmin && <Link href="/admin">Admin Panel</Link>}
+      <Link className="nav-cta" href={user ? (isAdmin ? "/admin" : "/dashboard") : "/ingia"}>{user ? (isAdmin ? "Admin Panel" : "Dashibodi") : "Ingia / Jisajili"}</Link>
+    </nav>
   </header>;
 }
