@@ -79,3 +79,47 @@ body{background:#050505;color:#f8f9fc}
 .home-footer span{color:#e5bd62}
 @media(max-width:800px){.home-book-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.home-book-cover,.home-book-placeholder{height:210px}.home-seller{margin:0 16px 25px;display:block;padding:24px}.home-seller>a{margin-top:18px}.site-header{align-items:center}.site-header nav{gap:9px;font-size:12px}.brand-wordmark{font-size:20px}.nav-cta{padding:8px 10px}}
 @media(max-width:480px){.site-header{padding:9px 12px;gap:7px}.brand-wordmark{font-size:18px;gap:5px}.brand-symbol{font-size:21px}.site-header nav{gap:8px;font-size:11px}.site-header nav>a:first-child{display:none}.nav-cta{padding:8px 9px}.home-hero{padding:24px 15px 27px;border-radius:0 0 22px 22px}.home-brand-art{width:min(270px,78vw)}.home-intro{font-size:14px}.book-search{gap:6px;padding-left:12px}.book-search input{font-size:14px}.book-search button{padding:0 12px}.home-section{padding:27px 15px 40px}.home-book-cover,.home-book-placeholder{height:180px}.home-book-info{padding:11px}.home-book-info h3{font-size:14px}.home-book-meta strong{font-size:11px}}
+
+
+/* Light, readable storefront and centered official logo */
+body{background:#fff!important;color:#172033!important}
+.site-header{min-height:unset!important;padding:15px 5vw 17px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;background:#fff!important;border-bottom:1px solid #e8e4da!important}
+.site-header .brand{display:flex!important;width:100%!important;align-items:center!important;justify-content:center!important}
+.site-header .brand img{display:block!important;width:min(340px,82vw)!important;height:auto!important;max-height:150px!important;object-fit:contain!important}
+.site-header nav{display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;gap:18px!important;color:#172033!important;font-size:14px!important}
+.site-header nav>a{display:inline-flex!important;align-items:center!important;min-height:44px!important}
+.site-header nav>a:first-child{display:inline-flex!important}
+.nav-cta{background:#101d36!important;color:#fff!important;border-radius:8px!important;padding:11px 17px!important}
+.home-shell{background:#fff!important;color:#172033!important;min-height:100vh}
+.home-hero{background:linear-gradient(110deg,#f7f5f0,#fbfaf7 58%,#f2ecdf)!important;border:1px solid #e8e4da!important;border-top:0!important;box-shadow:0 8px 28px #101d360a}
+.home-brand-art{display:none!important}
+.home-kicker{color:#a77b31!important}
+.home-hero h1{color:#101d36!important}
+.home-intro{color:#5f6878!important}
+.hero-links a{color:#8d6525!important}
+.home-section-head h2{color:#101d36!important}
+.book-count{color:#687184!important}
+.category-chips a{border-color:#e8e4da!important;color:#344057!important}
+.category-chips a.active{background:#101d36!important;color:#fff!important;border-color:#101d36!important}
+.home-book-card{background:#fff!important;border-color:#e8e4da!important;box-shadow:0 5px 18px #101d3608}
+.home-book-cover,.home-book-placeholder{background:#f7f5f0!important}
+.home-book-placeholder{background:linear-gradient(145deg,#172b50,#101d36)!important}
+.home-book-info h3{color:#172033!important}
+.home-book-info p{color:#687184!important}
+.home-book-meta span{color:#9b702c!important}
+.home-book-meta strong{color:#101d36!important}
+.home-empty{background:#f7f5f0!important;border-color:#e8e4da!important;color:#687184!important}
+.home-empty h3{color:#101d36!important}
+.home-empty a{color:#8d6525!important}
+.home-seller{background:#101d36!important;border-color:#101d36!important}
+.home-seller h2{color:#fff!important}
+.home-seller p:not(.home-kicker){color:#d6deea!important}
+.home-seller>a{background:#e6bd70!important;color:#101d36!important}
+.home-footer{background:#fff!important;color:#687184!important}
+.home-footer span{color:#a77b31!important}
+@media(max-width:650px){
+ .site-header{padding:12px 4vw 13px!important;gap:9px!important}
+ .site-header .brand img{width:min(300px,84vw)!important;max-height:130px!important}
+ .site-header nav{gap:10px!important;font-size:12px!important}
+ .site-header nav>a:first-child{display:inline-flex!important}
+}
