@@ -11,7 +11,7 @@ export async function SiteHeader() {
   const isAdmin = profile?.role === "admin";
   return <header className="site-header">
     <Link className="brand" href="/" aria-label="MaarifaBooks mwanzo">
-      <Image src="/maarifabooks-logo.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width={620} height={132} priority />
+      <Image src="/maarifabooks-logo.jpg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width={360} height={240} priority />
     </Link>
     <nav>
       <Link href="/#vitabu">Vitabu</Link>
