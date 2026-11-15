@@ -2,11 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
+
 export default async function Dashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/ingia");
   const { data: profile } = await supabase.from("profiles").select("full_name,role").eq("id", user.id).single();
+
+  // Administrators should land on the moderation dashboard, never the buyer dashboard.
+  if (profile?.role === "admin") redirect("/admin");
+
   const { data: books } = await supabase.from("books").select("id,title,status,price_tzs").eq("seller_id", user.id).order("created_at", { ascending: false });
   const { data: application } = await supabase.from("seller_applications").select("store_name,status").eq("user_id", user.id).maybeSingle();
   return <main className="page"><p className="eyebrow">DASHIBODI</p><h1>Karibu, {profile?.full_name || user.email}</h1><p className="muted">Akaunti: {profile?.role ?? "buyer"}</p>
