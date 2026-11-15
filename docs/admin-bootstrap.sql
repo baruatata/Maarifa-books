@@ -11,7 +11,7 @@ begin
       updated_at = now()
   from auth.users u
   where p.id = u.id
-    and lower(u.email) = lower('REPLACE-WITH-YOUR-LOGIN-EMAIL');
+    and lower(u.email) = lower('youflixtz@gmail.com');
   get diagnostics affected = row_count;
   execute 'alter table public.profiles enable trigger protect_profile_privileges';
   if affected <> 1 then
