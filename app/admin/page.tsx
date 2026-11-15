@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { reviewBook, reviewSeller } from "@/app/admin/actions";
 
 type SellerApplication = { id: string; user_id: string; store_name: string; bio: string | null; phone_number: string; status: string; created_at: string };
-type Book = { id: string; seller_id: string; title: string; author_name: string | null; description: string | null; format: string; language: string; price_tzs: number; status: string; created_at: string };
+type Book = { id: string; seller_id: string; title: string; author_name: string | null; description: string | null; format: string; language: string; price_tzs: number; status: string; created_at: string; file_path: string | null; cover_path: string | null };
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
   const params = await searchParams;
@@ -15,7 +15,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   const [{ data: applications }, { data: books }, { count: sellerCount }, { count: bookCount }, { count: memberCount }] = await Promise.all([
     supabase.from("seller_applications").select("id,user_id,store_name,bio,phone_number,status,created_at").eq("status", "pending").order("created_at", { ascending: true }),
-    supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at").eq("status", "pending").order("created_at", { ascending: true }),
+    supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("seller_applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("books").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -28,7 +28,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     ? await supabase.from("profiles").select("id,full_name,email,phone").in("id", profileIds)
     : { data: [] as { id: string; full_name: string | null; email: string | null; phone: string | null }[] };
   const profileMap = new Map((profiles ?? []).map(profile => [profile.id, profile]));
-  const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
+  const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);\n  const bookLinks = new Map(await Promise.all(bookRows.map(async book => {\n    const [file, cover] = await Promise.all([\n      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 300) : Promise.resolve({data:null}),\n      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300) : Promise.resolve({data:null}),\n    ]);\n    return [book.id, {fileUrl:file.data?.signedUrl ?? null, coverUrl:cover.data?.signedUrl ?? null}] as const;\n  })));
 
   return <main className="page admin-page">
     <div className="admin-top"><div><p className="eyebrow">LUMBWA DIGITAL · MAARIFABOOKS</p><h1>Admin Dashboard</h1><p className="muted">Karibu {me.full_name || user.email}. Dhibiti maombi ya wauzaji na vitabu kabla havijaonekana hadharani.</p></div><span className="admin-tag">ADMIN</span></div>
@@ -48,7 +48,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
     <section className="admin-section"><div className="admin-heading"><div><p className="eyebrow">UKAGUZI WA MAUDHUI</p><h2>Vitabu vinavyosubiri</h2></div><span className="status">{bookRows.length} vinasubiri</span></div>
       {bookRows.length === 0 ? <div className="empty">Hakuna kitabu kinachosubiri ukaguzi kwa sasa.</div> : <div className="admin-list">{bookRows.map(book => { const profile = profileMap.get(book.seller_id); return <article className="admin-card" key={book.id}>
-        <div className="admin-card-main"><div><h3>{book.title}</h3><p>{book.author_name || "Mwandishi hajatajwa"} · {book.format.toUpperCase()} · {book.language.toUpperCase()}</p><p>Muuzaji: {profile?.full_name || profile?.email || book.seller_id}</p><p className="price">TSh {money(book.price_tzs)}</p>{book.description && <p className="admin-description">{book.description}</p>}<small className="muted">Ametuma: {new Date(book.created_at).toLocaleDateString("sw-TZ")}</small></div><span className="status">Inasubiri</span></div>
+        <div className="admin-card-main"><div><h3>{book.title}</h3><p>{book.author_name || "Mwandishi hajatajwa"} · {book.format.toUpperCase()} · {book.language.toUpperCase()}</p><p>Muuzaji: {profile?.full_name || profile?.email || book.seller_id}</p><p className="price">TSh {money(book.price_tzs)}</p>{book.description && <p className="admin-description">{book.description}</p>}<div className="admin-file-links">{bookLinks.get(book.id)?.coverUrl && <a href={bookLinks.get(book.id)?.coverUrl ?? "#"} target="_blank" rel="noreferrer">Fungua jalada</a>}{bookLinks.get(book.id)?.fileUrl && <a href={bookLinks.get(book.id)?.fileUrl ?? "#"} target="_blank" rel="noreferrer">Kagua faili la kitabu</a>}{!book.file_path && <span className="muted">Faili halijapakiwa</span>}</div><small className="muted">Ametuma: {new Date(book.created_at).toLocaleDateString("sw-TZ")}</small></div><span className="status">Inasubiri</span></div>
         <form action={reviewBook} className="admin-review-form"><input type="hidden" name="book_id" value={book.id}/><input name="rejection_note" placeholder="Sababu ya kukataa (hiari)" aria-label="Sababu ya kukataa"/><button className="btn" name="decision" value="approved">Idhinisha kitabu</button><button className="btn btn-danger" name="decision" value="rejected">Kataa</button></form>
       </article>; })}</div>}
     </section>
