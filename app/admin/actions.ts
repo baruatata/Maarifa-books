@@ -54,6 +54,13 @@ export async function reviewBook(formData: FormData) {
   const note = String(formData.get("rejection_note") ?? "").trim().slice(0, 1000);
   if (!bookId || !["approved", "rejected"].includes(decision)) redirect("/admin?error=Taarifa+za+kitabu+si+sahihi");
 
+  const { data: book, error: bookLookupError } = await supabase.from("books")
+    .select("id,file_path,cover_path,status").eq("id", bookId).eq("status", "pending").single();
+  if (bookLookupError || !book) redirect("/admin?error=Kitabu+hakijapatikana");
+  if (decision === "approved" && (!book.file_path || !book.cover_path)) {
+    redirect("/admin?error=Kitabu+kinahitaji+faili+na+jalada+kabla+ya+kuidhinishwa");
+  }
+
   const update = decision === "approved"
     ? { status: "approved", approved_by: user.id, approved_at: new Date().toISOString(), rejection_note: null }
     : { status: "rejected", approved_by: null, approved_at: null, rejection_note: note || "Hakijaidhinishwa na msimamizi." };
