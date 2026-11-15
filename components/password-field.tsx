@@ -31,8 +31,14 @@ export function PasswordField({ name, label, minLength }: PasswordFieldProps) {
           aria-pressed={visible}
           title={visible ? "Ficha nenosiri" : "Onyesha nenosiri"}
           style={{
+            width: 44,
             minWidth: 44,
+            maxWidth: 44,
+            height: 44,
             minHeight: 44,
+            flex: "0 0 44px",
+            padding: 0,
+            marginTop: 0,
             border: "1px solid #cbd5e1",
             borderRadius: 8,
             background: "white",
