@@ -5,7 +5,12 @@ type Book = { id: string; title: string; author_name: string | null; format: str
 export default async function Home() {
   const supabase = await createClient();
   const { data } = await supabase.from("books").select("id,title,author_name,format,price_tzs,cover_path,category").eq("status", "approved").order("created_at", { ascending: false }).limit(12);
-  const books = (data ?? []) as Book[];\n  const covers = new Map(await Promise.all(books.map(async book => {\n    if (!book.cover_path) return [book.id, null] as const;\n    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300);\n    return [book.id, signed?.signedUrl ?? null] as const;\n  })));
+  const books = (data ?? []) as Book[];
+  const covers = new Map(await Promise.all(books.map(async book => {
+    if (!book.cover_path) return [book.id, null] as const;
+    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300);
+    return [book.id, signed?.signedUrl ?? null] as const;
+  })));
   return <main>
     <section className="hero"><div><p className="eyebrow">MAARIFA YANAPATIKANA POPOTE</p><h1>Hadithi, maarifa na mawazo <em>mikononi mwako.</em></h1><p className="lead">Gundua vitabu vya kidijitali kwa Kiswahili na Kiingereza. Soma au sikiliza kutoka kifaa chako popote ulipo.</p><Link className="btn" href="#vitabu">Chunguza vitabu　→</Link></div><div className="art"><div className="ring"/><div className="mockbook"><small>MAARIFA BOOKS</small><strong>Jifunze.<br/>Soma.<br/>Kua.</strong><small>MKUSANYIKO WA VITABU</small></div></div></section>
     <section className="section" id="vitabu"><div className="section-head"><div><p className="eyebrow">MAKTABA YETU</p><h2 className="section-title">Vitabu vilivyoidhinishwa</h2></div><span className="muted">{books.length} vitabu</span></div>
