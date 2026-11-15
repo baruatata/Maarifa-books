@@ -1,19 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="620" height="132" viewBox="0 0 620 132" role="img" aria-labelledby="title desc">
-<title id="title">MaarifaBooks</title><desc id="desc">MaarifaBooks, Soma Jifunze Endelea</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="360" viewBox="0 0 620 360" role="img" aria-labelledby="title desc">
+<title id="title">MaarifaBooks — Soma, Jifunze, Endelea</title><desc id="desc">Kitabu kilicho wazi chenye rangi za bluu na chungwa, MaarifaBooks</desc>
 <defs>
- <linearGradient id="blue" x1="0" y1="0" x2="0.15" y2="1"><stop stop-color="#5d91d2"/><stop offset=".35" stop-color="#173d70"/><stop offset=".72" stop-color="#071a35"/><stop offset="1" stop-color="#3b6596"/></linearGradient>
- <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0b8"/><stop offset=".28" stop-color="#e7b85d"/><stop offset=".65" stop-color="#b97822"/><stop offset="1" stop-color="#f4d58d"/></linearGradient>
- <filter id="shadow" x="-20%" y="-30%" width="150%" height="170%"><feGaussianBlur in="SourceAlpha" stdDeviation="2.5"/><feOffset dx="2" dy="4"/><feComponentTransfer><feFuncA type="linear" slope=".42"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2677d4"/><stop offset=".55" stop-color="#073477"/><stop offset="1" stop-color="#071b46"/></linearGradient>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffb326"/><stop offset=".55" stop-color="#ff7900"/><stop offset="1" stop-color="#d84a00"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe18a"/><stop offset="1" stop-color="#c68a27"/></linearGradient>
+ <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dy="4"/><feComponentTransfer><feFuncA type="linear" slope=".25"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
-<g transform="translate(9 16)" filter="url(#shadow)">
- <path d="M5 22 Q34 4 62 23 L62 88 Q34 68 5 85Z" fill="url(#blue)" stroke="#e4b75f" stroke-width="3"/>
- <path d="M62 23 Q91 4 119 22 L119 85 Q91 68 62 88Z" fill="url(#blue)" stroke="#e4b75f" stroke-width="3"/>
- <path d="M62 24V89" stroke="#f7d58c" stroke-width="3"/>
- <path d="M16 35Q38 25 52 35M16 48Q38 39 52 48M72 35Q88 25 108 35M72 48Q88 39 108 48" fill="none" stroke="#f5d99f" stroke-width="2.5" stroke-linecap="round"/>
+<g filter="url(#shadow)">
+ <path d="M75 176 Q153 85 292 175 Q390 84 512 116 L551 190 Q416 159 305 222 Q191 151 75 213Z" fill="url(#blue)" stroke="#e9b44d" stroke-width="3"/>
+ <path d="M305 220 Q205 135 96 177 L143 83 Q237 93 305 220Z" fill="url(#blue)" stroke="#f4c76c" stroke-width="2"/>
+ <path d="M305 220 Q375 91 467 83 L512 177 Q399 137 305 220Z" fill="url(#orange)" stroke="#f4c76c" stroke-width="2"/>
+ <path d="M305 220 Q299 130 251 93 Q283 95 305 115 Q331 72 365 65 Q333 113 305 220Z" fill="#092d67"/>
+ <path d="M95 178 Q190 154 305 220 Q419 155 512 178" fill="none" stroke="#fff" stroke-width="8"/>
+ <path d="M305 219 Q309 164 305 115" stroke="#fff0c9" stroke-width="4" fill="none"/>
+ <path d="M120 196 Q213 176 304 237 Q409 178 530 194" stroke="url(#orange)" stroke-width="8" fill="none" stroke-linecap="round"/>
+ <circle cx="302" cy="58" r="18" fill="#073477"/><path d="M372 17 L380 39 L402 47 L380 55 L372 78 L364 55 L342 47 L364 39Z" fill="url(#gold)"/>
+ <g fill="#073477"><rect x="500" y="74" width="18" height="18" rx="3"/><rect x="524" y="74" width="18" height="18" rx="3"/><rect x="548" y="74" width="18" height="18" rx="3"/><rect x="500" y="98" width="18" height="18" rx="3"/><rect x="548" y="98" width="18" height="18" rx="3"/></g><rect x="524" y="98" width="18" height="18" rx="3" fill="#ff8a00"/>
 </g>
-<g font-family="Ubuntu,Arial,sans-serif" font-weight="700" filter="url(#shadow)">
- <text x="145" y="75" font-size="55" letter-spacing="-2" fill="#071a35" stroke="#071a35" stroke-width="5" stroke-linejoin="round">Maarifa</text>
- <text x="344" y="75" font-size="55" letter-spacing="-2" fill="url(#gold)" stroke="#8c591d" stroke-width="1.5" stroke-linejoin="round">Books</text>
- <text x="148" y="105" font-size="16" letter-spacing="4" fill="#c08b39">SOMA  •  JIFUNZE  •  ENDELEA</text>
-</g>
-</svg>
+<g font-family="Ubuntu,Arial,sans-serif" font-weight="700" text-anchor="middle">
+ <text x="310" y="294" font-size="68" letter-spacing="-3" fill="#071b46">Maarifa<tspan fill="#f28a00">Books</tspan></text>
+ <text x="310" y="329" font-size="27" font-style="italic" font-weight="500" fill="#092657">Soma <tspan fill="#f28a00">•</tspan> Jifunze <tspan fill="#f28a00">•</tspan> Endelea</text>
+ <path d="M120 344 Q310 315 500 344" stroke="#f28a00" stroke-width="5" fill="none"/>
+</g></svg>
