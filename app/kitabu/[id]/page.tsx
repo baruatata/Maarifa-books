@@ -37,7 +37,7 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
           {book.price_tzs === 0
             ? <p className="book-payment-note">Kitabu hiki ni bure. Ingia kwenye akaunti ili kuanza kukisoma.</p>
             : <p className="book-payment-note">Malipo ya simu yatawezeshwa baada ya kuunganishwa rasmi kwa huduma ya Selcom. Kwa sasa usitume fedha nje ya mfumo huu.</p>}
-          <Link className="btn book-buy-button" href="/ingia?next=%2Fdashboard%2Fvitabu"> {book.price_tzs === 0 ? "Ingia kuanza kusoma" : "Nunua na Lipa (inaandaliwa)"} </Link>
+          {book.price_tzs === 0 ? <Link className="btn book-buy-button" href="/ingia?next=%2Fdashboard%2Fvitabu">Ingia kuanza kusoma</Link> : <button className="btn book-buy-button" type="button" disabled>Nunua na Lipa — inaandaliwa</button>}
         </div>
       </div>
     </section>
