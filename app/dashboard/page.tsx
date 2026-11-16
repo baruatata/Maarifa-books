@@ -20,7 +20,6 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   const rows = books ?? [];
   const approved = rows.filter(book => book.status === "approved").length;
   const pending = rows.filter(book => book.status === "pending").length;
-  const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
 
   if (application?.status === "approved") {
     return <main className="page seller-dashboard">
@@ -32,7 +31,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
         <article className="panel"><span>Bei kwa wasomaji</span><strong>BURE</strong></article>
       </section>
       <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/dashboard/usalama">Usalama wa akaunti</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div>
-      <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>TSh {money(book.price_tzs)}</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
+      <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>BURE</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
       {query.error && <p className="message">{query.error}</p>}{query.saved && <p className="notice">Taarifa zimehifadhiwa.</p>}{query.deleted && <p className="notice">Kitabu kimefutwa.</p>}
       <section className="panel seller-books-panel"><h2>Vitabu vya bure</h2><p className="muted">Kwa sasa mfumo hauna malipo. Wasomaji wanaweza kufungua na kusoma vitabu vilivyoidhinishwa bila kulipa.</p></section>
     </main>;
