@@ -126,7 +126,7 @@ body{background:#fff!important;color:#172033!important}
 
 
 /* Admin management console inspired by the approved dashboard reference */
-.site-header .brand img{content:url('/maarifabooks-logo.svg')!important}
+.site-header .brand img{content:url('/maarifabooks-logo.jpg')!important;width:min(420px,88vw)!important;height:auto!important;max-height:190px!important;object-fit:contain!important}
 .admin-console{--adm-navy:#071b46;--adm-blue:#0b3c8b;--adm-gold:#f4bd32;min-height:calc(100vh - 1px);display:grid;grid-template-columns:245px minmax(0,1fr);background:#f3f5fb;color:#14213b;font-family:Ubuntu,Arial,sans-serif}
 .admin-sidebar{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,#071b46,#092b68);padding:20px 14px;color:#fff;display:flex;flex-direction:column}
 .admin-brand{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;padding:5px;margin-bottom:27px;min-height:94px}
