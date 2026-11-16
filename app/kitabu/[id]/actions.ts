@@ -40,7 +40,7 @@ export async function submitManualPayment(bookId: string, formData: FormData) {
   });
   if (proofError) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Taarifa za malipo hazikuhifadhiwa. Usirudie malipo; wasiliana na msaada."));
 
-  redirect("/dashboard/vitabu?pending=1");
+  redirect("/kitabu/" + bookId + "?submitted=1");
 }
 
 export async function reviewManualPayment(formData: FormData) {
