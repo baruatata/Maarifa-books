@@ -320,3 +320,10 @@ body{background:#fff!important;color:#172033!important}
 .seller-delete-panel{margin-top:22px;border:1px solid #efd5d5}
 .seller-delete-panel .btn{color:#a52828;border-color:#d9a4a4}
 .seller-books-panel td a{font-weight:700;color:#9a6a20;text-decoration:underline}
+
+
+.manual-payment-box{margin-top:18px;padding:18px;border:1px solid var(--border,#d9deea);border-radius:14px;background:var(--panel,#fff)}
+.manual-payment-box h3{margin:0 0 10px;font-weight:800}
+.manual-payment-box>p strong{font-size:1.1rem;letter-spacing:.02em}
+.seller-payment-review{display:flex;gap:8px;flex-wrap:wrap}
+.seller-payment-review .btn{min-height:40px;padding:8px 12px}
