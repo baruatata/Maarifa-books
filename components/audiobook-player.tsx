@@ -71,8 +71,8 @@ export default function AudiobookPlayer({ bookId }: Props) {
       const data = await textResponse.json();
       if (!textResponse.ok) throw new Error(data.error || "Kitabu hakikuweza kuchambuliwa.");
       const chunks = (data.pages as string[]).flatMap((page) => {
-        const normalized = page.replace(/\\s+/g, " ").trim();
-        const parts = normalized.match(/[\\s\\S]{1,1800}/g) || [];
+        const normalized = page.replace(/\s+/g, " ").trim();
+        const parts = normalized.match(/[\s\S]{1,1800}/g) || [];
         return parts.map((part) => part.trim()).filter(Boolean);
       });
       if (!chunks.length) throw new Error("Hakuna maandishi ya kusikiliza kwenye PDF hii.");
@@ -97,7 +97,7 @@ export default function AudiobookPlayer({ bookId }: Props) {
       urlsRef.current = audioUrls;
       setStatus("ready");
       setMessage(`Sauti zote ${audioUrls.length} ziko tayari. Bonyeza Play kusikiliza; zitaendelea zenyewe kwa mfuatano.`);
-      playSegment(0, false);
+
     } catch (error) {
       urlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       urlsRef.current = [];
