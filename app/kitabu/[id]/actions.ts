@@ -6,50 +6,40 @@ import { createClient } from "@/lib/supabase/server";
 export async function submitManualPayment(bookId: string, formData: FormData) {
   const supabase = await createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
-  let user = currentUser;
-  if (!user) {
+
+  if (!currentUser) {
     const { data: guest, error: guestError } = await supabase.auth.signInAnonymously({
       options: { data: { preferred_language: "sw" } }
     });
     if (guestError || !guest.user) {
-      redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Hatukuweza kuanzisha ununuzi wa haraka. Jaribu tena au wasiliana na msaada."));
+      redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Hatukuweza kuanzisha ununuzi wa haraka. Jaribu tena."));
     }
-    user = guest.user;
   }
 
   const payerPhone = String(formData.get("payer_phone") || "").trim();
   const reference = String(formData.get("transaction_reference") || "").trim();
   const provider = String(formData.get("payment_provider") || "");
+
   if (!/^0[67][0-9]{8}$/.test(payerPhone) || reference.length < 5 || reference.length > 80) {
     redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Weka namba ya simu na kumbukumbu sahihi ya muamala."));
   }
 
-  const { data: book } = await supabase.from("books")
-    .select("id,title,seller_id,price_tzs,status")
-    .eq("id", bookId).eq("status", "approved").gt("price_tzs", 0).maybeSingle();
-  if (!book || book.seller_id === user.id) redirect("/?error=" + encodeURIComponent("Kitabu hiki hakiwezi kununuliwa kwa akaunti hii."));
-
-  const { data: payout } = await supabase.from("seller_payout_methods")
-    .select("provider,phone_number").eq("seller_id", book.seller_id).maybeSingle();
-  if (!payout || provider !== payout.provider) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Chagua mtandao uleule wa namba ya muuzaji."));
-
-  const { data: order, error: orderError } = await supabase.from("orders")
-    .insert({ buyer_id: user.id, total_tzs: book.price_tzs, status: "pending", payment_provider: provider })
-    .select("id").single();
-  if (orderError || !order) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Oda haikuweza kuanzishwa. Jaribu tena."));
-
-  const { error: itemError } = await supabase.from("order_items").insert({
-    order_id: order.id, book_id: book.id, seller_id: book.seller_id, unit_price_tzs: book.price_tzs
+  // One database transaction creates the order, its book item and the payment proof.
+  // If any insert fails, PostgreSQL rolls back all three records.
+  const { data: orderId, error } = await supabase.rpc("submit_book_payment", {
+    p_book_id: bookId,
+    p_payer_phone: payerPhone,
+    p_transaction_reference: reference,
+    p_payment_provider: provider
   });
-  if (itemError) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Oda imeanzishwa lakini bidhaa haikuongezwa. Wasiliana na msaada kabla ya kulipa tena."));
 
-  const { error: proofError } = await supabase.from("payment_submissions").insert({
-    order_id: order.id, buyer_id: user.id, seller_id: book.seller_id, amount_tzs: book.price_tzs,
-    payment_provider: provider, payer_phone: payerPhone, transaction_reference: reference
-  });
-  if (proofError) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Taarifa za malipo hazikuhifadhiwa. Usirudie malipo; wasiliana na msaada."));
+  if (error || !orderId) {
+    redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent(
+      error?.message || "Ombi la ununuzi halikuhifadhiwa. Hakuna malipo mapya yanayotakiwa."
+    ));
+  }
 
-  redirect("/kitabu/" + bookId + "?submitted=1&order=" + encodeURIComponent(order.id));
+  redirect("/kitabu/" + bookId + "?submitted=1&order=" + encodeURIComponent(orderId));
 }
 
 export async function reviewManualPayment(formData: FormData) {
