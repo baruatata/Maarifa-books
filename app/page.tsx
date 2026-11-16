@@ -99,7 +99,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 <div className="home-book-info">
                   <h3>{book.title}</h3>
                   <p>{book.author_name ?? "Mwandishi hajatajwa"}</p>
-                  <div className="home-book-meta"><span>{book.format.toUpperCase()}</span><strong>TSh {book.price_tzs.toLocaleString("en-TZ")}</strong></div>
+                  <div className="home-book-meta"><span>{book.format.toUpperCase()}</span><strong>BURE</strong></div>
                 </div>
               </Link>
             ))}
@@ -111,7 +111,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <div>
           <p className="home-kicker">KWA WAANDISHI NA WACHAPISHAJI</p>
           <h2>Kitabu chako kinaweza kuwafikia wasomaji wengi zaidi.</h2>
-          <p>Omba kujiunga kama muuzaji. Kila ombi na kitabu vitapitiwa na msimamizi. Kwa sasa muuzaji anapata asilimia 100 ya mauzo yake.</p>
+          <p>Omba kujiunga kama muuzaji. Kila ombi na kitabu vitapitiwa na msimamizi. Kwa sasa vitabu vyote vinatolewa bure kwa wasomaji.</p>
         </div>
         <Link href="/wauzaji">Anza kuuza vitabu <span aria-hidden="true">→</span></Link>
       </section>
