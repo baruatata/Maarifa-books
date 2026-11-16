@@ -38,8 +38,8 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   }
 
   return <main className="page"><p className="eyebrow">DASHIBODI</p><h1>Karibu, {profile?.full_name || user.email}</h1><p className="muted">Akaunti: Mnunuzi</p>
-    <div className="dashlinks"><Link href="/dashboard/vitabu">Vitabu nilivyonunua</Link><Link href="/dashboard/usalama">Usalama wa akaunti</Link><Link href="/wauzaji">Omba kuwa muuzaji</Link><Link href="/">Chunguza maktaba</Link><form action={signOut}><button className="btn">Toka</button></form></div>
+    <div className="dashlinks"><Link href="/dashboard/vitabu">Maktaba ya bure</Link><Link href="/dashboard/usalama">Usalama wa akaunti</Link><Link href="/wauzaji">Omba kuwa muuzaji</Link><Link href="/">Chunguza maktaba</Link><form action={signOut}><button className="btn">Toka</button></form></div>
     {application && <section className="panel" style={{ padding: 18, marginBottom: 20 }}><h2>Ombi la duka: {application.store_name}</h2><p>Hali ya ombi: <span className="status">{application.status === "pending" ? "Linasubiri idhini" : application.status === "approved" ? "Limeidhinishwa" : "Halijaidhinishwa"}</span></p>{application.review_note && <p className="muted">Maelezo ya Admin: {application.review_note}</p>}{application.status === "pending" && <p className="muted">Tutakujulisha baada ya timu kukagua ombi lako. Ukishakubaliwa, dashibodi ya muuzaji itafunguka hapa.</p>}</section>}
-    <section className="panel" style={{ padding: 18 }}><h2>Karibu kwenye MaarifaBooks</h2><p className="muted">Nunua na usome vitabu vya kidijitali. Unataka kuuza vitabu vyako? Tuma ombi la kuwa muuzaji.</p><Link className="btn" href="/wauzaji">Anza kuuza vitabu</Link></section>
+    <section className="panel" style={{ padding: 18 }}><h2>Karibu kwenye MaarifaBooks</h2><p className="muted">Soma vitabu vya kidijitali bure. Unataka kuchangia maktaba kwa kupakia kitabu? Tuma ombi la kuwa muuzaji.</p><Link className="btn" href="/wauzaji">Anza kuuza vitabu</Link></section>
   </main>;
 }
