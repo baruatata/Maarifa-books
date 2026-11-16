@@ -4,11 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 export async function SiteHeader() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
-    : { data: null };
+  const [{ data: profile }, { data: sellerApplication }] = user
+    ? await Promise.all([
+        supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+        supabase.from("seller_applications").select("status").eq("user_id", user.id).maybeSingle(),
+      ])
+    : [{ data: null }, { data: null }];
 
   if (profile?.role === "admin") return null;
+  const sellerApproved = sellerApplication?.status === "approved";
 
   return (
     <header className="site-header">
@@ -18,7 +22,7 @@ export async function SiteHeader() {
       </Link>
       <nav aria-label="Menyu kuu">
         <Link href="/#vitabu">Vitabu</Link>
-        <Link href="/wauzaji">Uza vitabu</Link>
+        <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>
         <Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? "Dashibodi" : "Ingia / Jisajili"}</Link>
       </nav>
     </header>
