@@ -31,6 +31,16 @@ export default function AudiobookPlayer({ bookId }: Props) {
     urlsRef.current.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
+  useEffect(() => {
+    if (status === "ready" && audioRef.current && urlsRef.current.length) {
+      segmentRef.current = 0;
+      setSegment(0);
+      audioRef.current.src = urlsRef.current[0];
+      audioRef.current.playbackRate = Number(speed);
+      audioRef.current.load();
+    }
+  }, [status]);
+
   function playSegment(index: number, autoplay = true) {
     const urls = urlsRef.current;
     const audio = audioRef.current;
