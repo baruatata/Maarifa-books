@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PdfFlipbook from "@/components/pdf-flipbook";
+import AudiobookPlayer from "@/components/audiobook-player";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,6 +36,7 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
     <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p><span className="reader-access-note">Unasoma kitabu bure</span></header>
     {book.format === "pdf" ? (
       <section className="reader-frame-wrap">
+        <AudiobookPlayer bookId={book.id} />
         <PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id} />
         <p className="reader-footnote">Unaweza kusogeza kurasa kwa kidole au mishale. Ukihitaji, <a href={signed.signedUrl} target="_blank" rel="noreferrer">fungua PDF yenyewe</a>.</p>
       </section>
