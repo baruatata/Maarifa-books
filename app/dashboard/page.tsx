@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "@/app/auth/actions";
+import { signOut } from "@/app/auth/actions";\nimport { saveSellerPayoutMethod } from "@/app/dashboard/kitabu/actions";
 
-export default async function Dashboard() {
+export default async function Dashboard({searchParams}:{searchParams:Promise<{error?:string;saved?:string;deleted?:string}>}) {\n  const query=await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/ingia");
@@ -33,7 +33,7 @@ export default async function Dashboard() {
         <article className="panel"><span>Vinasubiri ukaguzi</span><strong>{pending}</strong></article>
         <article className="panel"><span>Mauzo yaliyolipwa</span><strong>TSh {money(paid)}</strong></article>
       </section>
-      {typeof (await Promise.resolve(null)) === "undefined" ? null : null}\n      <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div>
+      <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div>
       <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>TSh {money(book.price_tzs)}</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
       <section className="panel seller-books-panel"><h2>Muhtasari wa mauzo</h2><p className="muted">Idadi ya nakala zilizouzwa: {(sales ?? []).length}. Malipo yaliyowekwa kuwa yamelipwa: TSh {money(paid)}.</p><p className="muted">Kwa sasa malipo yanafuatiliwa kulingana na taarifa zilizopo kwenye mfumo.</p></section>
     </main>;
