@@ -14,8 +14,8 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   const category = String(formData.get("category") ?? "nyingine");
   const format = String(formData.get("format") ?? "pdf");
   const language = String(formData.get("language") ?? "sw");
-  const price_tzs = Number(formData.get("price_tzs"));
-  if (!title || title.length > 180 || !["pdf","epub","audiobook"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
+  const price_tzs = 0;
+  if (!title || title.length > 180 || !["pdf","epub","audiobook"].includes(format) || !["sw","en","other"].includes(language)) return {ok:false,error:"Kagua jina, muundo na lugha ya kitabu."};
   const { data, error } = await supabase.from("books").insert({
     seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending"
   }).select("id").single();
@@ -62,8 +62,8 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   const description=String(formData.get("description")||"").trim();
   const category=String(formData.get("category")||"nyingine");
   const language=String(formData.get("language")||"sw");
-  const price_tzs=Number(formData.get("price_tzs"));
-  if(!title||title.length>180||!["sw","en","other"].includes(language)||!Number.isSafeInteger(price_tzs)||price_tzs<0) return {ok:false,error:"Kagua taarifa na bei ya kitabu."};
+  const price_tzs=0;
+  if(!title||title.length>180||!["sw","en","other"].includes(language)) return {ok:false,error:"Kagua taarifa za kitabu."};
   const {count: soldCount,error: soldError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(soldError) return {ok:false,error:"Imeshindikana kukagua historia ya mauzo."};
   if((soldCount??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kubadilisha toleo lililonunuliwa; wasiliana na Admin kwa marekebisho."};
