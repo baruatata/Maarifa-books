@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { submitManualPayment } from "./actions";
 
-export default async function BookDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
+export default async function BookDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; submitted?: string }> }) {
   const { id } = await params;
   const query = await searchParams;
   const supabase = await createClient();
@@ -27,7 +27,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
     <Link href="/" className="book-detail-back">← Rudi kwenye vitabu</Link>
     <section className="book-detail-layout">
       <div className="book-detail-cover">
-        {coverUrl ? <img src={coverUrl} alt={"Jalada la " + book.title} /> : <div className="home-book-placeholder"><span>MAARIFABOOKS</span><strong>{book.title}</strong><small>{book.author_name || "Mwandishi"}</small></div>}
+        {coverUrl ? <img src={coverUrl} alt={"Jalada la " + book.title} /> : <div className="book-cover-fallback"><strong>{book.title}</strong><small>{book.author_name || "Mwandishi"}</small></div>}
       </div>
       <div className="book-detail-info">
         <p className="eyebrow">TAARIFA ZA KITABU</p>
@@ -36,7 +36,8 @@ export default async function BookDetailsPage({ params, searchParams }: { params
         <div className="book-detail-tags"><span>{formatLabel[book.format] || book.format}</span><span>{languageLabel[book.language] || book.language}</span>{book.category && <span>{book.category}</span>}</div>
         <h2>Maelezo ya kitabu</h2>
         <p className="book-detail-description">{book.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</p>
-        {query.error && <p className="message">{query.error}</p>}
+        {query.error && <p className="message" role="alert">{query.error}</p>}
+        {query.submitted === "1" && <p className="notice payment-success" role="status">Taarifa za malipo zimetumwa kwa muuzaji. Subiri athibitishe kupokea fedha; kitabu kitafunguliwa baada ya uthibitisho.</p>}
         <div className="book-purchase-panel">
           <div><span className="muted">Bei ya kitabu</span><strong>{book.price_tzs === 0 ? "BURE" : "TSh " + Number(book.price_tzs).toLocaleString("en-TZ")}</strong></div>
           {book.price_tzs === 0
