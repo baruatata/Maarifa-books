@@ -11,7 +11,6 @@ export async function SiteHeader() {
       ])
     : [{ data: null }, { data: null }];
 
-  if (profile?.role === "admin") return null;
   const sellerApproved = sellerApplication?.status === "approved";
 
   return (
@@ -23,7 +22,7 @@ export async function SiteHeader() {
       <nav aria-label="Menyu kuu">
         <Link href="/#vitabu">Vitabu</Link>
         <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>
-        <Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? "Dashibodi" : "Ingia / Jisajili"}</Link>
+        <Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? (profile?.role === "admin" ? "Admin" : "Dashibodi") : "Ingia / Jisajili"}</Link>
       </nav>
     </header>
   );
