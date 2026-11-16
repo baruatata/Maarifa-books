@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -26,6 +26,8 @@ export async function POST(request: Request) {
     if (downloadError || !file) return NextResponse.json({ error: "Imeshindikana kufungua PDF." }, { status: 502 });
     if (file.size > 30 * 1024 * 1024) return NextResponse.json({ error: "PDF ni kubwa sana kwa usomaji wa sauti kwa sasa (kikomo MB 30)." }, { status: 413 });
 
+    // Resolve the matching worker from the externalized pdfjs-dist package on Vercel Node runtime.
+    GlobalWorkerOptions.workerSrc = `${process.cwd()}/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs`;
     const pdf = await getDocument({ data: new Uint8Array(await file.arrayBuffer()), useSystemFonts: true, disableFontFace: true, isEvalSupported: false, useWorkerFetch: false, verbosity: 0 }).promise;
     if (pdf.numPages > 250) return NextResponse.json({ error: "Kitabu kina kurasa zaidi ya 250; tafadhali gawanya PDF." }, { status: 413 });
 
