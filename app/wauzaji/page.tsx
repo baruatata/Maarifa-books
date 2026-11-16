@@ -7,12 +7,12 @@ async function applyAsSeller(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/ingia");
   const store_name = String(formData.get("store_name") ?? "").trim();
-  const rawPhone = String(formData.get("phone_number") ?? "").trim().replace(/[\\s()-]/g, "");
+  const rawPhone = String(formData.get("phone_number") ?? "").trim().replace(/[\s()-]/g, "");
   const bio = String(formData.get("bio") ?? "").trim();
   let phone_number = rawPhone.startsWith("+") ? rawPhone.slice(1) : rawPhone;
-  if (/^0[67]\\d{8}$/.test(phone_number)) phone_number = "255" + phone_number.slice(1);
-  else if (/^[67]\\d{8}$/.test(phone_number)) phone_number = "255" + phone_number;
-  if (!store_name || !/^255[67]\\d{8}$/.test(phone_number)) {
+  if (/^0[67]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number.slice(1);
+  else if (/^[67]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number;
+  if (!store_name || !/^255[67]\d{8}$/.test(phone_number)) {
     redirect("/wauzaji?error=" + encodeURIComponent("Jaza jina la duka na namba sahihi ya simu ya Tanzania."));
   }
   const { error } = await supabase.from("seller_applications").insert({ user_id: user.id, store_name, phone_number, bio, status: "pending" });
