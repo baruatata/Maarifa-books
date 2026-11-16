@@ -45,7 +45,7 @@ export default async function Home({ searchParams }: HomeProps) {
     <main className="home-shell">
       <section className="home-hero">
         <div className="home-brand-art">
-          <img src="/maarifabooks-logo.jpg" alt="MaarifaBooks — Soma, Jifunze, Endelea" />
+          <img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" />
         </div>
         <p className="home-kicker">SOMA · JIFUNZE · ENDELEA</p>
         <h1>Karibu kwenye ulimwengu wa vitabu</h1>
