@@ -327,3 +327,25 @@ body{background:#fff!important;color:#172033!important}
 .manual-payment-box>p strong{font-size:1.1rem;letter-spacing:.02em}
 .seller-payment-review{display:flex;gap:8px;flex-wrap:wrap}
 .seller-payment-review .btn{min-height:40px;padding:8px 12px}
+
+
+/* Mobile-safe book detail and manual payment layout */
+.book-detail-page,.book-detail-layout,.book-detail-info,.book-purchase-panel,.manual-payment-box{min-width:0;max-width:100%}
+.book-purchase-panel>.manual-payment-box{display:block!important;width:100%;min-width:0;padding:16px}
+.manual-payment-box .form{display:block;width:100%;max-width:none;min-width:0;padding:0;margin:14px 0 0}
+.manual-payment-box .field{display:grid;width:100%;min-width:0}
+.manual-payment-box .field input{display:block;width:100%;min-width:0;max-width:100%;font-size:16px}
+.manual-payment-box .btn{width:100%;white-space:normal;line-height:1.4;padding:13px 12px}
+.book-purchase-panel>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.book-purchase-panel>div:first-child strong{font-size:clamp(20px,5vw,24px);white-space:nowrap}
+.book-cover-fallback{width:100%;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;padding:24px;border-radius:9px;background:linear-gradient(145deg,#172b50,#101d36);color:#fff}
+.book-cover-fallback strong{font-size:clamp(22px,5vw,30px);line-height:1.25;overflow-wrap:anywhere}
+.book-cover-fallback small{color:#e7c783}
+.payment-success{border-color:#b8dec2;background:#eff9f1;color:#205b32;line-height:1.6}
+@media(max-width:700px){
+ .book-detail-page{width:100%;padding-left:15px;padding-right:15px;overflow-x:clip}
+ .book-purchase-panel{padding:14px}
+ .manual-payment-box{padding:13px}
+ .manual-payment-box .form{padding:0}
+ .book-detail-cover img{width:100%;max-width:100%;height:auto;min-height:0;max-height:420px;object-fit:contain}
+}
