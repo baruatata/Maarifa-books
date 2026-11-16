@@ -13,6 +13,7 @@ export default function PdfFlipbook({ url, title }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [zoom, setZoom] = useState(1.25);
 
   useEffect(() => {
     let active = true;
@@ -51,17 +52,22 @@ export default function PdfFlipbook({ url, title }: Props) {
         const pdfPage = await pdf.getPage(page);
         if (cancelled || !canvasRef.current) return;
         const base = pdfPage.getViewport({ scale: 1 });
-        const maxWidth = Math.min(window.innerWidth - 32, 900);
-        const scale = Math.max(0.5, Math.min(maxWidth / base.width, 1.8));
-        const viewport = pdfPage.getViewport({ scale });
+        const availableWidth = Math.max(280, window.innerWidth - 24);
+        const fitScale = availableWidth / base.width;
+        const viewport = pdfPage.getViewport({ scale: fitScale * zoom });
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
         if (!context) return;
-        canvas.width = Math.floor(viewport.width);
-        canvas.height = Math.floor(viewport.height);
-        canvas.style.width = "100%";
-        canvas.style.height = "auto";
-        renderTask = pdfPage.render({ canvasContext: context, viewport });
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        canvas.width = Math.floor(viewport.width * dpr);
+        canvas.height = Math.floor(viewport.height * dpr);
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        renderTask = pdfPage.render({
+          canvasContext: context,
+          viewport,
+          transform: dpr === 1 ? undefined : [dpr, 0, 0, dpr, 0, 0],
+        });
         await renderTask.promise;
       } catch {
         if (!cancelled) setError("Imeshindikana kuonyesha ukurasa huu wa PDF.");
@@ -74,7 +80,7 @@ export default function PdfFlipbook({ url, title }: Props) {
       cancelled = true;
       renderTask?.cancel?.();
     };
-  }, [pdf, page]);
+  }, [pdf, page, zoom]);
 
   const go = useCallback((next: number) => {
     setPage(Math.max(1, Math.min(total, next)));
@@ -95,6 +101,13 @@ export default function PdfFlipbook({ url, title }: Props) {
         <span className="flipbook-title">{title}</span>
         <span className="flipbook-count">{total ? `Ukurasa ${page} / ${total}` : "Inapakia..."}</span>
       </div>
+      {!loading && !error && <div className="zoom-controls" aria-label="Ukubwa wa maandishi">
+        <span>Ukubwa wa maandishi</span>
+        <button onClick={() => setZoom((z) => Math.max(1, Number((z - 0.25).toFixed(2))))} disabled={zoom <= 1} aria-label="Punguza ukubwa">A−</button>
+        <strong>{Math.round(zoom * 100)}%</strong>
+        <button onClick={() => setZoom((z) => Math.min(3, Number((z + 0.25).toFixed(2))))} disabled={zoom >= 3} aria-label="Ongeza ukubwa">A+</button>
+        <button className="fit-button" onClick={() => setZoom(1)}>Linganisha skrini</button>
+      </div>}
       {loading ? <div className="flipbook-message">Tafadhali subiri, tunafungua kurasa za kitabu...</div> :
         error ? <div className="flipbook-message flipbook-error">{error}</div> :
         <div className="flipbook-stage"
@@ -102,7 +115,7 @@ export default function PdfFlipbook({ url, title }: Props) {
           onTouchEnd={(e) => {
             if (touchStartX.current === null) return;
             const delta = e.changedTouches[0].clientX - touchStartX.current;
-            if (Math.abs(delta) > 45) go(page + (delta < 0 ? 1 : -1));
+            if (Math.abs(delta) > 65) go(page + (delta < 0 ? 1 : -1));
             touchStartX.current = null;
           }}>
           <button className="flipbook-arrow" onClick={() => go(page - 1)} disabled={page <= 1} aria-label="Ukurasa uliopita">‹</button>
@@ -117,26 +130,32 @@ export default function PdfFlipbook({ url, title }: Props) {
           value={page} onChange={(e) => go(Number(e.target.value) || 1)} /></label>
         <button onClick={() => go(page + 1)} disabled={page >= total}>Mbele →</button>
       </div>}
-      <p className="flipbook-hint">Telezesha kushoto au kulia kubadilisha ukurasa.</p>
+      <p className="flipbook-hint">Tumia A+ kuongeza maandishi. Ukurasa ukiwa mkubwa, telezesha pembeni kusoma sehemu zote; telezesha juu/chini kusoma ukurasa.</p>
       <style jsx>{`
-        .flipbook{width:100%;max-width:980px;margin:0 auto;color:#18212f}
+        .flipbook{width:100%;max-width:1100px;margin:0 auto;color:#18212f}
         .flipbook-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;background:#172b4d;color:white;border-radius:14px 14px 0 0;font-size:14px}
         .flipbook-title{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .flipbook-count{white-space:nowrap;font-variant-numeric:tabular-nums}
-        .flipbook-stage{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 6px;background:#e9edf3;min-height:280px}
-        .flipbook-paper{background:white;box-shadow:0 5px 22px #15223825;max-width:calc(100% - 76px);width:760px;line-height:0;transition:opacity .16s ease}
-        .flipbook-paper canvas{display:block;max-width:100%;object-fit:contain}
-        .flipbook-busy{opacity:.55}
-        .flipbook-arrow{border:0;border-radius:50%;width:38px;height:38px;flex:0 0 38px;background:#fff;color:#172b4d;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0002}
+        .zoom-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px 8px;background:#f5f7fa}
+        .zoom-controls span{font-size:13px;font-weight:600}
+        .zoom-controls button{min-width:46px;min-height:44px;border:1px solid #b9c5d4;border-radius:9px;background:white;color:#172b4d;font-weight:800;font-size:17px;padding:8px 12px}
+        .zoom-controls button:disabled{opacity:.35}
+        .zoom-controls strong{min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+        .zoom-controls .fit-button{font-size:13px;font-weight:650}
+        .flipbook-stage{display:flex;align-items:stretch;justify-content:center;gap:6px;padding:12px 4px;background:#e9edf3;min-height:280px}
+        .flipbook-paper{background:white;box-shadow:0 5px 22px #15223825;flex:1;min-width:0;max-width:calc(100% - 84px);overflow:auto;line-height:0;transition:opacity .16s ease;-webkit-overflow-scrolling:touch}
+        .flipbook-paper canvas{display:block;max-width:none;height:auto}
+        .flipbook-busy{opacity:.6}
+        .flipbook-arrow{position:sticky;top:45%;align-self:flex-start;margin-top:160px;border:0;border-radius:50%;width:36px;height:36px;flex:0 0 36px;background:#fff;color:#172b4d;font-size:27px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0002}
         .flipbook-arrow:disabled,.flipbook-controls button:disabled{opacity:.3;cursor:not-allowed}
         .flipbook-controls{display:flex;justify-content:center;align-items:center;gap:12px;padding:14px;flex-wrap:wrap}
-        .flipbook-controls button{border:1px solid #ccd4df;background:white;border-radius:9px;padding:10px 14px;font-weight:650;color:#172b4d}
-        .flipbook-controls label{font-size:13px;display:flex;align-items:center;gap:7px}
-        .flipbook-controls input{width:62px;padding:8px;border:1px solid #ccd4df;border-radius:8px;text-align:center}
+        .flipbook-controls button{min-height:44px;border:1px solid #ccd4df;background:white;border-radius:9px;padding:10px 16px;font-weight:650;color:#172b4d}
+        .flipbook-controls label{font-size:14px;display:flex;align-items:center;gap:7px}
+        .flipbook-controls input{width:70px;min-height:42px;padding:8px;border:1px solid #ccd4df;border-radius:8px;text-align:center;font-size:16px}
         .flipbook-message{padding:42px 18px;text-align:center;background:#f3f5f8;color:#445}
         .flipbook-error{color:#a12626}
-        .flipbook-hint{text-align:center;color:#697586;font-size:12px;margin:0 0 10px}
-        @media(max-width:600px){.flipbook-stage{gap:4px;padding:10px 2px;min-height:220px}.flipbook-paper{max-width:calc(100% - 54px)}.flipbook-arrow{width:28px;height:28px;flex-basis:28px;font-size:22px}.flipbook-toolbar{font-size:12px;padding:10px}}
+        .flipbook-hint{text-align:center;color:#596579;font-size:13px;line-height:1.5;margin:0 12px 14px}
+        @media(max-width:600px){.flipbook-toolbar{font-size:13px;padding:11px 10px}.zoom-controls{gap:7px}.zoom-controls span{width:100%;text-align:center}.flipbook-stage{gap:3px;padding:8px 2px;min-height:220px}.flipbook-paper{max-width:calc(100% - 58px)}.flipbook-arrow{width:26px;height:34px;flex-basis:26px;font-size:23px;margin-top:110px}.flipbook-hint{font-size:12px}}
       `}</style>
     </section>
   );
