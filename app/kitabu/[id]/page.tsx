@@ -9,6 +9,15 @@ export default async function BookDetailsPage({ params, searchParams }: { params
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   let paymentStatus: string | null = null;
+  let hasPaidAccess = false;
+  if (user) {
+    const { data: items } = await supabase.from("order_items").select("order_id").eq("book_id", id);
+    const orderIds = [...new Set((items ?? []).map(item => item.order_id))];
+    if (orderIds.length) {
+      const { data: paidOrders } = await supabase.from("orders").select("id").in("id", orderIds).eq("buyer_id", user.id).eq("status", "paid").limit(1);
+      hasPaidAccess = Boolean(paidOrders?.length);
+    }
+  }
   if (query.submitted === "1" && query.order && user) {
     const { data: submission } = await supabase.from("payment_submissions")
       .select("status").eq("order_id", query.order).eq("buyer_id", user.id).maybeSingle();
@@ -44,7 +53,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
         <h2>Maelezo ya kitabu</h2>
         <p className="book-detail-description">{book.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</p>
         {query.error && <p className="message" role="alert">{query.error}</p>}
-        {query.submitted === "1" && paymentStatus === "confirmed" && <div className="notice payment-success" role="status"><strong>Malipo yamethibitishwa!</strong><p>Kitabu chako kiko tayari. Huhitaji kujisajili wala kuingia.</p><Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link></div>}
+        {hasPaidAccess && <div className="notice payment-success" role="status"><strong>Malipo yamethibitishwa!</strong><p>Kitabu chako kiko tayari. Huhitaji kujisajili wala kuingia.</p><Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link></div>}
         {query.submitted === "1" && paymentStatus === "submitted" && <p className="notice" role="status">Tumepokea taarifa zako za malipo. Muuzaji akishathibitisha kupokea fedha, rudi hapa na uonyeshe ukurasa upya ili kitabu kifunguke.</p>}
         {query.submitted === "1" && paymentStatus === "rejected" && <p className="message" role="alert">Muuzaji hajathibitisha malipo haya. Hakikisha umetuma fedha sahihi kisha wasiliana na muuzaji.</p>}
         <div className="book-purchase-panel">
