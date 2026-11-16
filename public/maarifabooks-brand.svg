@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="220" viewBox="0 0 900 220" role="img" aria-labelledby="title desc">
+<title id="title">MaarifaBooks</title><desc id="desc">Nembo ya MaarifaBooks yenye kitabu kilichofunguliwa na jina la chapa</desc>
+<defs>
+ <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#244d91"/><stop offset="1" stop-color="#091d43"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd978"/><stop offset="1" stop-color="#d58b22"/></linearGradient>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffbd4a"/><stop offset="1" stop-color="#e66a12"/></linearGradient>
+</defs>
+<g transform="translate(18 18)">
+ <path d="M16 44 Q78 10 145 48 Q205 10 270 44 L270 170 Q202 135 145 174 Q80 135 16 170Z" fill="url(#navy)" stroke="url(#gold)" stroke-width="7" stroke-linejoin="round"/>
+ <path d="M145 48 Q91 16 32 48 L32 151 Q92 122 145 159Z" fill="#f9fbff"/>
+ <path d="M145 48 Q201 16 254 48 L254 151 Q199 122 145 159Z" fill="#fff1d1"/>
+ <path d="M145 48 L145 159" stroke="#d9a33d" stroke-width="5"/>
+ <path d="M47 72 Q93 57 126 77 M47 96 Q91 82 126 101 M164 77 Q203 57 239 72 M164 101 Q203 82 239 96" fill="none" stroke="#244d91" stroke-width="5" stroke-linecap="round"/>
+ <path d="M145 37 Q139 8 166 4 Q172 30 145 37Z" fill="url(#orange)"/>
+ <path d="M278 23 L286 43 L307 51 L286 59 L278 80 L270 59 L249 51 L270 43Z" fill="url(#gold)"/>
+</g>
+<text x="340" y="119" font-family="Ubuntu,Arial,sans-serif" font-size="91" font-weight="700" letter-spacing="-4" fill="#10264f">Maarifa<tspan fill="#e77d19">Books</tspan></text>
+<text x="347" y="172" font-family="Ubuntu,Arial,sans-serif" font-size="27" font-weight="700" letter-spacing="4" fill="#52627d">SOMA  •  JIFUNZE  •  ENDELEA</text>
+<path d="M347 188 Q590 205 820 188" fill="none" stroke="url(#orange)" stroke-width="5" stroke-linecap="round"/>
+</svg>
