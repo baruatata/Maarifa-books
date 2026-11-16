@@ -270,3 +270,26 @@ body{background:#fff!important;color:#172033!important}
  .site-header .brand-mark{font-size:34px}
  .site-header .brand-name{font-size:34px;letter-spacing:-1px}
 }
+
+
+/* Online book reader */
+.online-reader{max-width:1100px}
+.reader-nav{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}
+.reader-nav a{color:var(--navy,#10264f);font-weight:700;text-decoration:none}
+.reader-heading{margin-bottom:20px}
+.reader-heading h1{margin:8px 0;font-size:clamp(28px,5vw,42px)}
+.reader-access-note{display:inline-block;margin-top:8px;padding:7px 12px;border-radius:999px;background:#edf7ef;color:#23623b;font-weight:700;font-size:13px}
+.reader-frame-wrap{position:relative;background:#e8eaf0;border:1px solid #d9dce4;border-radius:16px;overflow:hidden}
+.reader-pdf-frame{display:block;width:100%;height:min(82vh,1000px);min-height:560px;border:0;background:white}
+.reader-watermark{position:absolute;right:18px;bottom:14px;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.72);color:#29344d;font-size:11px;pointer-events:none}
+.reader-footnote{font-size:13px;color:#687084;margin-top:12px}
+.reader-audio{padding:24px}
+.reader-audio audio{width:100%;margin-top:14px}
+.reader-unavailable{padding:24px;margin-top:18px}
+.purchased-book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:24px}
+.purchased-book-card{display:flex;gap:16px;align-items:center;padding:16px}
+.purchased-book-card img,.purchased-book-placeholder{width:92px;height:126px;object-fit:cover;border-radius:8px;flex:0 0 auto}
+.purchased-book-placeholder{display:grid;place-items:center;background:#10264f;color:white;font-weight:800;text-align:center;padding:8px;font-size:12px}
+.purchased-book-card h2{font-size:18px;margin:0 0 6px}
+.purchased-book-card .btn{display:inline-flex;margin-top:8px}
+@media(max-width:600px){.reader-pdf-frame{min-height:65vh;height:75vh}.reader-watermark{font-size:9px;right:8px;bottom:8px}.purchased-book-card{align-items:flex-start}}
