@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (downloadError || !file) return NextResponse.json({ error: "Imeshindikana kufungua PDF." }, { status: 502 });
     if (file.size > 30 * 1024 * 1024) return NextResponse.json({ error: "PDF ni kubwa sana kwa usomaji wa sauti kwa sasa (kikomo MB 30)." }, { status: 413 });
 
-    const pdf = await getDocument({ data: new Uint8Array(await file.arrayBuffer()), useSystemFonts: true }).promise;
+    const pdf = await getDocument({ data: new Uint8Array(await file.arrayBuffer()), useSystemFonts: true, disableFontFace: true, isEvalSupported: false, useWorkerFetch: false, verbosity: 0 }).promise;
     if (pdf.numPages > 250) return NextResponse.json({ error: "Kitabu kina kurasa zaidi ya 250; tafadhali gawanya PDF." }, { status: 413 });
 
     const pages: string[] = [];
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
     await pdf.destroy();
     if (!pages.some(Boolean)) return NextResponse.json({ error: "PDF hii haina maandishi yanayoweza kusomwa. Inaweza kuwa imetengenezwa kwa picha." }, { status: 422 });
     return NextResponse.json({ pages });
-  } catch {
-    return NextResponse.json({ error: "Imeshindikana kuchambua PDF. Jaribu tena." }, { status: 500 });
+  } catch (error) {
+    console.error("Audiobook PDF extraction failed:", error);
+    return NextResponse.json({ error: "Imeshindikana kuchambua PDF. Hakikisha PDF inafunguka vizuri, kisha jaribu tena.", code: "PDF_EXTRACTION_FAILED" }, { status: 500 });
   }
 }
