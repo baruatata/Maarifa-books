@@ -114,7 +114,18 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
         <button className="audio-toggle" type="button" onClick={() => setAudioOpen((v) => !v)} aria-expanded={audioOpen}>🎧 {audioOpen ? "Ficha sauti" : "Sikiliza"}</button>
       </header>
       {audioOpen && <div className="flip-audio"><AudiobookPlayer bookId={bookId} /></div>}
-      <section className="flip-stage" ref={stageRef}>
+      <section
+        className="flip-stage"
+        ref={stageRef}
+        onTouchStart={(event) => { const t = event.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY }; }}
+        onTouchEnd={(event) => {
+          if (!touchStart.current) return;
+          const dx = event.changedTouches[0].clientX - touchStart.current.x;
+          const dy = event.changedTouches[0].clientY - touchStart.current.y;
+          if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) go(page + (dx < 0 ? 1 : -1));
+          touchStart.current = null;
+        }}
+      >
         {loading ? <div className="flip-message">Inafungua kitabu...</div> : error ? (
           <div className="flip-message flip-error"><p>Imeshindikana kuonyesha PDF.</p><small>{error}</small><a href={url} target="_blank" rel="noreferrer">Fungua PDF yenyewe</a></div>
         ) : (
@@ -155,17 +166,7 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
         @media(max-width:600px){.flip-toolbar{height:48px;min-height:48px;padding:0 9px;gap:7px}.flip-title{font-size:12px}.audio-toggle{padding:7px 9px;font-size:11px}.flip-stage{padding:8px 27px}.page-arrow{width:29px;height:44px;font-size:26px}.flip-controls{min-height:54px;gap:8px;padding:7px 6px}.flip-controls button{padding:9px 10px;font-size:11px}.flip-controls label{gap:4px;font-size:11px}.flip-controls input{width:40px;padding:6px}}
         @media(prefers-reduced-motion:reduce){.turn-next,.turn-prev{animation:none}}
       `}</style>
-      <div
-        className="flip-swipe-area"
-        onTouchStart={(event) => { const t = event.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY }; }}
-        onTouchEnd={(event) => {
-          if (!touchStart.current) return;
-          const dx = event.changedTouches[0].clientX - touchStart.current.x;
-          const dy = event.changedTouches[0].clientY - touchStart.current.y;
-          if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) go(page + (dx < 0 ? 1 : -1));
-          touchStart.current = null;
-        }}
-      />
+
     </main>
   );
 }
