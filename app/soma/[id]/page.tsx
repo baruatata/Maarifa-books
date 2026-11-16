@@ -5,38 +5,44 @@ import { createClient } from "@/lib/supabase/server";
 export default async function ReadBookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    const { error } = await supabase.auth.signInAnonymously({ options: { data: { preferred_language: "sw" } } });
-    if (error) redirect("/ingia?next=" + encodeURIComponent("/soma/" + id));
-    redirect("/soma/" + id);
+
+  // Approved books are public in free mode; readers do not need an account.
+  const { data: book, error: bookError } = await supabase.from("books")
+    .select("id,title,author_name,format,file_path,status")
+    .eq("id", id)
+    .eq("status", "approved")
+    .maybeSingle();
+
+  if (bookError || !book || !book.file_path) {
+    redirect("/?error=" + encodeURIComponent("Kitabu hakijapatikana au bado hakijaidhinishwa."));
   }
 
-  const { data: book } = await supabase.from("books")
-    .select("id,title,author_name,format,file_path,status")
-    .eq("id", id).eq("status", "approved").maybeSingle();
-  if (!book || !book.file_path) redirect("/dashboard/vitabu?error=" + encodeURIComponent("Kitabu hakijapatikana."));
+  const { data: signed, error: fileError } = await supabase.storage
+    .from("book-files")
+    .createSignedUrl(book.file_path, 3600);
 
-
-
-  const { data: signed, error } = await supabase.storage.from("book-files").createSignedUrl(book.file_path, 300);
-  if (error || !signed?.signedUrl) {
-    return <main className="page"><h1>Kitabu hakijafunguka</h1><p className="muted">Jaribu tena baada ya muda mfupi.</p><Link className="btn" href="/dashboard/vitabu">Rudi kwenye vitabu vyangu</Link></main>;
+  if (fileError || !signed?.signedUrl) {
+    return <main className="page">
+      <h1>Faili la kitabu halijafunguka</h1>
+      <p className="muted">Kitabu kipo kwenye orodha, lakini mfumo umeshindwa kukifungua. Tafadhali jaribu tena baadaye.</p>
+      <Link className="btn" href={"/kitabu/" + book.id}>Rudi kwenye taarifa za kitabu</Link>
+    </main>;
   }
 
   return <main className="page online-reader">
-    <nav className="reader-nav"><Link href="/dashboard/vitabu">← Vitabu nilivyonunua</Link><Link href="/">MaarifaBooks</Link></nav>
+    <nav className="reader-nav"><Link href={"/kitabu/" + book.id}>← Rudi kwenye kitabu</Link><Link href="/">MaarifaBooks</Link></nav>
     <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p><span className="reader-access-note">Unasoma kitabu bure</span></header>
     {book.format === "pdf" ? (
       <section className="reader-frame-wrap">
         <iframe className="reader-pdf-frame" src={signed.signedUrl + "#toolbar=0&navpanes=0&scrollbar=1"} title={"Kitabu " + book.title} />
-        <div className="reader-watermark" aria-hidden="true">MaarifaBooks · {user.email || "Msomaji"}</div>
+        <p className="reader-footnote">Ikiwa PDF haionekani, fungua kiungo cha faili hapa chini.</p>
+        <a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Fungua PDF</a>
       </section>
     ) : book.format === "audiobook" ? (
       <section className="reader-audio panel"><p>Sikiliza kitabu chako hapa.</p><audio controls preload="metadata" src={signed.signedUrl}>Kivinjari chako hakitumii kicheza sauti.</audio></section>
     ) : (
-      <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF na Audiobook.</p></section>
+      <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF na Audiobook.</p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Pakua EPUB</a></section>
     )}
-    <p className="reader-footnote">Kiungo cha kusoma ni cha muda mfupi na hakiwekwi wazi kwenye maktaba ya umma.</p>
+    <p className="reader-footnote">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
   </main>;
 }
