@@ -37,10 +37,11 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
     import("pdfjs-dist/legacy/build/pdf.mjs").then(async (pdfjs: any) => {
       pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs";
       const task = pdfjs.getDocument({ url, isEvalSupported: false });
-      loaded = await task.promise;
-      if (!active) { await loaded.destroy(); return; }
-      pdfRef.current = loaded;
-      setTotal(loaded.numPages);
+      const document = await task.promise;
+      loaded = document;
+      if (!active) { await document.destroy(); return; }
+      pdfRef.current = document;
+      setTotal(document.numPages);
       setPage(1);
       setLoading(false);
     }).catch((err: unknown) => {
