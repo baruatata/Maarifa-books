@@ -90,7 +90,7 @@ export default async function Home({ searchParams }: HomeProps) {
         ) : (
           <div className="home-book-grid">
             {books.map((book) => (
-              <article className="home-book-card" key={book.id}>
+              <Link href={`/kitabu/${book.id}`} className="home-book-card" key={book.id} aria-label={`Angalia maelezo ya ${book.title}`}>
                 {covers.get(book.id) ? (
                   <img className="home-book-cover" src={covers.get(book.id)!} alt={`Jalada la ${book.title}`} />
                 ) : (
@@ -101,7 +101,7 @@ export default async function Home({ searchParams }: HomeProps) {
                   <p>{book.author_name ?? "Mwandishi hajatajwa"}</p>
                   <div className="home-book-meta"><span>{book.format.toUpperCase()}</span><strong>TSh {book.price_tzs.toLocaleString("en-TZ")}</strong></div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         )}
