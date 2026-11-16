@@ -38,7 +38,7 @@ export default function AudiobookPlayer({ bookId }: Props) {
       const data = await textResponse.json();
       if (!textResponse.ok) throw new Error(data.error || "Kitabu hakikuweza kuchambuliwa.");
       const chunks = (data.pages as string[]).flatMap((page) => {
-        const parts = page.match(/[\\s\\S]{1,1800}/g) || [];
+        const parts = page.match(/[\s\S]{1,1800}/g) || [];
         return parts.map((part) => part.trim()).filter(Boolean);
       });
       if (!chunks.length) throw new Error("Hakuna maandishi ya kusikiliza kwenye PDF hii.");
