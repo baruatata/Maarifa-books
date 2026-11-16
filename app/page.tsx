@@ -37,7 +37,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const covers = new Map(await Promise.all(books.map(async (book) => {
     if (!book.cover_path) return [book.id, null] as const;
-    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300);
+    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
     return [book.id, signed?.signedUrl ?? null] as const;
   })));
 
