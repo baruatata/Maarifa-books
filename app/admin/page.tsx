@@ -6,6 +6,7 @@ import { signOut } from "@/app/auth/actions";
 
 type SellerApplication = { id: string; user_id: string; store_name: string; bio: string | null; phone_number: string; status: string; created_at: string };
 type Book = { id: string; seller_id: string; title: string; author_name: string | null; description: string | null; format: string; language: string; price_tzs: number; status: string; created_at: string; file_path: string | null; cover_path: string | null };
+type Payment = { id: string; order_id: string; buyer_id: string; seller_id: string; amount_tzs: number; payment_provider: string; payer_phone: string; transaction_reference: string; status: string; seller_note: string | null; created_at: string; reviewed_at: string | null };
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
   const params = await searchParams;
@@ -24,7 +25,27 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   ]);
   const sellerRows = (applications ?? []) as SellerApplication[];
   const bookRows = (books ?? []) as Book[];
-  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...bookRows.map(row => row.seller_id)])];
+  const { data: payments } = await supabase.from("payment_submissions")
+    .select("id,order_id,buyer_id,seller_id,amount_tzs,payment_provider,payer_phone,transaction_reference,status,seller_note,created_at,reviewed_at")
+    .order("created_at", { ascending: false }).limit(100);
+  const paymentRows = (payments ?? []) as Payment[];
+  const paymentOrderIds = [...new Set(paymentRows.map(row => row.order_id))];
+  const { data: paymentItems } = paymentOrderIds.length
+    ? await supabase.from("order_items").select("order_id,book_id").in("order_id", paymentOrderIds)
+    : { data: [] as { order_id: string; book_id: string }[] };
+  const paymentBookIds = [...new Set((paymentItems ?? []).map(row => row.book_id))];
+  const { data: paymentBooks } = paymentBookIds.length
+    ? await supabase.from("books").select("id,title").in("id", paymentBookIds)
+    : { data: [] as { id: string; title: string }[] };
+  const paymentBookMap = new Map((paymentBooks ?? []).map(row => [row.id, row.title]));
+  const paymentTitles = new Map<string, string[]>();
+  for (const item of paymentItems ?? []) {
+    const list = paymentTitles.get(item.order_id) ?? [];
+    const title = paymentBookMap.get(item.book_id);
+    if (title) list.push(title);
+    paymentTitles.set(item.order_id, list);
+  }
+  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...bookRows.map(row => row.seller_id), ...paymentRows.flatMap(row => [row.buyer_id, row.seller_id])])];
   const { data: profiles } = profileIds.length
     ? await supabase.from("profiles").select("id,full_name,email,phone").in("id", profileIds)
     : { data: [] as { id: string; full_name: string | null; email: string | null; phone: string | null }[] };
@@ -45,6 +66,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <a className="admin-side-link active" href="#overview"><span>⌂</span> Dashboard</a>
       <a className="admin-side-link" href="#seller-review"><span>♙</span> Maombi ya wauzaji <b>{sellerRows.length}</b></a>
       <a className="admin-side-link" href="#book-review"><span>▤</span> Vitabu vya kukagua <b>{bookRows.length}</b></a>
+      <a className="admin-side-link" href="#payment-review"><span>৳</span> Usimamizi wa malipo <b>{paymentRows.length}</b></a>
       <a className="admin-side-link" href="#members"><span>♧</span> Wanachama</a>
       <div className="admin-side-bottom">
         <div className="admin-side-user"><span className="admin-avatar">{(me.full_name || user.email || "A").slice(0,1).toUpperCase()}</span><div><strong>{me.full_name || "Msimamizi"}</strong><small>Administrator</small></div></div>
@@ -71,6 +93,33 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
       <div className="admin-content-grid">
         <div className="admin-main-column">
+          <section className="admin-panel" id="payment-review">
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">UFUATILIAJI WA MAUZO</span><h2>Usimamizi wa malipo</h2></div><span className="admin-count">{paymentRows.length} jumla</span></div>
+            <div className="admin-payment-summary">
+              <div><span>Inasubiri</span><strong>{paymentRows.filter(row => row.status === "submitted").length}</strong></div>
+              <div><span>Yamethibitishwa</span><strong>{paymentRows.filter(row => row.status === "confirmed").length}</strong></div>
+              <div><span>Yamekataliwa</span><strong>{paymentRows.filter(row => row.status === "rejected").length}</strong></div>
+            </div>
+            {paymentRows.length === 0 ? <div className="admin-empty">Hakuna taarifa za malipo zilizotumwa bado.</div> : <div className="admin-payment-list">{paymentRows.map(payment => {
+              const buyer = profileMap.get(payment.buyer_id);
+              const seller = profileMap.get(payment.seller_id);
+              const statusLabel = payment.status === "confirmed" ? "Imethibitishwa na muuzaji" : payment.status === "rejected" ? "Imekataliwa na muuzaji" : "Inasubiri uthibitisho";
+              return <article className="admin-payment-card" key={payment.id}>
+                <div className="admin-payment-top"><div><h3>{(paymentTitles.get(payment.order_id) ?? []).join(", ") || "Kitabu hakijapatikana"}</h3><p>Mnunuzi: {buyer?.full_name || buyer?.email || payment.buyer_id}</p><p>Muuzaji: {seller?.full_name || seller?.email || payment.seller_id}</p></div><span className={payment.status === "confirmed" ? "admin-payment-status confirmed" : payment.status === "rejected" ? "admin-payment-status rejected" : "admin-payment-status pending"}>{statusLabel}</span></div>
+                <div className="admin-payment-details">
+                  <div><small>Kiasi</small><strong>TSh {money(payment.amount_tzs)}</strong></div>
+                  <div><small>Mtandao</small><strong>{payment.payment_provider.replaceAll("_", " ").toUpperCase()}</strong></div>
+                  <div><small>Namba ya mlipaji</small><strong>{payment.payer_phone}</strong></div>
+                  <div><small>Kumbukumbu ya muamala</small><strong>{payment.transaction_reference}</strong></div>
+                  <div><small>Tarehe ya kutuma</small><strong>{new Date(payment.created_at).toLocaleString("sw-TZ")}</strong></div>
+                  {payment.reviewed_at && <div><small>Tarehe ya uamuzi</small><strong>{new Date(payment.reviewed_at).toLocaleString("sw-TZ")}</strong></div>}
+                </div>
+                {payment.seller_note && <p className="admin-payment-note">Maelezo ya muuzaji: {payment.seller_note}</p>}
+              </article>;
+            })}</div>}
+            <p className="admin-payment-disclaimer">Taarifa hizi ni kumbukumbu zilizotumwa na wanunuzi na maamuzi ya wauzaji. Admin anaweza kuzifuatilia; mfumo hauhakiki miamala moja kwa moja kutoka mitandao ya simu.</p>
+          </section>
+
           <section className="admin-panel" id="seller-review">
             <div className="admin-panel-heading"><div><span className="admin-gold-kicker">UKAGUZI WA WAUZAJI</span><h2>Maombi ya wauzaji</h2></div><span className="admin-count">{sellerRows.length} yanasubiri</span></div>
             {sellerRows.length === 0 ? <div className="admin-empty">Hakuna ombi la muuzaji linalosubiri kwa sasa.</div> : <div className="admin-review-list">{sellerRows.map(application => { const profile = profileMap.get(application.user_id); return <article className="admin-review-card" key={application.id}>
