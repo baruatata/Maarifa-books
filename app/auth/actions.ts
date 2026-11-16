@@ -18,6 +18,8 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
   if (error) redirect("/ingia?error=" + encodeURIComponent(error.message));
+  const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance?.nextLevel === "aal2" && assurance.currentLevel !== "aal2") redirect("/mfa/challenge");
   redirect("/dashboard");
 }
 export async function signOut() {
