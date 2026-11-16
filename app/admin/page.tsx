@@ -53,8 +53,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
   const bookLinks = new Map(await Promise.all(bookRows.map(async book => {
     const [file, cover] = await Promise.all([
-      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 300) : Promise.resolve({data:null}),
-      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300) : Promise.resolve({data:null}),
+      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 86400) : Promise.resolve({data:null}),
+      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400) : Promise.resolve({data:null}),
     ]);
     return [book.id, {fileUrl:file.data?.signedUrl ?? null, coverUrl:cover.data?.signedUrl ?? null}] as const;
   })));
