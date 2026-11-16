@@ -5,8 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function submitManualPayment(bookId: string, formData: FormData) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/ingia?next=" + encodeURIComponent("/kitabu/" + bookId));
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  let user = currentUser;
+  if (!user) {
+    const { data: guest, error: guestError } = await supabase.auth.signInAnonymously({
+      options: { data: { preferred_language: "sw" } }
+    });
+    if (guestError || !guest.user) {
+      redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Hatukuweza kuanzisha ununuzi wa haraka. Jaribu tena au wasiliana na msaada."));
+    }
+    user = guest.user;
+  }
 
   const payerPhone = String(formData.get("payer_phone") || "").trim();
   const reference = String(formData.get("transaction_reference") || "").trim();
@@ -40,7 +49,7 @@ export async function submitManualPayment(bookId: string, formData: FormData) {
   });
   if (proofError) redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Taarifa za malipo hazikuhifadhiwa. Usirudie malipo; wasiliana na msaada."));
 
-  redirect("/kitabu/" + bookId + "?submitted=1");
+  redirect("/kitabu/" + bookId + "?submitted=1&order=" + encodeURIComponent(order.id));
 }
 
 export async function reviewManualPayment(formData: FormData) {
