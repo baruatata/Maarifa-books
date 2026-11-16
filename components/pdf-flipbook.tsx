@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Props = { url: string; title: string };
+type Props = { url: string; title: string; closeHref: string };
 
-export default function PdfFlipbook({ url, title }: Props) {
+export default function PdfFlipbook({ url, title, closeHref }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const touchStartX = useRef<number | null>(null);
   const [pdf, setPdf] = useState<any>(null);
@@ -100,6 +101,7 @@ export default function PdfFlipbook({ url, title }: Props) {
       <div className="flipbook-toolbar">
         <span className="flipbook-title">{title}</span>
         <span className="flipbook-count">{total ? `Ukurasa ${page} / ${total}` : "Inapakia..."}</span>
+        <Link className="flipbook-close" href={closeHref} aria-label="Funga kisomaji" title="Funga kisomaji"><span aria-hidden="true">×</span><small>Funga</small></Link>
       </div>
       {!loading && !error && <div className="zoom-controls" aria-label="Ukubwa wa maandishi">
         <span>Ukubwa wa maandishi</span>
@@ -132,30 +134,30 @@ export default function PdfFlipbook({ url, title }: Props) {
       </div>}
       <p className="flipbook-hint">Tumia A+ kuongeza maandishi. Ukurasa ukiwa mkubwa, telezesha pembeni kusoma sehemu zote; telezesha juu/chini kusoma ukurasa.</p>
       <style jsx>{`
-        .flipbook{width:100%;max-width:1100px;margin:0 auto;color:#18212f}
-        .flipbook-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;background:#172b4d;color:white;border-radius:14px 14px 0 0;font-size:14px}
+        .flipbook{position:fixed;inset:0;z-index:10000;width:100%;height:100dvh;max-width:none;margin:0;background:#f3f5f8;color:#18212f;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+        .flipbook-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;background:#172b4d;color:white;border-radius:0;font-size:14px;flex:0 0 auto;min-height:54px}
         .flipbook-title{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .flipbook-count{white-space:nowrap;font-variant-numeric:tabular-nums}
-        .zoom-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px 8px;background:#f5f7fa}
+        .flipbook-count{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}.flipbook-close{display:flex;align-items:center;gap:4px;color:white;text-decoration:none;font-weight:700;flex:0 0 auto}.flipbook-close span{font-size:32px;line-height:28px}.flipbook-close small{font-size:12px}
+        .zoom-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:8px;background:#f5f7fa;flex:0 0 auto}
         .zoom-controls span{font-size:13px;font-weight:600}
         .zoom-controls button{min-width:46px;min-height:44px;border:1px solid #b9c5d4;border-radius:9px;background:white;color:#172b4d;font-weight:800;font-size:17px;padding:8px 12px}
         .zoom-controls button:disabled{opacity:.35}
         .zoom-controls strong{min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
         .zoom-controls .fit-button{font-size:13px;font-weight:650}
-        .flipbook-stage{display:flex;align-items:stretch;justify-content:center;gap:6px;padding:12px 4px;background:#e9edf3;min-height:280px}
-        .flipbook-paper{background:white;box-shadow:0 5px 22px #15223825;flex:1;min-width:0;max-width:calc(100% - 84px);overflow:auto;line-height:0;transition:opacity .16s ease;-webkit-overflow-scrolling:touch}
+        .flipbook-stage{display:flex;align-items:stretch;justify-content:center;gap:6px;padding:8px 4px;background:#e9edf3;min-height:0;flex:1;overflow:hidden}
+        .flipbook-paper{background:white;box-shadow:0 5px 22px #15223825;flex:1;min-width:0;max-width:calc(100% - 84px);overflow:auto;line-height:0;transition:opacity .16s ease;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
         .flipbook-paper canvas{display:block;max-width:none;height:auto}
         .flipbook-busy{opacity:.6}
         .flipbook-arrow{position:sticky;top:45%;align-self:flex-start;margin-top:160px;border:0;border-radius:50%;width:36px;height:36px;flex:0 0 36px;background:#fff;color:#172b4d;font-size:27px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0002}
         .flipbook-arrow:disabled,.flipbook-controls button:disabled{opacity:.3;cursor:not-allowed}
-        .flipbook-controls{display:flex;justify-content:center;align-items:center;gap:12px;padding:14px;flex-wrap:wrap}
+        .flipbook-controls{display:flex;justify-content:center;align-items:center;gap:12px;padding:8px;flex-wrap:wrap;background:#f3f5f8;flex:0 0 auto}
         .flipbook-controls button{min-height:44px;border:1px solid #ccd4df;background:white;border-radius:9px;padding:10px 16px;font-weight:650;color:#172b4d}
         .flipbook-controls label{font-size:14px;display:flex;align-items:center;gap:7px}
         .flipbook-controls input{width:70px;min-height:42px;padding:8px;border:1px solid #ccd4df;border-radius:8px;text-align:center;font-size:16px}
         .flipbook-message{padding:42px 18px;text-align:center;background:#f3f5f8;color:#445}
         .flipbook-error{color:#a12626}
-        .flipbook-hint{text-align:center;color:#596579;font-size:13px;line-height:1.5;margin:0 12px 14px}
-        @media(max-width:600px){.flipbook-toolbar{font-size:13px;padding:11px 10px}.zoom-controls{gap:7px}.zoom-controls span{width:100%;text-align:center}.flipbook-stage{gap:3px;padding:8px 2px;min-height:220px}.flipbook-paper{max-width:calc(100% - 58px)}.flipbook-arrow{width:26px;height:34px;flex-basis:26px;font-size:23px;margin-top:110px}.flipbook-hint{font-size:12px}}
+        .flipbook-hint{text-align:center;color:#596579;font-size:12px;line-height:1.35;margin:0;padding:2px 10px 6px;flex:0 0 auto}
+        @media(max-width:600px){.flipbook-toolbar{font-size:13px;padding:8px 9px;min-height:50px}.flipbook-title{max-width:45vw}.flipbook-close span{font-size:30px}.flipbook-close small{display:none}.zoom-controls{gap:7px}.zoom-controls span{width:100%;text-align:center}.flipbook-stage{gap:3px;padding:8px 2px;min-height:220px}.flipbook-paper{max-width:calc(100% - 58px)}.flipbook-arrow{width:26px;height:34px;flex-basis:26px;font-size:23px;margin-top:110px}.flipbook-hint{font-size:12px}}
       `}</style>
     </section>
   );
