@@ -12,8 +12,9 @@ export async function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link className="brand" href="/" aria-label="MaarifaBooks mwanzo">
-        <img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" />
+      <Link className="brand brand-text-logo" href="/" aria-label="MaarifaBooks mwanzo">
+        <span className="brand-mark" aria-hidden="true">📚</span>
+        <span className="brand-name">Maarifa<span>Books</span></span>
       </Link>
       <nav aria-label="Menyu kuu">
         <Link href="/#vitabu">Vitabu</Link>
