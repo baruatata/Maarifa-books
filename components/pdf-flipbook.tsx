@@ -13,6 +13,9 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
         <a className="pdf-open" href={`${url}#zoom=page-fit&view=Fit`} target="_blank" rel="noreferrer">Fungua PDF</a>
         <Link className="pdf-close" href={closeHref} aria-label="Funga PDF" title="Funga PDF">×</Link>
       </header>
+      <div className="pdf-audio">
+        <AudiobookPlayer bookId={bookId} />
+      </div>
       <iframe
         className="pdf-document"
         src={`${url}#zoom=page-fit&view=Fit`}
