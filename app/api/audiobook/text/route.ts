@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
       const page = await pdf.getPage(pageNo);
       const content = await page.getTextContent();
-      const text = content.items.map((item: any) => typeof item.str === "string" ? item.str : "").filter(Boolean).join(" ").replace(/\\s+/g, " ").trim();
+      const text = content.items.map((item: any) => typeof item.str === "string" ? item.str : "").filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
       pages.push(text);
     }
     await pdf.destroy();
