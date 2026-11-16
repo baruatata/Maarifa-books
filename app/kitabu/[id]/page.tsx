@@ -14,7 +14,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
 
   let coverUrl: string | null = null;
   if (book.cover_path) {
-    const { data } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 300);
+    const { data } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
     coverUrl = data?.signedUrl ?? null;
   }
   const { data: payout } = await supabase.from("seller_payout_methods")
