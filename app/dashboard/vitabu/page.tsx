@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function PurchasedBooksPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function PurchasedBooksPage({ searchParams }: { searchParams: Promise<{ error?: string; pending?: string }> }) {
   const params = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -27,6 +27,7 @@ export default async function PurchasedBooksPage({ searchParams }: { searchParam
   return <main className="page purchased-library">
     <p className="eyebrow">MAKTABA YANGU</p><h1>Vitabu nilivyonunua</h1>
     <p className="muted">Vitabu ulivyolipia vinaonekana hapa. Bonyeza “Soma sasa” kuvisoma ndani ya MaarifaBooks.</p>
+    {params.pending && <p className="notice">Uthibitisho umetumwa kwa muuzaji. Kitabu kitaonekana hapa baada ya muuzaji kuthibitisha kuwa fedha zimeingia.</p>}
     {params.error && <p className="message">{params.error}</p>}
     {!books?.length ? <section className="panel"><h2>Bado huna kitabu</h2><p className="muted">Vitabu utakavyonunua vitaonekana hapa baada ya malipo kuthibitishwa.</p><Link className="btn" href="/">Chunguza vitabu</Link></section> :
       <section className="purchased-book-grid">{books.map(book => <article className="panel purchased-book-card" key={book.id}>
