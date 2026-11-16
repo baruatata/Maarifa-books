@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
         model: "s2.1-pro-free",
       },
-      body: JSON.stringify({ text, format: "mp3" }),
+      body: JSON.stringify({ text, format: "wav", sample_rate: 44100 }),
       cache: "no-store",
     });
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const audio = await response.arrayBuffer();
     return new Response(audio, {
       headers: {
-        "Content-Type": "audio/mpeg",
+        "Content-Type": "audio/wav",
         "Cache-Control": "no-store",
       },
     });
