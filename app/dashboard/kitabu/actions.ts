@@ -42,10 +42,10 @@ export async function saveSellerPayoutMethod(formData:FormData):Promise<{ok:true
   if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
   const provider=String(formData.get("provider")||"");
   const account_name=String(formData.get("account_name")||"").trim();
-  let phone_number=String(formData.get("phone_number")||"").trim().replace(/[\\s()-]/g,"");
+  let phone_number=String(formData.get("phone_number")||"").trim().replace(/[\s()-]/g,"");
   if(phone_number.startsWith("+")) phone_number=phone_number.slice(1);
-  if(/^0[67]\\d{8}$/.test(phone_number)) phone_number="255"+phone_number.slice(1);
-  if(!["mixx","mpesa","airtel_money","tigo_pesa"].includes(provider)||!/^255[67]\\d{8}$/.test(phone_number)||!account_name) return {ok:false,error:"Weka mtandao, jina la akaunti na namba sahihi ya simu."};
+  if(/^0[67]\d{8}$/.test(phone_number)) phone_number="255"+phone_number.slice(1);
+  if(!["mixx","mpesa","airtel_money","tigo_pesa"].includes(provider)||!/^255[67]\d{8}$/.test(phone_number)||!account_name) return {ok:false,error:"Weka mtandao, jina la akaunti na namba sahihi ya simu."};
   const {error}=await supabase.from("seller_payout_methods").upsert({seller_id:user.id,provider,phone_number,account_name,updated_at:new Date().toISOString()},{onConflict:"seller_id"});
   if(error) return {ok:false,error:error.message};
   return {ok:true};
