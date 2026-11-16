@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (downloadError || !file) return NextResponse.json({ error: "Imeshindikana kufungua PDF." }, { status: 502 });
     if (file.size > 30 * 1024 * 1024) return NextResponse.json({ error: "PDF ni kubwa sana kwa usomaji wa sauti kwa sasa (kikomo MB 30)." }, { status: 413 });
 
-    const pdf = await getDocument({ data: new Uint8Array(await file.arrayBuffer()), disableWorker: true, useSystemFonts: true }).promise;
+    const pdf = await getDocument({ data: new Uint8Array(await file.arrayBuffer()), useSystemFonts: true }).promise;
     if (pdf.numPages > 250) return NextResponse.json({ error: "Kitabu kina kurasa zaidi ya 250; tafadhali gawanya PDF." }, { status: 413 });
 
     const pages: string[] = [];
