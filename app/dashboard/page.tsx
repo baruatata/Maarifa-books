@@ -24,7 +24,7 @@ export default async function Dashboard() {
   const paid = (payments ?? []).filter(item => item.status === "paid").reduce((sum, item) => sum + Number(item.amount_tzs || 0), 0);
   const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
 
-  if (profile?.role === "seller" && application?.status === "approved") {
+  if (application?.status === "approved") {
     return <main className="page seller-dashboard">
       <div className="seller-dash-top"><div><p className="eyebrow">DASHIBODI YA MUUZAJI</p><h1>Karibu, {profile.full_name || user.email}</h1><p className="muted">Duka lako: <strong>{application.store_name}</strong></p></div><form action={signOut}><button className="btn btn-outline">Toka kwenye akaunti</button></form></div>
       <section className="seller-metrics">
