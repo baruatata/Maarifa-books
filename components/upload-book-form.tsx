@@ -33,7 +33,7 @@ export function UploadBookForm() {
       }
       if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type)) throw new Error("Jalada liwe JPG, PNG au WebP.");
       const metadata = new FormData();
-      ["title", "author_name", "description", "category", "format", "language", "price_tzs"].forEach((key) => metadata.set(key, String(formData.get(key) ?? "")));
+      ["title", "author_name", "description", "category", "format", "language"].forEach((key) => metadata.set(key, String(formData.get(key) ?? "")));
       const draft = await createBookDraft(metadata);
       if (!draft.ok) throw new Error(draft.error);
       const supabase = createBrowserClient(
@@ -70,14 +70,13 @@ export function UploadBookForm() {
   }
 
   return <form id="upload-book-form" action={submit} className="panel form upload-form">
-    <h2>Taarifa za kitabu</h2>
+    <h2>Taarifa za kitabu</h2><p className="notice">Kwa sasa vitabu vyote vinatolewa bure kwa wasomaji.</p>
     <div className="field"><label htmlFor="book-title">Jina la kitabu</label><input id="book-title" name="title" required maxLength={180}/></div>
     <div className="field"><label htmlFor="book-author">Mwandishi</label><input id="book-author" name="author_name" maxLength={160}/></div>
     <div className="field"><label htmlFor="book-description">Maelezo ya kitabu</label><textarea id="book-description" name="description" maxLength={3000}/></div>
     <div className="field"><label htmlFor="book-category">Kategoria</label><select id="book-category" name="category"><option value="elimu">Elimu</option><option value="biashara">Biashara</option><option value="maendeleo-binafsi">Maendeleo binafsi</option><option value="hadithi">Hadithi na fasihi</option><option value="dini">Dini</option><option value="teknolojia">Teknolojia</option><option value="nyingine">Nyingine</option></select></div>
     <div className="field"><label htmlFor="book-format">Muundo wa kitabu</label><select id="book-format" name="format"><option value="pdf">PDF</option><option value="epub">EPUB</option><option value="audiobook">Audiobook</option></select></div>
     <div className="field"><label htmlFor="book-language">Lugha</label><select id="book-language" name="language"><option value="sw">Kiswahili</option><option value="en">English</option><option value="other">Nyingine</option></select></div>
-    <div className="field"><label htmlFor="book-price">Bei (TSh)</label><input id="book-price" name="price_tzs" type="number" min="0" step="1" required/></div>
     <div className="field"><label htmlFor="book-cover">Jalada la kitabu (JPG, PNG, WebP; hadi MB 8)</label><input id="book-cover" name="cover_file" type="file" accept="image/jpeg,image/png,image/webp" required/></div>
     <div className="field"><label htmlFor="book-file">Faili la kitabu (hadi MB 100)</label><input id="book-file" name="book_file" type="file" accept=".pdf,.epub,.mp3,.m4a,.aac,audio/*,application/pdf" required/></div>
     {progress && <p className="muted" role="status">{progress}</p>}
