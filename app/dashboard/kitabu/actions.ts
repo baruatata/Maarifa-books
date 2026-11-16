@@ -64,6 +64,9 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   const language=String(formData.get("language")||"sw");
   const price_tzs=Number(formData.get("price_tzs"));
   if(!title||title.length>180||!["sw","en","other"].includes(language)||!Number.isSafeInteger(price_tzs)||price_tzs<0) return {ok:false,error:"Kagua taarifa na bei ya kitabu."};
+  const {count: soldCount,error: soldError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
+  if(soldError) return {ok:false,error:"Imeshindikana kukagua historia ya mauzo."};
+  if((soldCount??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kubadilisha toleo lililonunuliwa; wasiliana na Admin kwa marekebisho."};
   const {error}=await supabase.from("books").update({title,author_name,description,category,language,price_tzs,status:"pending"}).eq("id",bookId).eq("seller_id",user.id);
   if(error) return {ok:false,error:error.message};
   return {ok:true};
