@@ -248,3 +248,25 @@ body{background:#fff!important;color:#172033!important}
   .site-header .brand img{width:min(250px,78vw) !important;max-height:92px !important}
   .site-header nav{gap:10px !important}
 }
+
+
+/* Reliable inline MaarifaBooks wordmark: no external image dependency */
+.site-header .brand-text-logo{
+  display:flex!important;
+  width:auto!important;
+  min-height:64px;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  text-decoration:none!important;
+  color:#10264f!important;
+  line-height:1!important;
+}
+.site-header .brand-mark{font-size:clamp(34px,7vw,48px);line-height:1}
+.site-header .brand-name{font-family:Ubuntu,Arial,sans-serif;font-size:clamp(27px,6vw,40px);font-weight:800;letter-spacing:-1.5px;color:#10264f;white-space:nowrap}
+.site-header .brand-name span{color:#d58b22}
+@media(max-width:480px){
+ .site-header .brand-text-logo{min-height:52px;gap:7px}
+ .site-header .brand-mark{font-size:34px}
+ .site-header .brand-name{font-size:29px;letter-spacing:-1px}
+}
