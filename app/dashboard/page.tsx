@@ -26,7 +26,7 @@ export default async function Dashboard() {
 
   if (application?.status === "approved") {
     return <main className="page seller-dashboard">
-      <div className="seller-dash-top"><div><p className="eyebrow">DASHIBODI YA MUUZAJI</p><h1>Karibu, {profile.full_name || user.email}</h1><p className="muted">Duka lako: <strong>{application.store_name}</strong></p></div><form action={signOut}><button className="btn btn-outline">Toka kwenye akaunti</button></form></div>
+      <div className="seller-dash-top"><div><p className="eyebrow">DASHIBODI YA MUUZAJI</p><h1>Karibu, {profile?.full_name || user.email}</h1><p className="muted">Duka lako: <strong>{application?.store_name || "Duka lako"}</strong></p></div><form action={signOut}><button className="btn btn-outline">Toka kwenye akaunti</button></form></div>
       <section className="seller-metrics">
         <article className="panel"><span>Vitabu vyangu</span><strong>{rows.length}</strong></article>
         <article className="panel"><span>Vilivyoidhinishwa</span><strong>{approved}</strong></article>
