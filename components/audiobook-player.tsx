@@ -118,7 +118,7 @@ export default function AudiobookPlayer({ bookId }: Props) {
       audioRef.current.playbackRate = Number(speed);
       audioRef.current.load();
     }
-  }, [status, speed]);
+  }, [status]);
 
   async function start() {
     clearAudio();
