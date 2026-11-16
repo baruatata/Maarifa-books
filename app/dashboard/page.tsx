@@ -17,7 +17,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   const [{ data: books }, { data: application }, { data: sales }, { data: paidOrders }, { data: payout }, { data: paymentSubmissions }] = await Promise.all([
     supabase.from("books").select("id,title,status,price_tzs,format,created_at").eq("seller_id", user.id).order("created_at", { ascending: false }),
     supabase.from("seller_applications").select("store_name,status,review_note").eq("user_id", user.id).maybeSingle(),
-    supabase.from("order_items").select("id,order_id").eq("seller_id", user.id),
+    supabase.from("order_items").select("id,order_id,unit_price_tzs").eq("seller_id", user.id),
     supabase.from("orders").select("id,total_tzs").eq("status", "paid"),
     supabase.from("seller_payout_methods").select("provider,phone_number,account_name").eq("seller_id",user.id).maybeSingle(),
     supabase.from("payment_submissions").select("id,order_id,amount_tzs,payment_provider,payer_phone,transaction_reference,status,created_at").eq("seller_id",user.id).order("created_at",{ascending:false}).limit(30),
@@ -28,7 +28,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   const pending = rows.filter(book => book.status === "pending").length;
   const paidOrderIds = new Set((paidOrders ?? []).map(order => order.id));
   const soldCount = (sales ?? []).filter(item => paidOrderIds.has(item.order_id)).length;
-  const paid = (paidOrders ?? []).reduce((sum, order) => sum + Number(order.total_tzs || 0), 0);
+  const paid = (sales ?? []).filter(item => paidOrderIds.has(item.order_id)).reduce((sum, item) => sum + Number(item.unit_price_tzs || 0), 0);
   const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
 
   if (application?.status === "approved") {
