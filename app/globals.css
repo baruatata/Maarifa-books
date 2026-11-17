@@ -391,3 +391,18 @@ body{background:#fff!important;color:#172033!important}
 .scroll-error a{color:#1557a6;font-weight:700}
 @media(min-width:960px){.scroll-pages{padding:24px 20px 40px;gap:20px}}
 @media(max-width:600px){.scroll-reader{border-radius:0;margin-left:-15px;margin-right:-15px;width:calc(100% + 30px);border-left:0;border-right:0}.scroll-toolbar{min-height:56px;padding:7px 9px;gap:8px}.scroll-book-title strong{font-size:12px}.scroll-pages{gap:10px;padding:10px 6px 24px}.scroll-page{width:100%;aspect-ratio:1/1.414}.scroll-page-number{top:5px;right:6px;font-size:8px}}
+
+
+/* Seller WhatsApp and one-time coupon UI */
+.coupon-book-list { display: grid; gap: 18px; }
+.coupon-book-card { display: grid; gap: 14px; }
+.coupon-maker, .coupon-redeem { display: grid; gap: 10px; margin-top: 14px; }
+.coupon-result { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border, #d8dce5); border-radius: 12px; }
+.coupon-result code { display: block; overflow-wrap: anywhere; font-size: 1.1rem; font-weight: 700; letter-spacing: .06em; }
+.coupon-result .btn { justify-self: start; }
+.coupon-history { border-top: 1px solid var(--border, #d8dce5); padding-top: 12px; }
+.coupon-history ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 7px; }
+.coupon-history li { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; }
+.coupon-redeem { padding-top: 16px; border-top: 1px solid var(--border, #d8dce5); }
+.coupon-redeem-form { display: grid; gap: 8px; }
+.coupon-redeem-form input { min-height: 46px; }
