@@ -2,6 +2,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+function safeNextPath(value: string) {
+  return value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
+    ? value
+    : "/dashboard";
+}
+
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
   const full_name = String(formData.get("full_name") ?? "").trim();
@@ -10,7 +16,7 @@ export async function signUp(formData: FormData) {
   const phone = String(formData.get("phone") ?? "").trim();
   const preferred_language = String(formData.get("preferred_language") ?? "sw") === "en" ? "en" : "sw";
   const next = String(formData.get("next") ?? "");
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const safeNext = safeNextPath(next);
 
   if (!full_name || !email || password.length < 8) {
     redirect("/ingia?error=Jaza+taarifa.+Nenosiri+liwe+herufi+8+au+zaidi");
@@ -36,7 +42,7 @@ export async function signUp(formData: FormData) {
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const next = String(formData.get("next") ?? "");
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const safeNext = safeNextPath(next);
   const { error } = await supabase.auth.signInWithPassword({
     email: String(formData.get("email") ?? ""),
     password: String(formData.get("password") ?? ""),
