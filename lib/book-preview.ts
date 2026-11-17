@@ -1,5 +1,4 @@
 import JSZip from "jszip";
-import { PDFDocument } from "pdf-lib";
 
 const MAX_PREVIEW_BYTES = 35 * 1024 * 1024;
 
@@ -80,10 +79,6 @@ async function createPdfPreview(file: File): Promise<Blob> {
     if (endIndex < 0) {
       throw new Error("Mfumo haujapata mwanzo wa Sura ya Pili. Ili kuzuia kuonyesha kitabu kizima, hakikisha sura zina vichwa vinavyojitambulisha.");
     }
-    if (endIndex === startIndex + 0) {
-      throw new Error("Sura ya kwanza haikutenganishwa vizuri na sura inayofuata.");
-    }
-
     const { PDFDocument } = await import("pdf-lib");
     const original = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: false });
     const preview = await PDFDocument.create();
