@@ -20,6 +20,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   const rows = books ?? [];
   const approved = rows.filter(book => book.status === "approved").length;
   const pending = rows.filter(book => book.status === "pending").length;
+  const paidBooks = rows.filter(book => book.price_tzs > 0).length;
 
   if (application?.status === "approved") {
     return <main className="page seller-dashboard">
@@ -28,7 +29,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
         <article className="panel"><span>Vitabu vyangu</span><strong>{rows.length}</strong></article>
         <article className="panel"><span>Vilivyoidhinishwa</span><strong>{approved}</strong></article>
         <article className="panel"><span>Vinasubiri ukaguzi</span><strong>{pending}</strong></article>
-        <article className="panel"><span>Bei kwa wasomaji</span><strong>BURE</strong></article>
+        <article className="panel"><span>Vitabu vya kulipia</span><strong>{paidBooks}</strong></article>
       </section>
       <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/dashboard/kuponi">Tengeneza Coupon</Link><Link className="btn btn-outline" href="/dashboard/usalama">Usalama wa akaunti</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div><section className="panel seller-books-panel"><h2>WhatsApp ya kupokea oda</h2><p className="muted">Wateja watatumia namba hii kuwasiliana nawe wanapotaka kununua kitabu. Baada ya kuthibitisha malipo, tengeneza coupon kwenye sehemu ya “Tengeneza Coupon” na umtumie mteja.</p><strong>{application.phone_number || "Namba haijawekwa"}</strong></section>
       <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
