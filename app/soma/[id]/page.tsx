@@ -35,11 +35,11 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
     <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p><span className="reader-access-note">Unasoma kitabu bure</span></header>
     {book.format === "pdf" ? (
       <section className="reader-frame-wrap">
-        <PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id} bookId={book.id} />
+        <PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id} />
         <p className="reader-footnote">Unaweza kusogeza kurasa kwa kidole au mishale. Ukihitaji, <a href={signed.signedUrl} target="_blank" rel="noreferrer">fungua PDF yenyewe</a>.</p>
       </section>
     ) : (
-      <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF na Audiobook.</p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Pakua EPUB</a></section>
+      <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF pekee.</p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Pakua EPUB</a></section>
     )}
     <p className="reader-footnote">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
   </main>;
