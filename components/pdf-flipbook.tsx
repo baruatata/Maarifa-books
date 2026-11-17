@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Props = { url: string; title: string; closeHref: string };
 type PdfPage = {
@@ -35,18 +35,22 @@ function PdfScrollPage({
     if (!shell) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          onVisible(pageNumber);
-        }
+        if (entry.isIntersecting) setVisible(true);
       });
     }, { rootMargin: "900px 0px" });
     observer.observe(shell);
+    const activeObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) onVisible(pageNumber);
+      });
+    }, { rootMargin: "-40% 0px -50% 0px" });
+    activeObserver.observe(shell);
     const resize = new ResizeObserver(() => setWidth(shell.clientWidth));
     resize.observe(shell);
     setWidth(shell.clientWidth);
     return () => {
       observer.disconnect();
+      activeObserver.disconnect();
       resize.disconnect();
     };
   }, [onVisible, pageNumber]);
@@ -135,9 +139,9 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
     };
   }, [url]);
 
-  const markVisible = (page: number) => {
+  const markVisible = useCallback((page: number) => {
     setCurrentPage((previous) => previous === page ? previous : page);
-  };
+  }, []);
 
   return (
     <div className="scroll-reader" aria-label={"Kisomaji cha " + title}>
