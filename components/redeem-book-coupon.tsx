@@ -17,6 +17,6 @@ export function RedeemBookCoupon({ bookId }: { bookId: string }) {
       <input id={"coupon-" + bookId} name="coupon_code" autoComplete="off" placeholder="XXXXXX-XXXXXX-XXXXXX-XXXXXX" required/>
       <button className="btn" disabled={pending}>{pending ? "Inathibitisha..." : "Fungua kitabu"}</button>
     </form>
-    {state.error && <p className="message" role="status">{state.error} <Link href="/ingia">Ingia hapa</Link>.</p>}
+    {state.error && <p className="message" role="status">{state.error} <Link href={"/ingia?next=" + encodeURIComponent("/kitabu/" + bookId)}>Ingia hapa</Link>.</p>}
   </div>;
 }
