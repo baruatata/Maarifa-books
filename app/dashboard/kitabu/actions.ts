@@ -14,8 +14,8 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   const category = String(formData.get("category") ?? "nyingine");
   const format = String(formData.get("format") ?? "pdf");
   const language = String(formData.get("language") ?? "sw");
-  const price_tzs = 0;
-  if (!title || title.length > 180 || !["pdf","epub","audiobook"].includes(format) || !["sw","en","other"].includes(language)) return {ok:false,error:"Kagua jina, muundo na lugha ya kitabu."};
+  const price_tzs = Number(formData.get("price_tzs") ?? 0);
+  if (!title || title.length > 180 || !["pdf","epub"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0 || price_tzs > 100000000) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
   const { data, error } = await supabase.from("books").insert({
     seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending"
   }).select("id").single();
@@ -23,13 +23,16 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   return {ok:true,bookId:data.id};
 }
 
-export async function finishBookUpload(bookId:string,filePath:string,coverPath:string): Promise<{ok:true}|{ok:false;error:string}> {
+export async function finishBookUpload(bookId:string,filePath:string,coverPath:string,previewPath:string|null = null): Promise<{ok:true}|{ok:false;error:string}> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return {ok:false,error:"Tafadhali ingia tena."};
   const expectedPrefix = `${user.id}/${bookId}/`;
-  if (!filePath.startsWith(expectedPrefix) || !coverPath.startsWith(expectedPrefix)) return {ok:false,error:"Njia ya faili si sahihi."};
-  const { error } = await supabase.from("books").update({file_path:filePath,cover_path:coverPath}).eq("id",bookId).eq("seller_id",user.id).eq("status","pending");
+  if (!filePath.startsWith(expectedPrefix) || !coverPath.startsWith(expectedPrefix) || (previewPath && !previewPath.startsWith(expectedPrefix))) return {ok:false,error:"Njia ya faili si sahihi."};
+  const {data:book}=await supabase.from("books").select("price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","pending").maybeSingle();
+  if (!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  if (book.price_tzs > 0 && !previewPath) return {ok:false,error:"Kitabu cha kulipia lazima kiwe na faili la sampuli ya bure."};
+  const { error } = await supabase.from("books").update({file_path:filePath,cover_path:coverPath,preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id).eq("status","pending");
   if (error) return {ok:false,error:error.message};
   return {ok:true};
 }
@@ -62,8 +65,10 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   const description=String(formData.get("description")||"").trim();
   const category=String(formData.get("category")||"nyingine");
   const language=String(formData.get("language")||"sw");
-  const price_tzs=0;
-  if(!title||title.length>180||!["sw","en","other"].includes(language)) return {ok:false,error:"Kagua taarifa za kitabu."};
+  const price_tzs=Number(formData.get("price_tzs")??0);
+  if(!title||title.length>180||!["sw","en","other"].includes(language)||!Number.isSafeInteger(price_tzs)||price_tzs<0||price_tzs>100000000) return {ok:false,error:"Kagua taarifa na bei ya kitabu."};
+  const {data:existingBook}=await supabase.from("books").select("preview_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(price_tzs>0&&!existingBook?.preview_path) return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli ya bure. Wasiliana na Admin ili kuweka sampuli."};
   const {count: soldCount,error: soldError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(soldError) return {ok:false,error:"Imeshindikana kukagua historia ya mauzo."};
   if((soldCount??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kubadilisha toleo lililonunuliwa; wasiliana na Admin kwa marekebisho."};
