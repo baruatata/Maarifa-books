@@ -11,8 +11,12 @@ Marketplace ya vitabu vya kidijitali chini ya Lumbwa Digital.
 - Homepage ya vitabu vilivyoidhinishwa
 - Usajili, kuingia na kutoka kwa Supabase Auth
 - Dashibodi ya mtumiaji
-- Maombi ya wauzaji
+- Maombi ya wauzaji yenye namba ya WhatsApp na masharti ya muuzaji
 - Fomu ya kuwasilisha metadata ya kitabu kwa ukaguzi
+- Vitabu vya bure na vya kulipia; kitabu cha kulipia kinahitaji sampuli ya bure (angalau sura moja)
+- Oda za vitabu vya kulipia huenda moja kwa moja kwa muuzaji kupitia WhatsApp
+- Coupon za matumizi mara moja zinazotengenezwa na muuzaji baada ya kuthibitisha malipo
+- Faili kamili za vitabu vya kulipia hulindwa mpaka mnunuzi atumie coupon halali
 - Admin dashboard: kuidhinisha/kukataa wauzaji na vitabu
 - Ulinzi wa admin kupitia role ya database na RLS
 - Lugha: Kiswahili na Kiingereza
@@ -22,7 +26,8 @@ Marketplace ya vitabu vya kidijitali chini ya Lumbwa Digital.
 - Admin ndiye anayeidhinisha wauzaji na vitabu.
 - Muuzaji anapata 100% ya mapato yake kwa sasa; hakuna commission.
 - Idhini ya matangazo (email/SMS/WhatsApp) lazima iwe hiari na tofauti na usajili.
-- Malipo ya simu na uthibitishaji wa malipo havijawashwa bado.
+- Kampeni za email kwa wauzaji zitatumwa tu kwa waliochagua kuruhusu email marketing.
+- Malipo hayapiti kwenye MaarifaBooks: mnunuzi hulipa muuzaji moja kwa moja kupitia maelekezo ya WhatsApp; muuzaji ndiye anayethibitisha malipo na kutoa coupon.
 
 ## Kuendesha ndani ya kompyuta
 1. Tumia Node.js 20.9 au mpya zaidi.
