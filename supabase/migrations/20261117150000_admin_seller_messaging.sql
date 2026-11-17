@@ -11,12 +11,13 @@ create index if not exists support_messages_seller_created_idx
   on public.support_messages(seller_id, created_at);
 
 alter table public.support_messages enable row level security;
-grant select, insert, update on public.support_messages to authenticated;
+grant select, insert on public.support_messages to authenticated;
+grant update (read_at) on public.support_messages to authenticated;
 
 drop policy if exists "support messages visible to thread members" on public.support_messages;
 create policy "support messages visible to thread members"
 on public.support_messages for select to authenticated
-using (seller_id = auth.uid() or public.is_admin());
+using (seller_id = auth.uid() or private.is_admin());
 
 drop policy if exists "seller or admin send support messages" on public.support_messages;
 create policy "seller or admin send support messages"
