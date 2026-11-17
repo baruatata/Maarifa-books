@@ -12,9 +12,9 @@ async function applyAsSeller(formData: FormData) {
   const acceptedTerms = formData.get("accept_terms") === "on";
   const emailMarketing = formData.get("email_marketing") === "on";
   let phone_number = rawPhone.startsWith("+") ? rawPhone.slice(1) : rawPhone;
-  if (/^0[67]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number.slice(1);
-  else if (/^[67]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number;
-  if (!store_name || !/^255[67]\d{8}$/.test(phone_number) || !acceptedTerms) {
+  if (/^0[6-9]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number.slice(1);
+  else if (/^[6-9]\d{8}$/.test(phone_number)) phone_number = "255" + phone_number;
+  if (!store_name || !/^255[6-9]\d{8}$/.test(phone_number) || !acceptedTerms) {
     redirect("/wauzaji?error=" + encodeURIComponent("Jaza jina la duka, weka namba sahihi ya WhatsApp ya Tanzania na ukubali sheria za muuzaji."));
   }
   const { error } = await supabase.from("seller_applications").insert({ user_id: user.id, store_name, phone_number, bio, status: "pending", terms_accepted_at: new Date().toISOString(), terms_version: "seller-v1" });
