@@ -11,16 +11,36 @@ export async function signUp(formData: FormData) {
   const preferred_language = String(formData.get("preferred_language") ?? "sw") === "en" ? "en" : "sw";
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-  if (!full_name || !email || password.length < 8) redirect("/ingia?error=Jaza+taarifa.+Nenosiri+liwe+herufi+8+au+zaidi");
-  const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone, preferred_language } } });
+
+  if (!full_name || !email || password.length < 8) {
+    redirect("/ingia?error=Jaza+taarifa.+Nenosiri+liwe+herufi+8+au+zaidi");
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://maarifabooks.vercel.app";
+  const confirmationUrl = new URL("/auth/callback", siteUrl);
+  confirmationUrl.searchParams.set("next", safeNext);
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name, phone, preferred_language },
+      emailRedirectTo: confirmationUrl.toString(),
+    },
+  });
+
   if (error) redirect("/ingia?error=" + encodeURIComponent(error.message));
   redirect("/ingia?success=Angalia+barua+pepe+uthibitishe+akaunti&next=" + encodeURIComponent(safeNext));
 }
+
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-  const { error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: String(formData.get("email") ?? ""),
+    password: String(formData.get("password") ?? ""),
+  });
   if (error) redirect("/ingia?error=" + encodeURIComponent(error.message));
   const { data: factors } = await supabase.auth.mfa.listFactors();
   for (const factor of factors?.totp ?? []) {
@@ -28,6 +48,7 @@ export async function signIn(formData: FormData) {
   }
   redirect(safeNext);
 }
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
