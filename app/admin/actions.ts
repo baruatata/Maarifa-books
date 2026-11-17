@@ -55,7 +55,7 @@ export async function reviewBook(formData: FormData) {
   if (!bookId || !["approved", "rejected"].includes(decision)) redirect("/admin?error=Taarifa+za+kitabu+si+sahihi");
 
   const { data: book, error: bookLookupError } = await supabase.from("books")
-    .select("id,file_path,cover_path,status").eq("id", bookId).eq("status", "pending").single();
+    .select("id,file_path,preview_path,cover_path,price_tzs,status").eq("id", bookId).eq("status", "pending").single();
   if (bookLookupError || !book) redirect("/admin?error=Kitabu+hakijapatikana");
   if (decision === "approved" && (!book.file_path || !book.cover_path)) {
     redirect("/admin?error=Kitabu+kinahitaji+faili+na+jalada+kabla+ya+kuidhinishwa");
