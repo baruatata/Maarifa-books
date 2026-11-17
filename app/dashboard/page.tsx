@@ -14,7 +14,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
 
   const [{ data: books }, { data: application }] = await Promise.all([
     supabase.from("books").select("id,title,status,price_tzs,format,created_at").eq("seller_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("seller_applications").select("store_name,status,review_note").eq("user_id", user.id).maybeSingle(),
+    supabase.from("seller_applications").select("store_name,status,review_note,phone_number").eq("user_id", user.id).maybeSingle(),
   ]);
 
   const rows = books ?? [];
@@ -30,10 +30,10 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
         <article className="panel"><span>Vinasubiri ukaguzi</span><strong>{pending}</strong></article>
         <article className="panel"><span>Bei kwa wasomaji</span><strong>BURE</strong></article>
       </section>
-      <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/dashboard/usalama">Usalama wa akaunti</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div>
-      <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>BURE</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
+      <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/dashboard/kuponi">Tengeneza Coupon</Link><Link className="btn btn-outline" href="/dashboard/usalama">Usalama wa akaunti</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div><section className="panel seller-books-panel"><h2>WhatsApp ya kupokea oda</h2><p className="muted">Wateja watatumia namba hii kuwasiliana nawe wanapotaka kununua kitabu. Baada ya kuthibitisha malipo, tengeneza coupon kwenye sehemu ya “Tengeneza Coupon” na umtumie mteja.</p><strong>{application.phone_number || "Namba haijawekwa"}</strong></section>
+      <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
       {query.error && <p className="message">{query.error}</p>}{query.saved && <p className="notice">Taarifa zimehifadhiwa.</p>}{query.deleted && <p className="notice">Kitabu kimefutwa.</p>}
-      <section className="panel seller-books-panel"><h2>Vitabu vya bure</h2><p className="muted">Kwa sasa mfumo hauna malipo. Wasomaji wanaweza kufungua na kusoma vitabu vilivyoidhinishwa bila kulipa.</p></section>
+      <section className="panel seller-books-panel"><h2>Oda na mauzo kupitia WhatsApp</h2><p className="muted">MaarifaBooks haitakusanyia malipo. Mteja atalipa moja kwa moja kwako kupitia maelekezo utakayompa WhatsApp. Ukishathibitisha malipo, tengeneza coupon ya kitabu husika ili kumfungulia kitabu kizima.</p></section>
     </main>;
   }
 
