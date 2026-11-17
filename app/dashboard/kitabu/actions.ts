@@ -72,6 +72,29 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   return {ok:true};
 }
 
+
+export async function replaceSellerBookPdf(bookId:string,newFilePath:string):Promise<{ok:true}|{ok:false;error:string}> {
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return {ok:false,error:"Ingia kwanza."};
+  const {data:application}=await supabase.from("seller_applications").select("status").eq("user_id",user.id).maybeSingle();
+  if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
+  const expectedPrefix=user.id+"/"+bookId+"/";
+  if(!newFilePath.startsWith(expectedPrefix)||!newFilePath.toLowerCase().endsWith(".pdf")) return {ok:false,error:"Njia ya PDF si sahihi."};
+  const {data:book,error:bookError}=await supabase.from("books").select("id,file_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  const {count,error:countError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
+  if(countError) return {ok:false,error:"Imeshindikana kukagua historia ya kitabu."};
+  if((count??0)>0) return {ok:false,error:"Kitabu hiki kina historia ya mauzo; wasiliana na Admin kabla ya kubadilisha PDF."};
+  const filename=newFilePath.split("/").pop();
+  const {data:stored,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
+  if(listError||!stored?.some(file=>file.name===filename)) return {ok:false,error:"PDF mpya haijapatikana kwenye hifadhi."};
+  const {error}=await supabase.from("books").update({file_path:newFilePath,format:"pdf",status:"pending",approved_by:null,approved_at:null}).eq("id",bookId).eq("seller_id",user.id);
+  if(error) return {ok:false,error:error.message};
+  if(book.file_path&&book.file_path!==newFilePath) await supabase.storage.from("book-files").remove([book.file_path]);
+  return {ok:true};
+}
+
 export async function deleteSellerBook(bookId:string):Promise<{ok:true}|{ok:false;error:string}> {
   const supabase=await createClient();
   const {data:{user}}=await supabase.auth.getUser();
