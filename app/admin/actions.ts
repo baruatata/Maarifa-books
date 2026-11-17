@@ -72,3 +72,26 @@ export async function reviewBook(formData: FormData) {
   revalidatePath("/");
   redirect("/admin?success=Uamuzi+wa+kitabu+umehifadhiwa");
 }
+
+
+export async function removeBookFromLibrary(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const bookId = String(formData.get("book_id") ?? "");
+  if (!bookId) redirect("/admin?error=Kitabu+hakijachaguliwa");
+  const { data: book, error: lookupError } = await supabase.from("books").select("id,file_path,cover_path").eq("id", bookId).maybeSingle();
+  if (lookupError || !book) redirect("/admin?error=Kitabu+hakijapatikana");
+  const { count, error: salesError } = await supabase.from("order_items").select("id", { count: "exact", head: true }).eq("book_id", bookId);
+  if (salesError) redirect("/admin?error=Imeshindikana+kukagua+historia+ya+kitabu");
+  if ((count ?? 0) > 0) {
+    const { error } = await supabase.from("books").update({ status: "archived" }).eq("id", bookId);
+    if (error) redirect("/admin?error=" + encodeURIComponent(error.message));
+    revalidatePath("/admin"); revalidatePath("/");
+    redirect("/admin?success=Kitabu+kimeondolewa+kwenye+maktaba%2C+historia+imehifadhiwa");
+  }
+  const { error } = await supabase.from("books").delete().eq("id", bookId);
+  if (error) redirect("/admin?error=" + encodeURIComponent(error.message));
+  const paths = [book.file_path, book.cover_path].filter(Boolean) as string[];
+  if (paths.length) await supabase.storage.from("book-files").remove(paths);
+  revalidatePath("/admin"); revalidatePath("/");
+  redirect("/admin?success=Kitabu+kimefutwa+kabisa");
+}
