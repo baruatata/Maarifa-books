@@ -32,6 +32,14 @@ export async function finishBookUpload(bookId:string,filePath:string,coverPath:s
   const {data:book}=await supabase.from("books").select("price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","pending").maybeSingle();
   if (!book) return {ok:false,error:"Kitabu hakijapatikana."};
   if (book.price_tzs > 0 && !previewPath) return {ok:false,error:"Kitabu cha kulipia lazima kiwe na faili la sampuli ya bure."};
+  if (previewPath) {
+    const previewName = previewPath.split("/").pop();
+    const { data: stored, error: storageError } = await supabase.storage.from("book-files").list(user.id+"/"+bookId);
+    const previewFile = stored?.find(file => file.name === previewName);
+    if (storageError || !previewFile) return {ok:false,error:"Sampuli iliyotengenezwa haijapatikana kwenye hifadhi."};
+    const previewSize = Number(previewFile.metadata?.size ?? previewFile.metadata?.contentLength ?? 0);
+    if (previewSize > 35 * 1024 * 1024) return {ok:false,error:"Sampuli ya bure haiwezi kuzidi MB 35."};
+  }
   const { error } = await supabase.from("books").update({file_path:filePath,cover_path:coverPath,preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id).eq("status","pending");
   if (error) return {ok:false,error:error.message};
   return {ok:true};
