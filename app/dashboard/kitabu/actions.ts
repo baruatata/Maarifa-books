@@ -87,16 +87,19 @@ export async function replaceSellerBookPdf(bookId:string,newFilePath:string,newP
   const expectedPrefix=user.id+"/"+bookId+"/";
   if(!newFilePath.startsWith(expectedPrefix)||!newFilePath.toLowerCase().endsWith(".pdf")||(newPreviewPath!==null&&(!newPreviewPath.startsWith(expectedPrefix)||!newPreviewPath.toLowerCase().endsWith(".pdf")))) return {ok:false,error:"Njia ya PDF au sampuli si sahihi."};
   const {data:book,error:bookError}=await supabase.from("books").select("id,file_path,preview_path,price_tzs").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
-  if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};\n  if(book.price_tzs>0&&!newPreviewPath) return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli mpya ya Sura ya Kwanza."};
+  if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  if(book.price_tzs>0&&!newPreviewPath) return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli mpya ya Sura ya Kwanza."};
   const {count,error:countError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(countError) return {ok:false,error:"Imeshindikana kukagua historia ya kitabu."};
   if((count??0)>0) return {ok:false,error:"Kitabu hiki kina historia ya mauzo; wasiliana na Admin kabla ya kubadilisha PDF."};
   const filename=newFilePath.split("/").pop();
   const {data:stored,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
   if(listError||!stored?.some(file=>file.name===filename)) return {ok:false,error:"PDF mpya haijapatikana kwenye hifadhi."};
+  if(newPreviewPath){const previewName=newPreviewPath.split("/").pop();if(!stored?.some(file=>file.name===previewName)) return {ok:false,error:"Sampuli mpya haijapatikana kwenye hifadhi."};}
   const {error}=await supabase.from("books").update({file_path:newFilePath,preview_path:newPreviewPath,format:"pdf",status:"pending",approved_by:null,approved_at:null}).eq("id",bookId).eq("seller_id",user.id);
   if(error) return {ok:false,error:error.message};
-  const oldPaths=[book.file_path,book.preview_path].filter((path):path is string=>Boolean(path)&&path!==newFilePath&&path!==newPreviewPath);\n  if(oldPaths.length) await supabase.storage.from("book-files").remove(oldPaths);
+  const oldPaths=[book.file_path,book.preview_path].filter((path):path is string=>Boolean(path)&&path!==newFilePath&&path!==newPreviewPath);
+  if(oldPaths.length) await supabase.storage.from("book-files").remove(oldPaths);
   return {ok:true};
 }
 
