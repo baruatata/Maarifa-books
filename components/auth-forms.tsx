@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn, signUp } from "@/app/auth/actions";
 import { PasswordField } from "@/components/password-field";
 
-export function AuthForms({ error, success }: { error?: string; success?: string }) {
+export function AuthForms({ error, success, next }: { error?: string; success?: string; next?: string }) {
   const [language, setLanguage] = useState<"sw" | "en">("sw");
   const en = language === "en";
   return <section>
@@ -17,13 +17,13 @@ export function AuthForms({ error, success }: { error?: string; success?: string
     {error && <p className="message">{error}</p>}
     {success && <p className="notice">{en ? "Check your email to confirm your account." : success}</p>}
     <div className="auth-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(270px,1fr))", gap: 20 }}>
-      <form className="panel form" action={signIn}>
+      <form className="panel form" action={signIn}><input type="hidden" name="next" value={next || ""}/>
         <h2>{en ? "Log in" : "Ingia"}</h2>
         <div className="field"><label htmlFor="login-email">{en ? "Email address" : "Barua pepe"}</label><input id="login-email" name="email" type="email" autoComplete="email" required /></div>
         <PasswordField name="password" label={en ? "Password" : "Nenosiri"} />
         <button className="btn">{en ? "Log in" : "Ingia"}</button>
       </form>
-      <form className="panel form" action={signUp}>
+      <form className="panel form" action={signUp}><input type="hidden" name="next" value={next || ""}/>
         <h2>{en ? "Create an account" : "Jisajili"}</h2>
         <div className="field"><label htmlFor="full-name">{en ? "Full name" : "Jina kamili"}</label><input id="full-name" name="full_name" autoComplete="name" required /></div>
         <div className="field"><label htmlFor="phone">{en ? "Phone number" : "Namba ya simu"}</label><input id="phone" name="phone" type="tel" autoComplete="tel" /></div>
