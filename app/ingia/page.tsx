@@ -1,12 +1,12 @@
 import { AuthForms } from "@/components/auth-forms";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string; next?: string }> }) {
   const params = await searchParams;
   return <main className="page">
     <div style={{ display: "flex", justifyContent: "center", margin: "0 auto 24px" }}><img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width="300" height="74" style={{ width: "min(320px, 84vw)", height: "auto", objectFit: "contain" }} /></div>
     <p className="eyebrow">KARIBU MAARIFABOOKS</p>
     <h1>Ingia au fungua akaunti</h1>
     <p className="muted seller-login-entry">Tayari ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
-    <AuthForms error={params.error} success={params.success} />
+    <AuthForms error={params.error} success={params.success} next={params.next} />
   </main>;
 }
