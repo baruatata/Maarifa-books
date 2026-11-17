@@ -382,15 +382,14 @@ body{background:#fff!important;color:#172033!important}
 .scroll-book-title span{font-size:11px;color:#d5deed}
 .scroll-download{display:inline-flex;align-items:center;justify-content:center;min-width:48px;min-height:40px;padding:0 12px;border-radius:8px;background:#fff;color:#172b4d;font-size:12px;font-weight:800;text-decoration:none}
 .scroll-pages{display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 12px 30px}
-.scroll-page{position:relative;width:min(100%,920px);aspect-ratio:1/1.414;display:flex;align-items:flex-start;justify-content:center;padding:0;background:#fff;box-shadow:0 3px 14px #15243a18;overflow:hidden}
-.scroll-page-canvas{display:block;width:100%;height:auto;max-width:100%;background:#fff}
+.scroll-page{position:relative;display:block;width:min(100%,920px);height:auto;min-height:1px;padding:0;background:#fff;box-shadow:0 3px 14px #15243a18;overflow:visible}.scroll-page-canvas{display:block;width:100%;height:auto;max-width:100%;background:#fff}
 .scroll-page-number{position:absolute;top:8px;right:10px;z-index:1;padding:4px 7px;border-radius:4px;background:#172b4dcc;color:#fff;font-size:9px;letter-spacing:.6px;pointer-events:none}
 .scroll-page-error{padding:35px 18px;color:#8c3030;font-size:13px;text-align:center}
 .scroll-status{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;color:#52627a}
 .scroll-error{color:#8c3030}
 .scroll-error a{color:#1557a6;font-weight:700}
 @media(min-width:960px){.scroll-pages{padding:24px 20px 40px;gap:20px}}
-@media(max-width:600px){.scroll-reader{border-radius:0;margin-left:-15px;margin-right:-15px;width:calc(100% + 30px);border-left:0;border-right:0}.scroll-toolbar{min-height:56px;padding:7px 9px;gap:8px}.scroll-book-title strong{font-size:12px}.scroll-pages{gap:10px;padding:10px 6px 24px}.scroll-page{width:100%;aspect-ratio:1/1.414}.scroll-page-number{top:5px;right:6px;font-size:8px}}
+@media(max-width:600px){.scroll-reader{border-radius:0;margin-left:-15px;margin-right:-15px;width:calc(100% + 30px);border-left:0;border-right:0}.scroll-toolbar{min-height:56px;padding:7px 9px;gap:8px}.scroll-book-title strong{font-size:12px}.scroll-pages{gap:10px;padding:10px 6px 24px}.scroll-page{width:100%;height:auto;aspect-ratio:auto}.scroll-page-number{top:5px;right:6px;font-size:8px}}
 
 
 /* Seller WhatsApp and one-time coupon UI */
