@@ -13,7 +13,7 @@ Marketplace ya vitabu vya kidijitali chini ya Lumbwa Digital.
 - Dashibodi ya mtumiaji
 - Maombi ya wauzaji yenye namba ya WhatsApp na masharti ya muuzaji
 - Fomu ya kuwasilisha metadata ya kitabu kwa ukaguzi
-- Vitabu vya bure na vya kulipia; kitabu cha kulipia kinahitaji sampuli ya bure (angalau sura moja)
+- Vitabu vya bure na vya kulipia; kwa kitabu cha kulipia mfumo hutengeneza sampuli ya Sura ya Kwanza kiotomatiki (PDF/EPUB hadi MB 35)
 - Oda za vitabu vya kulipia huenda moja kwa moja kwa muuzaji kupitia WhatsApp
 - Coupon za matumizi mara moja zinazotengenezwa na muuzaji baada ya kuthibitisha malipo
 - Faili kamili za vitabu vya kulipia hulindwa mpaka mnunuzi atumie coupon halali
