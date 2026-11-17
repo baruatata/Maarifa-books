@@ -21,7 +21,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").order("created_at", { ascending: false }),
     supabase.from("seller_applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("books").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "seller"),
   ]);
   const sellerRows = (applications ?? []) as SellerApplication[];
   const bookRows = (books ?? []) as Book[];
@@ -67,7 +67,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
 
       <section className="admin-metric-grid" id="members">
-        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wasajili wa jukwaa</small></article>
+        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wauzaji</p><strong>{memberCount ?? 0}</strong><small>Wauzaji walioidhinishwa</small></article>
         <article className="admin-metric"><span className="metric-icon">♧</span><p>Maombi ya wauzaji</p><strong>{sellerCount ?? 0}</strong><small>Yanasubiri uamuzi</small></article>
         <article className="admin-metric"><span className="metric-icon">▤</span><p>Vitabu vya kukagua</p><strong>{bookCount ?? 0}</strong><small>Vinasubiri idhini</small></article>
       </section>
