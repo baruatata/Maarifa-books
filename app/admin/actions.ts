@@ -57,8 +57,8 @@ export async function reviewBook(formData: FormData) {
   const { data: book, error: bookLookupError } = await supabase.from("books")
     .select("id,file_path,preview_path,cover_path,price_tzs,status").eq("id", bookId).eq("status", "pending").single();
   if (bookLookupError || !book) redirect("/admin?error=Kitabu+hakijapatikana");
-  if (decision === "approved" && (!book.file_path || !book.cover_path)) {
-    redirect("/admin?error=Kitabu+kinahitaji+faili+na+jalada+kabla+ya+kuidhinishwa");
+  if (decision === "approved" && (!book.file_path || !book.cover_path || (book.price_tzs > 0 && !book.preview_path))) {
+    redirect("/admin?error=Kitabu+cha+kulipia+kinahitaji+faili+kamili%2C+sampuli+ya+bure+na+jalada");
   }
 
   const update = decision === "approved"
@@ -78,7 +78,7 @@ export async function removeBookFromLibrary(formData: FormData) {
   const { supabase } = await requireAdmin();
   const bookId = String(formData.get("book_id") ?? "");
   if (!bookId) redirect("/admin?error=Kitabu+hakijachaguliwa");
-  const { data: book, error: lookupError } = await supabase.from("books").select("id,file_path,cover_path").eq("id", bookId).maybeSingle();
+  const { data: book, error: lookupError } = await supabase.from("books").select("id,file_path,preview_path,cover_path").eq("id", bookId).maybeSingle();
   if (lookupError || !book) redirect("/admin?error=Kitabu+hakijapatikana");
   const { count, error: salesError } = await supabase.from("order_items").select("id", { count: "exact", head: true }).eq("book_id", bookId);
   if (salesError) redirect("/admin?error=Imeshindikana+kukagua+historia+ya+kitabu");
@@ -90,7 +90,7 @@ export async function removeBookFromLibrary(formData: FormData) {
   }
   const { error } = await supabase.from("books").delete().eq("id", bookId);
   if (error) redirect("/admin?error=" + encodeURIComponent(error.message));
-  const paths = [book.file_path, book.cover_path].filter(Boolean) as string[];
+  const paths = [book.file_path, book.preview_path, book.cover_path].filter(Boolean) as string[];
   if (paths.length) await supabase.storage.from("book-files").remove(paths);
   revalidatePath("/admin"); revalidatePath("/");
   redirect("/admin?success=Kitabu+kimefutwa+kabisa");
