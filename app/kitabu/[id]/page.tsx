@@ -17,7 +17,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
     const { data } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
     coverUrl = data?.signedUrl ?? null;
   }
-  const formatLabel: Record<string, string> = { pdf: "PDF", epub: "EPUB", audiobook: "Audiobook" };
+  const formatLabel: Record<string, string> = { pdf: "PDF", epub: "EPUB" };
   const languageLabel: Record<string, string> = { sw: "Kiswahili", en: "Kiingereza", other: "Lugha nyingine" };
 
   return <main className="page book-detail-page">
