@@ -106,14 +106,14 @@ export async function deleteSellerBook(bookId:string):Promise<{ok:true}|{ok:fals
   if(!user) return {ok:false,error:"Ingia kwanza."};
   const {data:application}=await supabase.from("seller_applications").select("status").eq("user_id",user.id).maybeSingle();
   if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
-  const {data:book,error:readError}=await supabase.from("books").select("id,file_path,cover_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  const {data:book,error:readError}=await supabase.from("books").select("id,file_path,preview_path,cover_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
   if(readError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
   const {count,error:countError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(countError) return {ok:false,error:countError.message};
   if((count??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kukifuta kabisa ili kuhifadhi historia ya wanunuzi; badala yake wasiliana na Admin akiondoe kwenye maktaba."};
   const {error}=await supabase.from("books").delete().eq("id",bookId).eq("seller_id",user.id);
   if(error) return {ok:false,error:error.message};
-  const paths=[book.file_path,book.cover_path].filter(Boolean) as string[];
+  const paths=[book.file_path,book.preview_path,book.cover_path].filter(Boolean) as string[];
   if(paths.length) await supabase.storage.from("book-files").remove(paths);
   return {ok:true};
 }
