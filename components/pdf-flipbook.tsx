@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Props = { url: string; title: string; closeHref: string; bookId: string };
+type Props = { url: string; title: string; closeHref: string };
 type PdfDocument = { numPages: number; getPage: (n: number) => Promise<any>; destroy: () => Promise<void> };
 
-export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
+export default function PdfFlipbook({ url, title, closeHref }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const pdfRef = useRef<PdfDocument | null>(null);
