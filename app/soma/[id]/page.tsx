@@ -38,8 +38,6 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
         <PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id} bookId={book.id} />
         <p className="reader-footnote">Unaweza kusogeza kurasa kwa kidole au mishale. Ukihitaji, <a href={signed.signedUrl} target="_blank" rel="noreferrer">fungua PDF yenyewe</a>.</p>
       </section>
-    ) : book.format === "audiobook" ? (
-      <section className="reader-audio panel"><p>Sikiliza kitabu chako hapa.</p><audio controls preload="metadata" src={signed.signedUrl}>Kivinjari chako hakitumii kicheza sauti.</audio></section>
     ) : (
       <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF na Audiobook.</p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Pakua EPUB</a></section>
     )}
