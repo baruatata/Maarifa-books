@@ -310,7 +310,7 @@ body{background:#fff!important;color:#172033!important}
 .book-detail-info h2{font-size:19px;color:#101d36}
 .book-detail-description{white-space:pre-wrap;color:#4f596b;line-height:1.8;font-weight:400}
 .book-purchase-panel{margin-top:25px;padding:20px;border:1px solid #e8e4da;border-radius:13px;background:#fbfaf7;display:grid;gap:12px}
-.book-purchase-panel>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.book-purchase-panel>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .book-purchase-panel>div strong{font-size:24px;color:#101d36}
 .book-payment-note{font-size:13px;line-height:1.65;color:#687184;margin:0;font-weight:400}
 .book-buy-button{width:100%;min-height:48px;align-items:center}
@@ -406,3 +406,46 @@ body{background:#fff!important;color:#172033!important}
 .coupon-redeem { padding-top: 16px; border-top: 1px solid var(--border, #d8dce5); }
 .coupon-redeem-form { display: grid; gap: 8px; }
 .coupon-redeem-form input { min-height: 46px; }
+
+
+/* Prevent mobile book purchase panel and coupon form from overflowing */
+.book-purchase-panel,
+.book-purchase-panel > *,
+.book-purchase-panel > .coupon-redeem,
+.coupon-redeem,
+.coupon-redeem > *,
+.coupon-redeem-form {
+  min-width: 0;
+  max-width: 100%;
+}
+.book-purchase-panel > .coupon-redeem {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100%;
+  align-items: stretch;
+}
+.coupon-redeem-form input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.coupon-redeem-form .btn {
+  width: 100%;
+  white-space: normal;
+  line-height: 1.4;
+}
+.book-payment-note {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .book-purchase-panel > div:first-child {
+    flex-wrap: wrap;
+  }
+  .book-purchase-panel > div:first-child strong {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    margin-left: auto;
+  }
+}
