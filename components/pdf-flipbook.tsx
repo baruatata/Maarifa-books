@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import AudiobookPlayer from "@/components/audiobook-player";
 
 type Props = { url: string; title: string; closeHref: string; bookId: string };
 type PdfDocument = { numPages: number; getPage: (n: number) => Promise<any>; destroy: () => Promise<void> };
@@ -17,7 +16,6 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [audioOpen, setAudioOpen] = useState(false);
   const [turn, setTurn] = useState<"next" | "prev" | "">("");
   const [fit, setFit] = useState(1);
 
@@ -112,9 +110,7 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
       <header className="flip-toolbar">
         <Link className="flip-close" href={closeHref} aria-label="Rudi kwenye kitabu">‹</Link>
         <span className="flip-title">{title}</span>
-        <button className="audio-toggle" type="button" onClick={() => setAudioOpen((v) => !v)} aria-expanded={audioOpen}>🎧 {audioOpen ? "Ficha sauti" : "Sikiliza"}</button>
       </header>
-      {audioOpen && <div className="flip-audio"><AudiobookPlayer bookId={bookId} /></div>}
       <section
         className="flip-stage"
         ref={stageRef}
@@ -148,8 +144,6 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
         .flip-toolbar{height:52px;min-height:52px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#172b4d;color:#fff;box-shadow:0 2px 8px #10213a25}
         .flip-close{font-size:32px;line-height:1;color:#fff;text-decoration:none;width:30px;flex:0 0 30px}
         .flip-title{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-        .audio-toggle{border:1px solid #ffffff70;border-radius:20px;background:#ffffff15;color:#fff;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap}
-        .flip-audio{flex:0 0 auto;max-height:36vh;overflow:auto;background:#fff;padding:0 10px;border-bottom:1px solid #dce2eb}
         .flip-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px 34px;overflow:hidden;touch-action:pan-y}
         .page-paper{display:flex;align-items:center;justify-content:center;max-width:100%;max-height:100%;background:white;box-shadow:0 8px 26px #1b2c451f;border-radius:2px;overflow:hidden;transform-origin:left center}
         .page-paper canvas{display:block;max-width:100%;max-height:100%;object-fit:contain}
@@ -164,7 +158,7 @@ export default function PdfFlipbook({ url, title, closeHref, bookId }: Props) {
         .flip-controls button:disabled{opacity:.35}.flip-controls label{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;white-space:nowrap}
         .flip-controls input{width:48px;text-align:center;border:1px solid #cbd5e1;border-radius:8px;padding:7px;color:#172b4d;font-size:14px}
         .flip-progress{height:3px;background:#d7dfeb;flex:0 0 3px}.flip-progress span{display:block;height:100%;background:#2563a6;transition:width .2s}
-        @media(max-width:600px){.flip-toolbar{height:48px;min-height:48px;padding:0 9px;gap:7px}.flip-title{font-size:12px}.audio-toggle{padding:7px 9px;font-size:11px}.flip-stage{padding:8px 27px}.page-arrow{width:29px;height:44px;font-size:26px}.flip-controls{min-height:54px;gap:8px;padding:7px 6px}.flip-controls button{padding:9px 10px;font-size:11px}.flip-controls label{gap:4px;font-size:11px}.flip-controls input{width:40px;padding:6px}}
+        @media(max-width:600px){.flip-toolbar{height:48px;min-height:48px;padding:0 9px;gap:7px}.flip-title{font-size:12px}.flip-stage{padding:8px 27px}.page-arrow{width:29px;height:44px;font-size:26px}.flip-controls{min-height:54px;gap:8px;padding:7px 6px}.flip-controls button{padding:9px 10px;font-size:11px}.flip-controls label{gap:4px;font-size:11px}.flip-controls input{width:40px;padding:6px}}
         @media(prefers-reduced-motion:reduce){.turn-next,.turn-prev{animation:none}}
       `}</style>
 
