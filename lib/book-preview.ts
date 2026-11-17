@@ -173,6 +173,11 @@ async function createEpubPreview(file: File): Promise<Blob> {
     }
 
     zip.file(opfPath, new XMLSerializer().serializeToString(opfDoc));
+    const mimeFile = zip.file("mimetype");
+    if (mimeFile) {
+      const mimeText = await mimeFile.async("text");
+      zip.file("mimetype", mimeText, { compression: "STORE" });
+    }
     const preview = await zip.generateAsync({
       type: "blob",
       mimeType: "application/epub+zip",
