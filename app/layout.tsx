@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 
@@ -13,5 +14,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="sw"><body><SiteHeader />{children}</body></html>;
+  return (
+    <html lang="sw">
+      <body>
+        <SiteHeader />
+        {children}
+        <Analytics />
+      </body>
+    </html>
+  );
 }
