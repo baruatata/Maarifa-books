@@ -1,4 +1,5 @@
 import { AuthForms } from "@/components/auth-forms";
+import { CustomerPhoneAuth } from "@/components/customer-phone-auth";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string; next?: string }> }) {
   const params = await searchParams;
@@ -12,6 +13,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     ) : (
       <p className="muted seller-login-entry">Wewe ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
     )}
+    {isCustomerSelfService && <CustomerPhoneAuth next={params.next} />}
     <AuthForms error={params.error} success={params.success} next={params.next} />
   </main>;
 }
