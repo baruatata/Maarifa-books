@@ -2,6 +2,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+function authRedirect(path: string, message: string, kind: "error" | "success" = "error") {
+  const params = new URLSearchParams({ [kind]: message });
+  if (path.startsWith("/") && !path.startsWith("//")) params.set("next", path);
+  redirect("/ingia?" + params.toString());
+}
+
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
   const full_name = String(formData.get("full_name") ?? "").trim();
@@ -11,17 +17,17 @@ export async function signUp(formData: FormData) {
   const preferred_language = String(formData.get("preferred_language") ?? "sw") === "en" ? "en" : "sw";
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-  if (!full_name || !email || password.length < 8) redirect("/ingia?error=Jaza+taarifa.+Nenosiri+liwe+herufi+8+au+zaidi");
+  if (!full_name || !email || password.length < 8) authRedirect(safeNext, "Jaza taarifa. Nenosiri liwe herufi 8 au zaidi");
   const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone, preferred_language } } });
-  if (error) redirect("/ingia?error=" + encodeURIComponent(error.message));
-  redirect("/ingia?success=Angalia+barua+pepe+uthibitishe+akaunti&next=" + encodeURIComponent(safeNext));
+  if (error) authRedirect(safeNext, error.message);
+  authRedirect(safeNext, "Angalia barua pepe uthibitishe akaunti", "success");
 }
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
   const { error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
-  if (error) redirect("/ingia?error=" + encodeURIComponent(error.message));
+  if (error) authRedirect(safeNext, error.message);
   const { data: factors } = await supabase.auth.mfa.listFactors();
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
