@@ -488,3 +488,37 @@ body{background:#fff!important;color:#172033!important}
 .site-header nav .account-menu-panel form{margin:0}
 .site-header nav .nav-login{font-weight:700}
 @media(max-width:650px){.site-header nav .account-menu{font-size:12px}.site-header nav .account-menu-panel{right:0;min-width:170px}}
+
+
+/* Larger MaarifaBooks header wordmark and homepage return-to-top button */
+.site-header .brand-text-logo{min-height:76px!important;gap:12px!important}
+.site-header .brand-mark{font-size:clamp(46px,7vw,58px)!important}
+.site-header .brand-name{font-size:clamp(42px,6vw,56px)!important;letter-spacing:-1.8px!important}
+@media(max-width:650px){
+  .site-header .brand-text-logo{min-height:62px!important;gap:8px!important}
+  .site-header .brand-mark{font-size:42px!important}
+  .site-header .brand-name{font-size:clamp(37px,9vw,43px)!important;letter-spacing:-1.2px!important}
+}
+.home-back-to-top{
+  position:fixed;
+  right:max(18px,env(safe-area-inset-right));
+  bottom:max(22px,calc(env(safe-area-inset-bottom) + 14px));
+  z-index:1000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  width:58px;
+  height:58px;
+  border:0;
+  border-radius:999px;
+  background:#e6b84f;
+  color:#101827;
+  box-shadow:0 4px 16px #0005;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.home-back-to-top span:first-child{font-size:27px;font-weight:900;line-height:1}
+.home-back-to-top span:last-child{font-size:9px;font-weight:800;line-height:1}
+.home-back-to-top:focus-visible{outline:3px solid #172b4d;outline-offset:3px}
