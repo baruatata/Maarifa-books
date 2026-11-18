@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { reviewBook, reviewSeller, removeBookFromLibrary } from "@/app/admin/actions";
 import { signOut } from "@/app/auth/actions";
+import EhubSenderLookup from "@/components/admin/ehub-sender-lookup";
 
 type SellerApplication = { id: string; user_id: string; store_name: string; bio: string | null; phone_number: string; status: string; created_at: string };
 type Book = { id: string; seller_id: string; title: string; author_name: string | null; description: string | null; format: string; language: string; price_tzs: number; status: string; created_at: string; file_path: string | null; cover_path: string | null };
@@ -101,6 +102,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </section>
         </div>
         <aside className="admin-right-column">
+          <section className="admin-quick-panel"><h3>eHUB SMS · Sender ID</h3><p>Angalia UUID ya Sender ID Youflix iliyoidhinishwa. Kitendo hiki kinapatikana kwa admin pekee.</p><EhubSenderLookup /></section>
           <section className="admin-quick-panel"><h3>Hatua za haraka</h3><a href="#seller-review">Kagua maombi ya wauzaji <span>→</span></a><a href="#book-review">Kagua vitabu vipya <span>→</span></a><Link href="/">Tazama tovuti ya umma <span>↗</span></Link></section>
           <section className="admin-quick-panel admin-note-panel"><span className="admin-gold-kicker">USALAMA WA MAUDHUI</span><h3>Kabla ya kuidhinisha</h3><p>Hakiki taarifa za muuzaji, jalada, faili la kitabu na maelezo yake. Vitabu vilivyoidhinishwa ndivyo vinavyoonekana kwa wanunuzi.</p></section>
           <section className="admin-quick-panel"><h3>Muhtasari wa foleni</h3><div className="admin-queue-row"><span>Wauzaji</span><strong>{sellerRows.length}</strong></div><div className="admin-queue-row"><span>Vitabu</span><strong>{bookRows.length}</strong></div><div className="admin-queue-total"><span>Jumla inayosubiri</span><strong>{sellerRows.length + bookRows.length}</strong></div></section>
