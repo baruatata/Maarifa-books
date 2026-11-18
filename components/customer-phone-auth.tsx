@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 function toE164(value: string) {
-  const digits = value.replace(/\\D/g, "");
+  const digits = value.replace(/\D/g, "");
   if (digits.startsWith("0") && digits.length === 10) return "+255" + digits.slice(1);
   if (digits.startsWith("255") && digits.length === 12) return "+" + digits;
   if ((digits.startsWith("6") || digits.startsWith("7")) && digits.length === 9) return "+255" + digits;
@@ -43,12 +43,12 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
     } finally { setBusy(false); }
   }
 
-  async function verifyOtp(e: React.FormEvent) {
+  async function verifyOtp(e: FormEvent) {
     e.preventDefault();
     setBusy(true); setError(""); setMessage("");
     try {
       const phone = toE164(phoneInput);
-      if (!/^\\d{6}$/.test(code.trim())) throw new Error("Ingiza OTP yenye tarakimu 6.");
+      if (!/^\d{6}$/.test(code.trim())) throw new Error("Ingiza OTP yenye tarakimu 6.");
       const supabase = createClient();
       const { data, error: verifyError } = await supabase.auth.verifyOtp({ phone, token: code.trim(), type: "sms" });
       if (verifyError) throw verifyError;
@@ -59,7 +59,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
         await supabase.auth.signOut();
         throw new Error("Huduma ya Jihudumie ni kwa wateja pekee. Tumia ukurasa wa muuzaji.");
       }
-      window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
+      const { error: profileUpdateError } = await supabase.from("profiles").update({ phone, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);\n      if (profileUpdateError) throw profileUpdateError;\n      window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
       setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");
     } finally { setBusy(false); }
@@ -90,7 +90,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
     </form> : <form onSubmit={verifyOtp}>
       <div className="field">
         <label htmlFor="customer-otp">OTP ya tarakimu 6</label>
-        <input id="customer-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\\D/g, "").slice(0, 6))} required />
+        <input id="customer-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} required />
       </div>
       <button className="btn" type="submit" disabled={busy}>{busy ? "Inathibitisha..." : "Thibitisha na uendelee"}</button>
       <button className="btn secondary" type="button" disabled={busy} onClick={() => { setStep("details"); setCode(""); setMessage(""); setError(""); }}>Badili namba</button>
