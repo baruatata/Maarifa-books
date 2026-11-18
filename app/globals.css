@@ -448,3 +448,30 @@ body{background:#fff!important;color:#172033!important}
     margin-left: auto;
   }
 }
+
+
+/* Floating return-to-top control for long book-reading sessions */
+.reader-back-to-top{
+  position:fixed;
+  right:max(18px,env(safe-area-inset-right));
+  bottom:max(22px,calc(env(safe-area-inset-bottom) + 14px));
+  z-index:1000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  width:54px;
+  height:54px;
+  border:0;
+  border-radius:999px;
+  background:#172b4d;
+  color:#fff;
+  box-shadow:0 4px 16px #10213a45;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.reader-back-to-top span:first-child{font-size:25px;font-weight:800;line-height:1}
+.reader-back-to-top-label{font-size:10px;font-weight:700;line-height:1}
+.reader-back-to-top:focus-visible{outline:3px solid #f0b429;outline-offset:3px}
+@media(hover:hover){.reader-back-to-top:hover{background:#254879}}
