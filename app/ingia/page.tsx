@@ -2,11 +2,16 @@ import { AuthForms } from "@/components/auth-forms";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string; next?: string }> }) {
   const params = await searchParams;
+  const isCustomerSelfService = params.next === "/dashboard/jihudumie";
   return <main className="page">
     <div style={{ display: "flex", justifyContent: "center", margin: "0 auto 24px" }}><img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width="300" height="74" style={{ width: "min(320px, 84vw)", height: "auto", objectFit: "contain" }} /></div>
-    <p className="eyebrow">KARIBU MAARIFABOOKS</p>
-    <h1>Ingia au fungua akaunti</h1>
-    <p className="muted seller-login-entry">Tayari ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
+    <p className="eyebrow">{isCustomerSelfService ? "HUDUMA ZA MTEJA" : "KARIBU MAARIFABOOKS"}</p>
+    <h1>{isCustomerSelfService ? "Ingia au fungua akaunti ya mteja" : "Ingia au fungua akaunti"}</h1>
+    {isCustomerSelfService ? (
+      <p className="muted">Jihudumie ni sehemu ya wateja wa MaarifaBooks. Ingia kwenye akaunti yako au jisajili bure ili uweze kusimamia vitabu, malipo na kupata msaada.</p>
+    ) : (
+      <p className="muted seller-login-entry">Wewe ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
+    )}
     <AuthForms error={params.error} success={params.success} next={params.next} />
   </main>;
 }
