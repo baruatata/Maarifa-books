@@ -59,7 +59,9 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
         await supabase.auth.signOut();
         throw new Error("Huduma ya Jihudumie ni kwa wateja pekee. Tumia ukurasa wa muuzaji.");
       }
-      const { error: profileUpdateError } = await supabase.from("profiles").update({ phone, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);\n      if (profileUpdateError) throw profileUpdateError;\n      window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
+      const { error: profileUpdateError } = await supabase.from("profiles").update({ phone, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);
+      if (profileUpdateError) throw profileUpdateError;
+      window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
       setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");
     } finally { setBusy(false); }
