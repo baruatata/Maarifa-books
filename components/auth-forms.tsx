@@ -23,7 +23,7 @@ export function AuthForms({ error, success, next }: { error?: string; success?: 
         <PasswordField name="password" label={en ? "Password" : "Nenosiri"} />
         <button className="btn">{en ? "Log in" : "Ingia"}</button>
       </form>
-      <form className="panel form" action={signUp}><input type="hidden" name="next" value={next || ""}/>
+      <form id="jisajili" className="panel form" action={signUp}><input type="hidden" name="next" value={next || ""}/>
         <h2>{en ? "Create an account" : "Jisajili"}</h2>
         <div className="field"><label htmlFor="full-name">{en ? "Full name" : "Jina kamili"}</label><input id="full-name" name="full_name" autoComplete="name" required /></div>
         <div className="field"><label htmlFor="phone">{en ? "Phone number" : "Namba ya simu"}</label><input id="phone" name="phone" type="tel" autoComplete="tel" /></div>

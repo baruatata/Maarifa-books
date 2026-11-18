@@ -475,3 +475,16 @@ body{background:#fff!important;color:#172033!important}
 .reader-back-to-top-label{font-size:10px;font-weight:700;line-height:1}
 .reader-back-to-top:focus-visible{outline:3px solid #f0b429;outline-offset:3px}
 @media(hover:hover){.reader-back-to-top:hover{background:#254879}}
+
+
+/* Customer account menu */
+.site-header nav .account-menu{position:relative;display:inline-block;color:inherit;font-size:14px;font-weight:700}
+.site-header nav .account-menu summary{min-height:44px;display:flex;align-items:center;gap:7px;cursor:pointer;list-style:none}
+.site-header nav .account-menu summary::-webkit-details-marker{display:none}
+.site-header nav .account-menu summary::after{content:"▾";font-size:11px}
+.site-header nav .account-menu-panel{position:absolute;z-index:50;right:0;top:calc(100% + 8px);min-width:190px;padding:8px;background:#fff;border:1px solid #e8e4da;border-radius:12px;box-shadow:0 12px 30px rgba(16,29,54,.16);display:grid;gap:2px;color:#172033}
+.site-header nav .account-menu-panel>a,.site-header nav .account-menu-panel button{display:flex;align-items:center;width:100%;min-height:42px;padding:9px 12px;border:0;border-radius:8px;background:transparent;color:#172033;text-align:left;text-decoration:none;font:inherit;cursor:pointer}
+.site-header nav .account-menu-panel>a:hover,.site-header nav .account-menu-panel button:hover{background:#f4f1e9}
+.site-header nav .account-menu-panel form{margin:0}
+.site-header nav .nav-login{font-weight:700}
+@media(max-width:650px){.site-header nav .account-menu{font-size:12px}.site-header nav .account-menu-panel{right:0;min-width:170px}}
