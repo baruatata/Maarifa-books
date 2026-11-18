@@ -53,6 +53,12 @@ export async function createCustomerTicket(formData: FormData) {
   });
   if (messageError) redirect("/dashboard/jihudumie?error=Ombi+limesajiliwa+lakini+ujumbe+haukuhifadhiwa");
 
+  // Notify the administrator independently of the customer's optional SMS consent.
+  const { error: adminSmsError } = await supabase.functions.invoke("notify-admin-complaint", {
+    body: { ticket_id: ticket.id },
+  });
+  if (adminSmsError) console.error("Admin complaint SMS notification failed:", adminSmsError.message);
+
   if (smsConsent) {
     const { data: profile } = await supabase.from("profiles").select("phone").eq("id", user.id).single();
     await sendEhubSms(profile?.phone, `MaarifaBooks: Ombi lako ${ticket.reference_code} limepokelewa. Fuatilia maendeleo kupitia Jihudumie.`);
