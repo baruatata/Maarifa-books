@@ -77,7 +77,7 @@ with check (
     or exists (
       select 1 from public.support_tickets t
       join public.profiles p on p.id = t.user_id
-      where t.id = ticket_id and t.user_id = auth.uid() and p.role = 'buyer'
+      where t.id = ticket_id and t.user_id = auth.uid() and p.role = 'buyer' and t.status <> 'resolved'
     )
   )
 );
