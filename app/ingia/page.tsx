@@ -13,7 +13,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     ) : (
       <p className="muted seller-login-entry">Wewe ni muuzaji? <a href="/muuzaji/ingia"><u>Ingia kwenye dashibodi ya muuzaji</u></a>.</p>
     )}
-    {isCustomerSelfService && <CustomerPhoneAuth next={params.next} />}
-    <AuthForms error={params.error} success={params.success} next={params.next} />
+    {isCustomerSelfService ? (
+      <CustomerPhoneAuth next={params.next} />
+    ) : (
+      <AuthForms error={params.error} success={params.success} next={params.next} />
+    )}
   </main>;
 }
