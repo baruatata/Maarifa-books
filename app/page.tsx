@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HomeBackToTop } from "@/components/home-back-to-top";
 import { createClient } from "@/lib/supabase/server";
 
 type Book = {
@@ -116,6 +117,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <Link href="/wauzaji">Anza kuuza vitabu <span aria-hidden="true">→</span></Link>
       </section>
       <footer className="home-footer">MaarifaBooks <span>·</span> Sehemu ya Lumbwa Digital</footer>
+      <HomeBackToTop />
     </main>
   );
 }
