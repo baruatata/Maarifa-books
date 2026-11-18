@@ -36,7 +36,7 @@ export default async function CustomerSelfServicePage({
       .select("id,total_tzs,status,payment_provider,provider_reference,paid_at,created_at,order_items(id,unit_price_tzs,books(id,title,author_name,format))")
       .eq("buyer_id", user.id).order("created_at", { ascending: false }),
     supabase.from("book_entitlements")
-      .select("id,created_at,books(id,title,author_name,format)")
+      .select("id,created_at,books(id,title,author_name,format,file_path)")
       .eq("buyer_id", user.id).order("created_at", { ascending: false }),
     supabase.from("support_tickets")
       .select("id,reference_code,category,subject,status,sms_notifications_consented,created_at,updated_at")
@@ -57,17 +57,14 @@ export default async function CustomerSelfServicePage({
     messagesByTicket.set(message.ticket_id, current);
   }
 
-  const purchasedBooks = new Map<string, { id: string; title: string; author_name: string | null; format: string }>();
-  for (const order of orders ?? []) {
-    if (order.status !== "paid") continue;
-    for (const item of order.order_items ?? []) {
-      const book = Array.isArray(item.books) ? item.books[0] : item.books;
-      if (book?.id) purchasedBooks.set(book.id, book);
-    }
-  }
+  const purchasedBooks = new Map<string, { id: string; title: string; author_name: string | null; format: string; downloadUrl: string | null }>();
   for (const entitlement of entitlements ?? []) {
     const book = Array.isArray(entitlement.books) ? entitlement.books[0] : entitlement.books;
-    if (book?.id) purchasedBooks.set(book.id, book);
+    if (!book?.id) continue;
+    const { data: signed } = book.file_path
+      ? await supabase.storage.from("book-files").createSignedUrl(book.file_path, 600, { download: true })
+      : { data: null };
+    purchasedBooks.set(book.id, { ...book, downloadUrl: signed?.signedUrl ?? null });
   }
   const money = (amount: number) => "TSh " + new Intl.NumberFormat("sw-TZ").format(amount);
 
@@ -108,7 +105,7 @@ export default async function CustomerSelfServicePage({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
           {[...purchasedBooks.values()].map(book => <article key={book.id} style={{ border: "1px solid var(--border,#e5e5e5)", borderRadius: 12, padding: 14 }}>
             <strong>{book.title}</strong><p className="muted">{book.author_name || "Mwandishi"} · {String(book.format).toUpperCase()}</p>
-            <Link className="btn" href={"/soma/" + book.id}>Soma kitabu</Link>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link className="btn" href={"/soma/" + book.id}>Soma kitabu</Link>{book.downloadUrl && <a className="btn btn-outline" href={book.downloadUrl}>Pakua</a>}</div>
           </article>)}
         </div>}
     </section>
