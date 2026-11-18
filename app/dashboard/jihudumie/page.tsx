@@ -31,12 +31,15 @@ export default async function CustomerSelfServicePage({
     .select("full_name,phone,email,role").eq("id", user.id).single();
   if (profile?.role !== "buyer") redirect("/dashboard");
 
-  const [{ data: orders }, { data: entitlements }, { data: tickets }] = await Promise.all([
+  const [{ data: orders }, { data: entitlements }, { data: submissions }, { data: tickets }] = await Promise.all([
     supabase.from("orders")
       .select("id,total_tzs,status,payment_provider,provider_reference,paid_at,created_at,order_items(id,unit_price_tzs,books(id,title,author_name,format))")
       .eq("buyer_id", user.id).order("created_at", { ascending: false }),
     supabase.from("book_entitlements")
       .select("id,created_at,books(id,title,author_name,format,file_path)")
+      .eq("buyer_id", user.id).order("created_at", { ascending: false }),
+    supabase.from("payment_submissions")
+      .select("id,amount_tzs,payment_provider,transaction_reference,status,created_at,reviewed_at,seller_note")
       .eq("buyer_id", user.id).order("created_at", { ascending: false }),
     supabase.from("support_tickets")
       .select("id,reference_code,category,subject,status,sms_notifications_consented,created_at,updated_at")
@@ -116,6 +119,12 @@ export default async function CustomerSelfServicePage({
         <div className="table-wrap"><table className="table"><thead><tr><th>Tarehe</th><th>Kiasi</th><th>Njia</th><th>Hali</th></tr></thead><tbody>
           {orders.map(order => <tr key={order.id}><td>{new Date(order.created_at).toLocaleDateString("sw-TZ")}</td><td>{money(order.total_tzs)}</td><td>{order.payment_provider || "Haijatajwa"}</td><td>{order.status === "paid" ? "Imelipwa" : order.status === "pending" ? "Inasubiri" : order.status === "failed" ? "Imeshindikana" : order.status === "refunded" ? "Imerejeshwa" : "Imeghairiwa"}</td></tr>)}
         </tbody></table></div>}
+      <h3 style={{ marginTop: 22 }}>Uthibitisho wa malipo uliotuma</h3>
+      {!submissions?.length ? <p className="muted">Bado hujatuma uthibitisho wa malipo.</p> :
+        <div className="table-wrap"><table className="table"><thead><tr><th>Tarehe</th><th>Kiasi</th><th>Njia</th><th>Namba ya muamala</th><th>Hali</th></tr></thead><tbody>
+          {submissions.map(payment => <tr key={payment.id}><td>{new Date(payment.created_at).toLocaleDateString("sw-TZ")}</td><td>{money(payment.amount_tzs)}</td><td>{payment.payment_provider}</td><td>{payment.transaction_reference}</td><td>{payment.status === "confirmed" ? "Imethibitishwa" : payment.status === "rejected" ? "Imekataliwa" : "Inasubiri uthibitisho"}</td></tr>)}
+        </tbody></table></div>}
+      {(submissions ?? []).some(payment => payment.seller_note) && <p className="muted">Maoni ya muuzaji: {(submissions ?? []).filter(payment => payment.seller_note).map(payment => payment.seller_note).join(" · ")}</p>}
     </section>
 
     <section className="panel" style={{ padding: 20, marginTop: 18 }}>
