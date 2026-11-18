@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
 export async function SiteHeader() {
@@ -21,9 +22,30 @@ export async function SiteHeader() {
       </Link>
       <nav aria-label="Menyu kuu">
         <Link href="/#vitabu">Vitabu</Link>
-        <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>
-        {user && profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
-        <Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? (profile?.role === "admin" ? "Admin" : "Dashibodi") : "Ingia / Jisajili"}</Link>
+        {user ? (
+          <>
+            {profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
+            {profile?.role !== "buyer" && <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>}
+            {profile?.role === "admin" ? (
+              <Link className="nav-cta" href="/admin">Admin</Link>
+            ) : (
+              <details className="account-menu">
+                <summary>Akaunti yangu</summary>
+                <div className="account-menu-panel">
+                  <Link href="/dashboard">Dashibodi</Link>
+                  {profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
+                  {sellerApproved && <Link href="/dashboard/kitabu">Pakia kitabu</Link>}
+                  <form action={signOut}><button type="submit">Toka</button></form>
+                </div>
+              </details>
+            )}
+          </>
+        ) : (
+          <>
+            <Link className="nav-login" href="/ingia">Ingia</Link>
+            <Link className="nav-cta" href="/ingia#jisajili">Jisajili</Link>
+          </>
+        )}
       </nav>
     </header>
   );
