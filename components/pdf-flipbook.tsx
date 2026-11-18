@@ -106,6 +106,7 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -139,41 +140,66 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
     };
   }, [url]);
 
+  useEffect(() => {
+    const updateVisibility = () => setShowBackToTop(window.scrollY > 400);
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateVisibility);
+  }, []);
+
   const markVisible = useCallback((page: number) => {
     setCurrentPage((previous) => previous === page ? previous : page);
   }, []);
 
-  return (
-    <div className="scroll-reader" aria-label={"Kisomaji cha " + title}>
-      <header className="scroll-toolbar">
-        <Link className="scroll-back" href={closeHref} aria-label="Rudi kwenye kitabu">‹</Link>
-        <div className="scroll-book-title">
-          <strong>{title}</strong>
-          <span>{loading ? "Inafungua kitabu..." : total ? "Ukurasa " + currentPage + " kati ya " + total : "Kisomaji cha MaarifaBooks"}</span>
-        </div>
-        <a className="scroll-download" href={url} target="_blank" rel="noreferrer">PDF</a>
-      </header>
+  const backToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-      {loading ? (
-        <div className="scroll-status">Inafungua kitabu chako, tafadhali subiri...</div>
-      ) : error ? (
-        <div className="scroll-status scroll-error">
-          <strong>Imeshindikana kufungua PDF.</strong>
-          <span>{error}</span>
-          <a href={url} target="_blank" rel="noreferrer">Fungua PDF yenyewe</a>
-        </div>
-      ) : pdfRef.current ? (
-        <div className="scroll-pages">
-          {Array.from({ length: total }, (_, index) => (
-            <PdfScrollPage
-              key={index + 1}
-              pdf={pdfRef.current as PdfDocument}
-              pageNumber={index + 1}
-              onVisible={markVisible}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
+  return (
+    <>
+      <div className="scroll-reader" aria-label={"Kisomaji cha " + title}>
+        <header className="scroll-toolbar">
+          <Link className="scroll-back" href={closeHref} aria-label="Rudi kwenye kitabu">‹</Link>
+          <div className="scroll-book-title">
+            <strong>{title}</strong>
+            <span>{loading ? "Inafungua kitabu..." : total ? "Ukurasa " + currentPage + " kati ya " + total : "Kisomaji cha MaarifaBooks"}</span>
+          </div>
+          <a className="scroll-download" href={url} target="_blank" rel="noreferrer">PDF</a>
+        </header>
+
+        {loading ? (
+          <div className="scroll-status">Inafungua kitabu chako, tafadhali subiri...</div>
+        ) : error ? (
+          <div className="scroll-status scroll-error">
+            <strong>Imeshindikana kufungua PDF.</strong>
+            <span>{error}</span>
+            <a href={url} target="_blank" rel="noreferrer">Fungua PDF yenyewe</a>
+          </div>
+        ) : pdfRef.current ? (
+          <div className="scroll-pages">
+            {Array.from({ length: total }, (_, index) => (
+              <PdfScrollPage
+                key={index + 1}
+                pdf={pdfRef.current as PdfDocument}
+                pageNumber={index + 1}
+                onVisible={markVisible}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+      {showBackToTop && (
+        <button
+          type="button"
+          className="reader-back-to-top"
+          onClick={backToTop}
+          aria-label="Rudi juu ya ukurasa"
+          title="Rudi juu"
+        >
+          <span aria-hidden="true">↑</span>
+          <span className="reader-back-to-top-label">Juu</span>
+        </button>
+      )}
+    </>
   );
 }
