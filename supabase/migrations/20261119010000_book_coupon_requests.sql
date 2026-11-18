@@ -20,8 +20,8 @@ drop policy if exists "public can request coupon for approved paid book" on publ
 create policy "public can request coupon for approved paid book"
 on public.book_coupon_requests for insert to anon, authenticated
 with check (
-  status = 'pending' and customer_user_id is null and fulfilled_at is null
-  and exists (select 1 from public.books b where b.id=book_id and b.seller_id=seller_id and b.status='approved' and b.price_tzs>0)
+  status = 'pending' and ((auth.uid() is null and customer_user_id is null) or customer_user_id = auth.uid()) and fulfilled_at is null
+  and exists (select 1 from public.books b where b.id=book_id and b.seller_id=book_coupon_requests.seller_id and b.status='approved' and b.price_tzs>0)
 );
 drop policy if exists "seller reads own coupon requests" on public.book_coupon_requests;
 create policy "seller reads own coupon requests" on public.book_coupon_requests for select to authenticated
