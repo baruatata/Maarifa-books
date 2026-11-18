@@ -42,6 +42,7 @@ export async function SiteHeader() {
           </>
         ) : (
           <>
+            <Link href="/ingia?next=%2Fdashboard%2Fjihudumie">Jihudumie</Link>
             <Link className="nav-login" href="/ingia">Ingia</Link>
             <Link className="nav-cta" href="/ingia#jisajili">Jisajili</Link>
           </>
