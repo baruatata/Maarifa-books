@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type LookupResult = {
   found?: boolean;
-  sender?: { id?: string; sender_name?: string; status?: string; type?: string } | null;
+  sender_ids?: { id?: string; sender_name?: string; status?: string; type?: string }[];
   message?: string;
 };
 
@@ -30,7 +30,8 @@ export default function EhubSenderLookup() {
       });
       if (functionError) throw new Error(functionError.message || "Imeshindikana kuwasiliana na huduma ya eHUB.");
       const payload = data as LookupResult;
-      if (!payload?.found || !payload.sender?.id) {
+      const sender = payload?.sender_ids?.[0];
+      if (!payload?.found || !sender?.id) {
         setResult(payload ?? { found: false, message: "Sender ID Youflix haijapatikana." });
       } else {
         setResult(payload);
@@ -47,10 +48,10 @@ export default function EhubSenderLookup() {
       {loading ? "Inatafuta..." : "Tafuta UUID ya Youflix"}
     </button>
     {error && <p className="message" role="alert">{error}</p>}
-    {result && (result.found && result.sender?.id ? <div className="ehub-sender-result" role="status">
-      <strong>{result.sender.sender_name || "Youflix"} · {result.sender.status || "Hali haijulikani"}</strong>
-      <code>{result.sender.id}</code>
-      <button type="button" className="btn btn-outline" onClick={() => navigator.clipboard?.writeText(result.sender?.id || "")}>Nakili UUID</button>
+    {result && (result.found && result.sender_ids?.[0]?.id ? <div className="ehub-sender-result" role="status">
+      <strong>{result.sender_ids?.[0]?.sender_name || "Youflix"} · {result.sender_ids?.[0]?.status || "Hali haijulikani"}</strong>
+      <code>{result.sender_ids?.[0]?.id}</code>
+      <button type="button" className="btn btn-outline" onClick={() => navigator.clipboard?.writeText(result.sender_ids?.[0]?.id || "")}>Nakili UUID</button>
     </div> : <p className="muted" role="status">{result.message || "Sender ID Youflix haijapatikana kwenye orodha ya eHUB."}</p>)}
   </div>;
 }
