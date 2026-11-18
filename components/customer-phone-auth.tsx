@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 function toE164(value: string) {
@@ -21,7 +21,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  async function requestOtp(e: React.FormEvent) {
+  async function requestOtp(e: FormEvent) {
     e.preventDefault();
     setBusy(true); setError(""); setMessage("");
     try {
