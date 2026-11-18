@@ -53,9 +53,31 @@ export async function createCustomerTicket(formData: FormData) {
   });
   if (messageError) redirect("/dashboard/jihudumie?error=Ombi+limesajiliwa+lakini+ujumbe+haukuhifadhiwa");
 
+  // SMS delivery must never hold the complaint submission open indefinitely.
+  const adminNotice = supabase.functions.invoke("notify-admin-complaint", {
+    body: { ticket_id: ticket.id },
+  }).then(({ error }) => {
+    if (error) console.error("Admin complaint SMS notification failed:", error.message);
+  }).catch((error) => {
+    console.error("Admin complaint SMS notification failed:", error instanceof Error ? error.message : "Unknown error");
+  });
+  await Promise.race([
+    adminNotice,
+    new Promise<void>((resolve) => setTimeout(resolve, 2500)),
+  ]);
+
   if (smsConsent) {
     const { data: profile } = await supabase.from("profiles").select("phone").eq("id", user.id).single();
-    await sendEhubSms(profile?.phone, `MaarifaBooks: Ombi lako ${ticket.reference_code} limepokelewa. Fuatilia maendeleo kupitia Jihudumie.`);
+    const customerNotice = sendEhubSms(
+      profile?.phone,
+      `MaarifaBooks: Ombi lako ${ticket.reference_code} limepokelewa. Fuatilia maendeleo kupitia Jihudumie.`,
+    ).catch((error) => {
+      console.error("Customer complaint SMS failed:", error instanceof Error ? error.message : "Unknown error");
+    });
+    await Promise.race([
+      customerNotice,
+      new Promise<void>((resolve) => setTimeout(resolve, 2500)),
+    ]);
   }
 
   revalidatePath("/dashboard/jihudumie");
