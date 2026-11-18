@@ -49,6 +49,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <a className="admin-side-link" href="#book-review"><span>▤</span> Vitabu vya kukagua <b>{bookRows.length}</b></a>
       <a className="admin-side-link" href="#book-library"><span>▣</span> Maktaba ya vitabu <b>{libraryRows.length}</b></a>
       <a className="admin-side-link" href="#members"><span>♧</span> Wanachama</a>
+      <Link className="admin-side-link" href="/admin/malalamiko"><span>⚑</span> Malalamiko ya wateja <b>↗</b></Link>
       <Link className="admin-side-link" href="/admin/mawasiliano"><span>✉</span> Mawasiliano <b>↗</b></Link>
       <div className="admin-side-bottom">
         <div className="admin-side-user"><span className="admin-avatar">{(me.full_name || user.email || "A").slice(0,1).toUpperCase()}</span><div><strong>{me.full_name || "Msimamizi"}</strong><small>Administrator</small></div></div>

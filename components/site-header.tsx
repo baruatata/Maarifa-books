@@ -22,6 +22,7 @@ export async function SiteHeader() {
       <nav aria-label="Menyu kuu">
         <Link href="/#vitabu">Vitabu</Link>
         <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>
+        {user && profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
         <Link className="nav-cta" href={user ? "/dashboard" : "/ingia"}>{user ? (profile?.role === "admin" ? "Admin" : "Dashibodi") : "Ingia / Jisajili"}</Link>
       </nav>
     </header>
