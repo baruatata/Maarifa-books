@@ -21,16 +21,16 @@ export async function SiteHeader() {
         <span className="brand-name">Maarifa<span>Books</span></span>
       </Link>
       <nav aria-label="Menyu kuu">
-        <Link href="/#vitabu">Vitabu</Link>
+        <Link className="nav-cta" href="/#vitabu">Vitabu</Link>
         {user ? (
           <>
-            {profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
-            {profile?.role !== "buyer" && <Link href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>}
+            {profile?.role === "buyer" && <Link className="nav-cta" href="/dashboard/jihudumie">Jihudumie</Link>}
+            {profile?.role !== "buyer" && <Link className="nav-cta" href={sellerApproved ? "/dashboard/kitabu" : "/wauzaji"}>{sellerApproved ? "Pakia kitabu" : "Uza vitabu"}</Link>}
             {profile?.role === "admin" ? (
               <Link className="nav-cta" href="/admin">Admin</Link>
             ) : (
               <details className="account-menu">
-                <summary>Akaunti yangu</summary>
+                <summary className="nav-cta">Akaunti yangu</summary>
                 <div className="account-menu-panel">
                   <Link href="/dashboard">Dashibodi</Link>
                   {profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
@@ -42,8 +42,7 @@ export async function SiteHeader() {
           </>
         ) : (
           <>
-            <Link href="/ingia?next=%2Fdashboard%2Fjihudumie">Jihudumie</Link>
-            <Link className="nav-login" href="/ingia">Ingia</Link>
+            <Link className="nav-cta" href="/ingia?next=%2Fdashboard%2Fjihudumie">Jihudumie</Link>
             <Link className="nav-cta" href="/ingia#jisajili">Jisajili</Link>
           </>
         )}
