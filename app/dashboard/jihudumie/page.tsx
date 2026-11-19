@@ -79,7 +79,6 @@ export default async function CustomerSelfServicePage({
 
     {params.error && <p className="message" role="alert">{params.error}</p>}
     {params.saved === "profile" && <p className="notice">Taarifa za akaunti zimehifadhiwa.</p>}
-    {params.created && <p className="notice">Malalamiko yako yamepokelewa. Namba ya kumbukumbu: <strong>{params.created}</strong></p>}
     {params.replied && <p className="notice">Ujumbe wako umetumwa.</p>}
 
     <section className="panel" style={{ padding: 20, marginTop: 20 }}>
@@ -150,7 +149,8 @@ export default async function CustomerSelfServicePage({
           <input type="checkbox" name="sms_notifications_consented" style={{ width: 20, height: 20, marginTop: 2 }}/>
           <span>Nakubali kupokea SMS za taarifa za huduma kuhusu ombi hili kwenye namba yangu ya simu. SMS hizi si matangazo.</span>
         </label>
-        <button className="btn" type="submit">Tuma malalamiko</button>
+        <button className="btn" type="submit">Wasilisha ombi</button>
+        {params.created && <p className="notice" role="status" aria-live="polite">Ujumbe umetumwa na ombi lako limepokelewa. Namba ya kumbukumbu: <strong>{params.created}</strong></p>}
       </form>
     </section>
 
