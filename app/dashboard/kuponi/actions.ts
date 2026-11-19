@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash, randomBytes } from "node:crypto";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type CouponActionState = { code?: string; error?: string };
@@ -11,6 +12,7 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   if (!user) return { error: "Ingia kwanza kwenye akaunti yako." };
 
   const bookId = String(formData.get("book_id") ?? "");
+  const requestId = String(formData.get("request_id") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(bookId)) return { error: "Kitabu hakijatambulika." };
 
   const { data: application } = await supabase.from("seller_applications")
@@ -25,19 +27,51 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
 
   const raw = randomBytes(12).toString("hex").toUpperCase();
   const code = raw.match(/.{1,6}/g)?.join("-") ?? raw;
-  const normalized = raw.replace(/[^A-Z0-9]/g, "");
-  const codeHash = createHash("sha256").update(normalized).digest("hex");
+  const codeHash = createHash("sha256").update(raw).digest("hex");
 
-  const { error } = await supabase.from("book_access_codes").insert({
-    book_id: book.id,
-    seller_id: user.id,
-    code_hash: codeHash,
-  });
-  if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
+  if (requestId) {
+    if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { error: "Ombi halijatambulika." };
+    const { error } = await supabase.rpc("create_book_coupon_for_request", {
+      p_request_id: requestId,
+      p_code_hash: codeHash,
+    });
+    if (error) return { error: error.message.includes("Thibitisha") ? error.message : "Imeshindikana kutengeneza coupon ya ombi hili. Hakiki hali ya malipo na ujaribu tena." };
+  } else {
+    const { error } = await supabase.from("book_access_codes").insert({
+      book_id: book.id,
+      seller_id: user.id,
+      code_hash: codeHash,
+    });
+    if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
+  }
 
+  revalidatePath("/dashboard/kuponi");
   return { code };
 }
 
+export type PaymentConfirmationState = { ok?: boolean; error?: string };
+
+export async function setCouponRequestPaymentStatus(_previous: PaymentConfirmationState, formData: FormData): Promise<PaymentConfirmationState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Ingia kwanza kwenye akaunti yako." };
+
+  const requestId = String(formData.get("request_id") ?? "");
+  const status = String(formData.get("payment_status") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(requestId) || !["received", "not_received"].includes(status)) {
+    return { error: "Taarifa za uthibitisho hazijatambulika." };
+  }
+
+  const { error } = await supabase.rpc("set_book_coupon_payment_status", {
+    p_request_id: requestId,
+    p_status: status,
+  });
+  if (error) return { error: error.message.includes("Ombi halijapatikana") ? error.message : "Imeshindikana kuhifadhi uthibitisho wa malipo. Jaribu tena." };
+
+  revalidatePath("/dashboard/kuponi");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
 
 export type FulfillRequestState = { ok?: boolean; error?: string };
 
@@ -58,8 +92,12 @@ export async function markBookCouponRequestFulfilled(_previous: FulfillRequestSt
     .eq("id", requestId).eq("seller_id", user.id).eq("status", "pending")
     .select("id").maybeSingle();
 
-  if (error) return { error: "Imeshindikana kusasisha hali ya ombi. Tafadhali jaribu tena." };
-  if (updated) return { ok: true };
+  if (error) return { error: "Ombi haliwezi kufungwa. Hakikisha malipo yamethibitishwa na coupon ya ombi hili imetengenezwa." };
+  if (updated) {
+    revalidatePath("/dashboard/kuponi");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  }
 
   const { data: existing } = await supabase.from("book_coupon_requests")
     .select("status").eq("id", requestId).eq("seller_id", user.id).maybeSingle();
