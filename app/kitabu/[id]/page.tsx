@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BookCouponRequestForm } from "@/components/book-coupon-request-form";
+import { CopyPhoneButton } from "@/components/copy-phone-button";
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,12 +18,15 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
     coverUrl = data?.signedUrl ?? null;
   }
 
+  let sellerPhone: string | null = null;
   let whatsappHref: string | null = null;
   if (book.price_tzs > 0) {
-    const { data: sellerPhone } = await supabase.rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
+    const { data } = await supabase.rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
+    sellerPhone = data ? String(data) : null;
     if (sellerPhone) {
       const message = `Habari, nahitaji kununua kitabu "${book.title}" cha TSh ${new Intl.NumberFormat("sw-TZ").format(book.price_tzs)} kupitia MaarifaBooks. Naomba maelekezo ya malipo.`;
-      whatsappHref = `https://wa.me/${sellerPhone}?text=${encodeURIComponent(message)}`;
+      const whatsappNumber = sellerPhone.replace(/\\D/g, "");
+      whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     }
   }
 
@@ -45,8 +49,13 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
         <div className="book-purchase-panel">
           <div><span className="muted">Bei ya kitabu</span><strong>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</strong></div>
           {book.price_tzs > 0 ? <>
-            <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
-            {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
+            <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
+            {sellerPhone ? <div className="book-seller-contact">
+              <p><strong>Namba ya simu ya muuzaji</strong></p>
+              <p className="book-seller-phone" dir="ltr">{sellerPhone}</p>
+              <CopyPhoneButton phone={sellerPhone} />
+              {whatsappHref && <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a>}
+            </div> : <p className="message">Namba ya simu ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
             <BookCouponRequestForm bookId={book.id}/>
           </> : <>
