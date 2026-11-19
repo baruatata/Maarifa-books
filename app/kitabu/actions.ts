@@ -20,7 +20,7 @@ export async function redeemBookCoupon(_previous: RedeemCouponState, formData: F
   redirect("/soma/" + data);
 }
 
-export type CouponRequestState = { success?: boolean; error?: string };
+export type CouponRequestState = { success?: boolean; error?: string; whatsappUrl?: string | null };
 
 export async function createBookCouponRequest(_previous: CouponRequestState, formData: FormData): Promise<CouponRequestState> {
   const bookId = String(formData.get("book_id") ?? "");
@@ -33,7 +33,7 @@ export async function createBookCouponRequest(_previous: CouponRequestState, for
   }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: book } = await supabase.from("books").select("id,seller_id,status,price_tzs")
+  const { data: book } = await supabase.from("books").select("id,title,seller_id,status,price_tzs")
     .eq("id", bookId).eq("status", "approved").gt("price_tzs", 0).maybeSingle();
   if (!book) return { error: "Kitabu hiki hakipokei maombi ya coupon kwa sasa." };
   let name = customerName || null;
