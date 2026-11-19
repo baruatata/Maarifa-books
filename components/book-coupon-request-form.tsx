@@ -17,7 +17,7 @@ export function BookCouponRequestForm({ bookId }: { bookId: string }) {
     try {
       setRequestPreviouslySent(window.localStorage.getItem(storageKey) === "sent");
     } catch {
-      // Keep the request flow usable when browser storage is unavailable.
+      // The coupon entry remains available even when browser storage is unavailable.
     }
   }, [storageKey]);
 
@@ -44,7 +44,7 @@ export function BookCouponRequestForm({ bookId }: { bookId: string }) {
         aria-expanded={showCouponEntry}
         onClick={() => setShowCouponEntry((visible) => !visible)}
       >
-        {showCouponEntry ? "Funga sehemu ya coupon" : "Nimepokea coupon — Ingiza hapa"}
+        {showCouponEntry ? "Funga sehemu ya coupon" : "Weka coupon"}
       </button>
       {showCouponEntry && <RedeemBookCoupon bookId={bookId} />}
     </section>
@@ -73,6 +73,16 @@ export function BookCouponRequestForm({ bookId }: { bookId: string }) {
           </button>
         </>
       )}
+      <button
+        className="btn btn-outline"
+        type="button"
+        aria-expanded={showCouponEntry}
+        onClick={() => setShowCouponEntry((visible) => !visible)}
+        style={{ marginTop: 10 }}
+      >
+        {showCouponEntry ? "Funga sehemu ya coupon" : "Weka coupon"}
+      </button>
+      {showCouponEntry && <RedeemBookCoupon bookId={bookId} />}
     </section>
   );
 }
