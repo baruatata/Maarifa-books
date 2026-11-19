@@ -7,7 +7,11 @@ const initialState: CouponRequestState = {};
 
 export function BookCouponRequestForm({ bookId }: { bookId: string }) {
   const [state, action, pending] = useActionState(createBookCouponRequest, initialState);
-  if (state.success) return <div className="notice" role="status">Ombi lako la coupon limetumwa kwa muuzaji. Atakagua malipo na kukutumia coupon yako.</div>;
+  if (state.success) return <div className="notice" role="status">
+    <p>Ombi lako limehifadhiwa na linaonekana kwenye dashibodi ya muuzaji. Atakagua malipo na kukutumia coupon yako.</p>
+    {state.whatsappUrl ? <a className="btn" href={state.whatsappUrl} target="_blank" rel="noreferrer">Tuma taarifa kwa muuzaji WhatsApp</a> : <p className="muted">Namba ya WhatsApp ya muuzaji haipatikani; ombi lako bado limehifadhiwa kwenye dashibodi yake.</p>}
+    <p className="muted">Bonyeza kitufe cha WhatsApp kisha bonyeza Tuma ndani ya WhatsApp ili ujumbe umfikie muuzaji.</p>
+  </div>;
   return <section className="panel" style={{ padding: 16, marginTop: 16 }}>
     <h3>Umelipa tayari? Omba Coupon</h3>
     <p className="muted">Jaza namba uliyotumia kulipa na kumbukumbu ya muamala. Jina ni hiari; kama umeingia kwenye akaunti tutatumia jina lililohifadhiwa.</p>
