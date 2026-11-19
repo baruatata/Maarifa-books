@@ -37,3 +37,32 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
 
   return { code };
 }
+
+
+export type FulfillRequestState = { ok?: boolean; error?: string };
+
+export async function markBookCouponRequestFulfilled(_previous: FulfillRequestState, formData: FormData): Promise<FulfillRequestState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Ingia kwanza kwenye akaunti yako." };
+
+  const requestId = String(formData.get("request_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { error: "Ombi halijatambulika." };
+
+  const { data: application } = await supabase.from("seller_applications")
+    .select("status").eq("user_id", user.id).maybeSingle();
+  if (application?.status !== "approved") return { error: "Akaunti yako ya muuzaji haijaidhinishwa." };
+
+  const { data: updated, error } = await supabase.from("book_coupon_requests")
+    .update({ status: "fulfilled", fulfilled_at: new Date().toISOString() })
+    .eq("id", requestId).eq("seller_id", user.id).eq("status", "pending")
+    .select("id").maybeSingle();
+
+  if (error) return { error: "Imeshindikana kusasisha hali ya ombi. Tafadhali jaribu tena." };
+  if (updated) return { ok: true };
+
+  const { data: existing } = await supabase.from("book_coupon_requests")
+    .select("status").eq("id", requestId).eq("seller_id", user.id).maybeSingle();
+  if (existing?.status === "fulfilled") return { ok: true };
+  return { error: "Ombi halijapatikana au tayari limekataliwa." };
+}
