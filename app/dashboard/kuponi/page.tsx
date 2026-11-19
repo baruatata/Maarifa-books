@@ -34,14 +34,13 @@ export default async function SellerCouponsPage() {
       <p className="muted">Kila mteja ana ombi lake. Hakiki kumbukumbu ya muamala, kisha tengeneza coupon tofauti kwa kila mteja.</p>
       {!requestRows.length ? <p className="muted">Bado hakuna maombi ya coupon.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Mteja</th><th>Kitabu</th><th>Simu</th><th>Muamala</th><th>Hali</th><th>Tarehe</th><th>Hatua</th></tr></thead><tbody>{requestRows.map(request => <tr key={request.id}><td>{request.customer_name || "Jina halijatolewa"}</td><td>{bookTitles.get(request.book_id) || "Kitabu"}</td><td>{request.customer_phone}</td><td>{request.transaction_reference}</td><td><span className="status">{request.status === "pending" ? (request.payment_status === "received" ? "Malipo yamethibitishwa" : request.payment_status === "not_received" ? "Malipo hayajathibitishwa" : "Yanasubiri uthibitisho") : request.status === "fulfilled" ? "Limehudumiwa" : "Limekataliwa"}</span></td><td>{new Date(request.created_at).toLocaleString("sw-TZ")}</td><td>{request.status === "pending" ? <CreateBookCoupon bookId={request.book_id} requestId={request.id} paymentStatus={request.payment_status}/> : request.status === "fulfilled" ? "Limehudumiwa" : "Limekataliwa"}</td></tr>)}</tbody></table></div>}
     </section>
-    <p className="muted">Mteja akishalipa moja kwa moja kwako kupitia WhatsApp, tengeneza coupon moja kwa ajili yake na umtumie. Kila coupon inatumika mara moja tu.</p>
+    <p className="muted">Mteja akishalipa moja kwa moja kwako, hakiki muamala kwenye akaunti yako ya simu. Thibitisha kupokea fedha kwenye ombi lake, kisha tengeneza coupon maalumu kwa ombi hilo na umtumie. Kila ombi lina coupon yake ya matumizi mara moja tu.</p>
     {!books?.length ? <section className="panel"><h2>Bado hakuna kitabu cha kulipia kilichoidhinishwa</h2><p className="muted">Pakia kitabu, weka bei kubwa kuliko sifuri na sampuli ya bure, kisha subiri Admin akidhinishe.</p><Link className="btn" href="/dashboard/kitabu">Pakia kitabu</Link></section> : <div className="coupon-book-list">
       {books.map(book => {
         const bookCodes = codeRows.filter(code => code.book_id === book.id);
         return <section className="panel coupon-book-card" key={book.id}>
           <h2>{book.title}</h2>
           <p className="muted">Bei: TSh {new Intl.NumberFormat("sw-TZ").format(book.price_tzs)}</p>
-          <CreateBookCoupon bookId={book.id}/>
           <div className="coupon-history">
             <strong>Historia ya coupon ({bookCodes.length})</strong>
             {bookCodes.length === 0 ? <p className="muted">Bado hujatengeneza coupon.</p> : <ul>{bookCodes.slice(0, 10).map(code => <li key={code.id}>
