@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { redeemBookCoupon, type RedeemCouponState } from "@/app/kitabu/actions";
 
 const initialState: RedeemCouponState = {};
@@ -17,6 +16,6 @@ export function RedeemBookCoupon({ bookId }: { bookId: string }) {
       <input id={"coupon-" + bookId} name="coupon_code" autoComplete="off" placeholder="XXXXXX-XXXXXX-XXXXXX-XXXXXX" required/>
       <button className="btn" disabled={pending}>{pending ? "Inathibitisha..." : "Fungua kitabu"}</button>
     </form>
-    {state.error && <p className="message" role="status">{state.error} <Link href={"/ingia?next=" + encodeURIComponent("/kitabu/" + bookId)}>Ingia hapa</Link>.</p>}
+    {state.error && <p className="message" role="status">{state.error}</p>}
   </div>;
 }
