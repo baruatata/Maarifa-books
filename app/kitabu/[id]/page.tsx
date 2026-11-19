@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RedeemBookCoupon } from "@/components/redeem-book-coupon";
 import { BookCouponRequestForm } from "@/components/book-coupon-request-form";
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -49,7 +48,7 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
             <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
-            <RedeemBookCoupon bookId={book.id}/><BookCouponRequestForm bookId={book.id}/>
+            <BookCouponRequestForm bookId={book.id}/>
           </> : <>
             <p className="book-payment-note">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
             <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link>
