@@ -14,6 +14,7 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   const bookId = String(formData.get("book_id") ?? "");
   const requestId = String(formData.get("request_id") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(bookId)) return { error: "Kitabu hakijatambulika." };
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { error: "Coupon lazima itengenezwe kwa ombi maalumu la mteja." };
 
   const { data: application } = await supabase.from("seller_applications")
     .select("status").eq("user_id", user.id).maybeSingle();
@@ -28,27 +29,15 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   const raw = randomBytes(12).toString("hex").toUpperCase();
   const code = raw.match(/.{1,6}/g)?.join("-") ?? raw;
   const codeHash = createHash("sha256").update(raw).digest("hex");
-
-  if (requestId) {
-    if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { error: "Ombi halijatambulika." };
-    const { error } = await supabase.rpc("create_book_coupon_for_request", {
-      p_request_id: requestId,
-      p_code_hash: codeHash,
-    });
-    if (error) return { error: error.message.includes("Thibitisha") ? error.message : "Imeshindikana kutengeneza coupon ya ombi hili. Hakiki hali ya malipo na ujaribu tena." };
-  } else {
-    const { error } = await supabase.from("book_access_codes").insert({
-      book_id: book.id,
-      seller_id: user.id,
-      code_hash: codeHash,
-    });
-    if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
-  }
+  const { error } = await supabase.rpc("create_book_coupon_for_request", {
+    p_request_id: requestId,
+    p_code_hash: codeHash,
+  });
+  if (error) return { error: error.message.includes("Thibitisha") ? error.message : "Imeshindikana kutengeneza coupon ya ombi hili. Hakiki uthibitisho wa malipo na ujaribu tena." };
 
   revalidatePath("/dashboard/kuponi");
   return { code };
 }
-
 export type PaymentConfirmationState = { ok?: boolean; error?: string };
 
 export async function setCouponRequestPaymentStatus(_previous: PaymentConfirmationState, formData: FormData): Promise<PaymentConfirmationState> {
