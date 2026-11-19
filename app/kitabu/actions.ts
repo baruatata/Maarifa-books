@@ -66,7 +66,7 @@ export async function createBookCouponRequest(_previous: CouponRequestState, for
     "Simu ya malipo: " + phone,
     "Kumbukumbu ya muamala: " + reference,
     "Naomba uhakiki wa malipo na coupon."
-  ].join("\\n");
+  ].join("\n");
   const whatsappUrl = whatsappNumber
     ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(whatsappMessage)
     : null;
