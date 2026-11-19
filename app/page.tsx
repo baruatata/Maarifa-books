@@ -116,7 +116,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
         <Link href="/wauzaji">Anza kuuza vitabu <span aria-hidden="true">→</span></Link>
       </section>
-      <footer className="home-footer">MaarifaBooks <span>·</span> Sehemu ya Lumbwa Digital</footer>
+      <footer className="home-footer">Maarifabooks by <a href="https://lumbwadigital.vercel.app" target="_blank" rel="noopener noreferrer">lumbwadigital</a></footer>
       <HomeBackToTop />
     </main>
   );
