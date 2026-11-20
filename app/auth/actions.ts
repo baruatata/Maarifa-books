@@ -28,15 +28,22 @@ export async function signIn(formData: FormData) {
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
   const { data, error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
-  if (error) authRedirect(safeNext, error.message);
+  if (error) return { ok: false as const, error: error.message };
   const { data: factors } = await supabase.auth.mfa.listFactors();
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
   }
-  if (data.user?.id) {
-    await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
-  }
-  redirect(safeNext);
+  if (!data.user?.id) return { ok: false as const, error: "Imeshindikana kuthibitisha akaunti. Jaribu tena." };
+  await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
+  return {
+    ok: true as const,
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? "",
+      name: String(data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? ""),
+    },
+    redirectTo: safeNext,
+  };
 }
 export async function signOut() {
   const supabase = await createClient();
