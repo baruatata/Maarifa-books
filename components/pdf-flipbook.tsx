@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import posthog from "posthog-js";
 
-type Props = { url: string; title: string; closeHref: string };
+type Props = { url: string; title: string; bookId: string; closeHref: string };
 type PdfPage = {
   getViewport: (options: { scale: number }) => any;
   render: (options: { canvasContext: CanvasRenderingContext2D; viewport: any }) => { promise: Promise<void>; cancel: () => void };
@@ -100,8 +101,9 @@ function PdfScrollPage({
   );
 }
 
-export default function PdfFlipbook({ url, title, closeHref }: Props) {
+export default function PdfFlipbook({ url, title, bookId, closeHref }: Props) {
   const pdfRef = useRef<PdfDocument | null>(null);
+  const readingStartedRef = useRef(false);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -111,6 +113,7 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
   useEffect(() => {
     let active = true;
     let loaded: PdfDocument | null = null;
+    readingStartedRef.current = false;
     setLoading(true);
     setError("");
     import("pdfjs-dist/legacy/build/pdf.mjs").then(async (pdfjs: any) => {
@@ -126,6 +129,10 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
       setTotal(document.numPages);
       setCurrentPage(1);
       setLoading(false);
+      if (!readingStartedRef.current) {
+        readingStartedRef.current = true;
+        posthog.capture("book_reading_started", { book_id: bookId, book_title: title });
+      }
     }).catch((err: unknown) => {
       if (active) {
         setError(err instanceof Error ? err.message : "PDF haikuweza kufunguliwa.");
