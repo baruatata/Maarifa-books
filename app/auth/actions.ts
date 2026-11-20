@@ -33,6 +33,9 @@ export async function signIn(formData: FormData) {
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
   }
+  if (data.user?.id) {
+    await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
+  }
   redirect(safeNext);
 }
 export async function signOut() {
