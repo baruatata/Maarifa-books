@@ -21,7 +21,6 @@ export async function signUp(formData: FormData) {
   if (!full_name || !email || password.length < 8) authRedirect(safeNext, "Jaza taarifa. Nenosiri liwe herufi 8 au zaidi");
   const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone, preferred_language } } });
   if (error) authRedirect(safeNext, error.message);
-  if (data.user) await captureServerEvent(data.user.id, "user_signed_up", { method: "email", language: preferred_language });
   authRedirect(safeNext, "Angalia barua pepe uthibitishe akaunti", "success");
 }
 export async function signIn(formData: FormData) {
@@ -34,7 +33,6 @@ export async function signIn(formData: FormData) {
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
   }
-  if (data.user) await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
   redirect(safeNext);
 }
 export async function signOut() {
