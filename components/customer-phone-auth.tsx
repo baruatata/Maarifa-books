@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import posthog from "posthog-js";
 
 function toE164(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -40,6 +41,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       },
     });
     if (otpError) throw otpError;
+    posthog.capture("customer_otp_requested", { flow: mode });
     setStep("verify");
     setResendCountdown(60);
     setMessage("Ombi la OTP limetumwa. Ingiza msimbo mara tu unapoupokea; ukichelewa unaweza kuomba mwingine baada ya sekunde 60.");
@@ -84,6 +86,9 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       }
       const { error: profileUpdateError } = await supabase.from("profiles").update({ phone, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);
       if (profileUpdateError) throw profileUpdateError;
+      posthog.identify(data.user.id);
+      posthog.capture(mode === "signup" ? "customer_phone_signup_completed" : "customer_phone_login_completed", { method: "sms_otp" });
+      posthog.capture(mode === "signup" ? "user_signed_up" : "user_logged_in", { method: "sms_otp" });
       window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
       setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");

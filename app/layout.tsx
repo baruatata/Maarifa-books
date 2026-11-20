@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
+import { PostHogAuthIdentity } from "@/components/posthog-auth-identity";
 
 export const metadata: Metadata = {
   title: "MaarifaBooks | Vitabu vya Kidijitali",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="sw">
       <body>
+        <PostHogAuthIdentity />
         <SiteHeader />
         {children}
         <Analytics />

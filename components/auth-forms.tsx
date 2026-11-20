@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import posthog from "posthog-js";
 import { signIn, signUp } from "@/app/auth/actions";
 import { PasswordField } from "@/components/password-field";
 
 export function AuthForms({ error, success, next }: { error?: string; success?: string; next?: string }) {
+  const signupEventSent = useRef(false);
+  useEffect(() => {
+    if (!success || signupEventSent.current) return;
+    signupEventSent.current = true;
+    posthog.capture("user_signed_up", { method: "email" });
+    const url = new URL(window.location.href);
+    url.searchParams.delete("success");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, [success]);
+
   const [language, setLanguage] = useState<"sw" | "en">("sw");
   const en = language === "en";
   return <section>

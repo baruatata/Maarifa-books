@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -40,6 +41,7 @@ export async function reviewSeller(formData: FormData) {
     ...(decision === "approved" ? { role: "seller" } : {}),
   }).eq("id", userId);
   if (profileError) redirect("/admin?error=Ombi+limesasishwa+lakini+hali+ya+akaunti+haikubadilika%3A+" + encodeURIComponent(profileError.message));
+  await captureServerEvent(user.id, "seller_application_reviewed", { decision });
 
   revalidatePath("/admin");
   revalidatePath("/dashboard");
@@ -67,6 +69,7 @@ export async function reviewBook(formData: FormData) {
 
   const { error } = await supabase.from("books").update(update).eq("id", bookId).eq("status", "pending");
   if (error) redirect("/admin?error=" + encodeURIComponent(error.message));
+  await captureServerEvent(user.id, "book_moderation_reviewed", { book_id: bookId, decision });
 
   revalidatePath("/admin");
   revalidatePath("/");

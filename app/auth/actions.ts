@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 function authRedirect(path: string, message: string, kind: "error" | "success" = "error") {
   const params = new URLSearchParams({ [kind]: message });
@@ -18,7 +19,7 @@ export async function signUp(formData: FormData) {
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
   if (!full_name || !email || password.length < 8) authRedirect(safeNext, "Jaza taarifa. Nenosiri liwe herufi 8 au zaidi");
-  const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone, preferred_language } } });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone, preferred_language } } });
   if (error) authRedirect(safeNext, error.message);
   authRedirect(safeNext, "Angalia barua pepe uthibitishe akaunti", "success");
 }
@@ -26,7 +27,7 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const next = String(formData.get("next") ?? "");
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-  const { error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
   if (error) authRedirect(safeNext, error.message);
   const { data: factors } = await supabase.auth.mfa.listFactors();
   for (const factor of factors?.totp ?? []) {
@@ -36,6 +37,8 @@ export async function signIn(formData: FormData) {
 }
 export async function signOut() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) await captureServerEvent(user.id, "user_logged_out");
   await supabase.auth.signOut();
   redirect("/");
 }

@@ -2,10 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 export async function submitManualPayment(bookId: string, formData: FormData) {
   const supabase = await createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
+  let actorId = currentUser?.id;
 
   if (!currentUser) {
     const { data: guest, error: guestError } = await supabase.auth.signInAnonymously({
@@ -14,31 +16,26 @@ export async function submitManualPayment(bookId: string, formData: FormData) {
     if (guestError || !guest.user) {
       redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Hatukuweza kuanzisha ununuzi wa haraka. Jaribu tena."));
     }
+    actorId = guest.user.id;
   }
 
   const payerPhone = String(formData.get("payer_phone") || "").trim();
   const reference = String(formData.get("transaction_reference") || "").trim();
   const provider = String(formData.get("payment_provider") || "");
-
   if (!/^0[67][0-9]{8}$/.test(payerPhone) || reference.length < 5 || reference.length > 80) {
     redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent("Weka namba ya simu na kumbukumbu sahihi ya muamala."));
   }
 
-  // One database transaction creates the order, its book item and the payment proof.
-  // If any insert fails, PostgreSQL rolls back all three records.
   const { data: orderId, error } = await supabase.rpc("submit_book_payment", {
-    p_book_id: bookId,
-    p_payer_phone: payerPhone,
-    p_transaction_reference: reference,
-    p_payment_provider: provider
+    p_book_id: bookId, p_payer_phone: payerPhone,
+    p_transaction_reference: reference, p_payment_provider: provider
   });
-
   if (error || !orderId) {
     redirect("/kitabu/" + bookId + "?error=" + encodeURIComponent(
       error?.message || "Ombi la ununuzi halikuhifadhiwa. Hakuna malipo mapya yanayotakiwa."
     ));
   }
-
+  if (actorId) await captureServerEvent(actorId, "manual_payment_submitted", { book_id: bookId, payment_provider: provider });
   redirect("/kitabu/" + bookId + "?submitted=1&order=" + encodeURIComponent(orderId));
 }
 
@@ -65,5 +62,6 @@ export async function reviewManualPayment(formData: FormData) {
     status: decision, reviewed_at: new Date().toISOString()
   }).eq("id", submissionId).eq("seller_id", user.id).eq("status", "submitted");
   if (reviewError) redirect("/dashboard?error=" + encodeURIComponent("Malipo yamepitiwa lakini hali ya uthibitisho haikuhifadhiwa. Wasiliana na msaada."));
+  await captureServerEvent(user.id, "seller_payment_reviewed", { order_id: orderId, decision });
   redirect("/dashboard?payment=" + decision);
 }
