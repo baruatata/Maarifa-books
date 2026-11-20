@@ -88,6 +88,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       if (profileUpdateError) throw profileUpdateError;
       posthog.identify(data.user.id);
       posthog.capture(mode === "signup" ? "customer_phone_signup_completed" : "customer_phone_login_completed", { method: "sms_otp" });
+      posthog.capture(mode === "signup" ? "user_signed_up" : "user_logged_in", { method: "sms_otp" });
       window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
       setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");
