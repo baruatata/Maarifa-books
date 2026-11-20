@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { captureServerEvent } from "@/lib/posthog-server";
 import PdfFlipbook from "@/components/pdf-flipbook";
 
 export default async function ReadBookPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,13 +26,6 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
   if (fileError || !signed?.signedUrl) {
     return <main className="page"><h1>Faili la kitabu halijafunguka</h1><p className="muted">Kitabu kipo kwenye orodha, lakini mfumo umeshindwa kukifungua. Tafadhali jaribu tena baadaye.</p><Link className="btn" href={"/kitabu/" + book.id}>Rudi kwenye taarifa za kitabu</Link></main>;
   }
-  if (user) {
-    await captureServerEvent(user.id, "book_reader_opened", {
-      book_id: book.id, access_type: isFreePreview ? "preview" : book.price_tzs > 0 ? "full_paid" : "free",
-      format: book.format
-    });
-  }
-
   return <main className="page online-reader">
     <nav className="reader-nav"><Link href={"/kitabu/" + book.id}>← Rudi kwenye kitabu</Link><Link href="/">MaarifaBooks</Link></nav>
     <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p>
@@ -41,7 +33,7 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
       {isFreePreview && <p className="book-payment-note">Hii ni sampuli ya bure. Ili kuendelea na kitabu kizima, wasiliana na muuzaji na uombe coupon.</p>}
     </header>
     {book.format === "pdf" ? (
-      <section className="reader-frame-wrap"><PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id} />
+      <section className="reader-frame-wrap"><PdfFlipbook url={signed.signedUrl} title={book.title} bookId={book.id} closeHref={"/kitabu/" + book.id} />
         <p className="reader-footnote">Unaweza kusogeza kurasa kwa kidole au mishale. {isFreePreview ? "Soma sampuli hii kisha wasiliana na muuzaji ili kununua kitabu kizima." : <><a href={signed.signedUrl} target="_blank" rel="noreferrer">Fungua PDF yenyewe</a>.</>}</p>
       </section>
     ) : (
