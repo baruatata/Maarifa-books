@@ -10,7 +10,6 @@ export function PostHogAuthIdentity() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user?.id) {
         posthog.identify(session.user.id);
-        if (event === "SIGNED_IN") posthog.capture("user_logged_in", { method: "supabase_auth" });
       } else if (event === "SIGNED_OUT") {
         posthog.reset();
       }
