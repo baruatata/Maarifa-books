@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 export async function createBookDraft(formData: FormData): Promise<{ok:true;bookId:string}|{ok:false;error:string}> {
   const supabase = await createClient();
@@ -16,10 +17,9 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   const language = String(formData.get("language") ?? "sw");
   const price_tzs = Number(formData.get("price_tzs") ?? 0);
   if (!title || title.length > 180 || !["pdf","epub"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0 || price_tzs > 100000000) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
-  const { data, error } = await supabase.from("books").insert({
-    seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending"
-  }).select("id").single();
+  const { data, error } = await supabase.from("books").insert({ seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending" }).select("id").single();
   if (error || !data) return {ok:false,error:error?.message ?? "Kitabu hakikuweza kuanzishwa."};
+  await captureServerEvent(user.id, "book_draft_created", { book_id: data.id, format, category, price_type: price_tzs > 0 ? "paid" : "free" });
   return {ok:true,bookId:data.id};
 }
 
@@ -42,6 +42,7 @@ export async function finishBookUpload(bookId:string,filePath:string,coverPath:s
   }
   const { error } = await supabase.from("books").update({file_path:filePath,cover_path:coverPath,preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id).eq("status","pending");
   if (error) return {ok:false,error:error.message};
+  await captureServerEvent(user.id, "book_submitted_for_review", { book_id: bookId, price_type: book.price_tzs > 0 ? "paid" : "free", has_free_preview: Boolean(previewPath) });
   return {ok:true};
 }
 
@@ -53,10 +54,10 @@ export async function saveSellerPayoutMethod(formData:FormData):Promise<{ok:true
   if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
   const provider=String(formData.get("provider")||"");
   const account_name=String(formData.get("account_name")||"").trim();
-  let phone_number=String(formData.get("phone_number")||"").trim().replace(/[\s()-]/g,"");
+  let phone_number=String(formData.get("phone_number")||"").trim().replace(/[\\s()-]/g,"");
   if(phone_number.startsWith("+")) phone_number=phone_number.slice(1);
-  if(/^0[67]\d{8}$/.test(phone_number)) phone_number="255"+phone_number.slice(1);
-  if(!["mixx","mpesa","airtel_money","tigo_pesa"].includes(provider)||!/^255[67]\d{8}$/.test(phone_number)||!account_name) return {ok:false,error:"Weka mtandao, jina la akaunti na namba sahihi ya simu."};
+  if(/^0[67]\\d{8}$/.test(phone_number)) phone_number="255"+phone_number.slice(1);
+  if(!["mixx","mpesa","airtel_money","tigo_pesa"].includes(provider)||!/^255[67]\\d{8}$/.test(phone_number)||!account_name) return {ok:false,error:"Weka mtandao, jina la akaunti na namba sahihi ya simu."};
   const {error}=await supabase.from("seller_payout_methods").upsert({seller_id:user.id,provider,phone_number,account_name,updated_at:new Date().toISOString()},{onConflict:"seller_id"});
   if(error) return {ok:false,error:error.message};
   return {ok:true};
@@ -84,7 +85,6 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   if(error) return {ok:false,error:error.message};
   return {ok:true};
 }
-
 
 export async function replaceSellerBookPdf(bookId:string,newFilePath:string,newPreviewPath:string|null=null):Promise<{ok:true}|{ok:false;error:string}> {
   const supabase=await createClient();
