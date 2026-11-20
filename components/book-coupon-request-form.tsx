@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState, useRef } from "react";
+import posthog from "posthog-js";
 import { createBookCouponRequest, type CouponRequestState } from "@/app/kitabu/actions";
 import { RedeemBookCoupon } from "@/components/redeem-book-coupon";
 
@@ -12,6 +13,7 @@ export function BookCouponRequestForm({ bookId }: { bookId: string }) {
   const [showCouponEntry, setShowCouponEntry] = useState(false);
   const [requestPreviouslySent, setRequestPreviouslySent] = useState(false);
   const storageKey = "maarifabooks-coupon-request-" + bookId;
+  const analyticsTracked = useRef(false);
 
   useEffect(() => {
     try {
@@ -22,7 +24,9 @@ export function BookCouponRequestForm({ bookId }: { bookId: string }) {
   }, [storageKey]);
 
   useEffect(() => {
-    if (!state.success) return;
+    if (!state.success || analyticsTracked.current) return;
+    analyticsTracked.current = true;
+    if (!state.analyticsTracked) posthog.capture("coupon_request_submitted", { book_id: bookId });
     try {
       window.localStorage.setItem(storageKey, "sent");
       setRequestPreviouslySent(true);
