@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { reviewBook, reviewSeller, removeBookFromLibrary } from "@/app/admin/actions";
+import { reviewBook, reviewSeller, removeBookFromLibrary, promoteMaarifabooksAdmin } from "@/app/admin/actions";
 import { signOut } from "@/app/auth/actions";
 
 type MemberProfile = { id: string; full_name: string | null; email: string | null; phone: string | null; role: string; created_at: string };
@@ -83,7 +83,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2>Wanachama wote</h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
             <p className="admin-description">Orodha ya akaunti zilizosajiliwa MaarifaBooks, ikijumuisha wanunuzi (Buyer), wauzaji (Seller) na wasimamizi (Admin). Barua pepe zinaonekana kwa Admin pekee.</p>
             {memberRows.length === 0 ? <div className="admin-empty">Bado hakuna akaunti zilizosajiliwa.</div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
-              <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>
+              <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>{member.email?.toLowerCase() === "maarifabooks55@gmail.com" && member.role !== "admin" && <form action={promoteMaarifabooksAdmin} className="admin-review-form"><input type="hidden" name="user_id" value={member.id}/><button className="btn" type="submit">Muweke Admin</button></form>}
             </article>)}</div>}
           </section>
           <section className="admin-panel" id="seller-review">
