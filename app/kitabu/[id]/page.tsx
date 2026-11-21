@@ -29,7 +29,7 @@ export async function generateMetadata({
   }
 
   const author = book.author_name?.trim();
-  const descriptionText = book.description?.replace(/\\s+/g, " ").trim();
+  const descriptionText = book.description?.replace(/\s+/g, " ").trim();
   const description = (
     descriptionText ||
     `Soma maelezo ya kitabu ${book.title}${author ? ` kilichoandikwa na ${author}` : ""} kupitia MaarifaBooks.`
@@ -91,7 +91,7 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
     sellerPhone = data ? String(data) : null;
     if (sellerPhone) {
       const message = `Habari, nahitaji kununua kitabu "${book.title}" cha TSh ${new Intl.NumberFormat("sw-TZ").format(book.price_tzs)} kupitia MaarifaBooks. Naomba maelekezo ya malipo.`;
-      const whatsappNumber = sellerPhone.replace(/\\D/g, "");
+      const whatsappNumber = sellerPhone.replace(/\D/g, "");
       whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     }
   }
