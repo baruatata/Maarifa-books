@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { captureServerEvent } from "@/lib/posthog-server";
 
-function authRedirect(path: string, message: string, kind: "error" | "success" = "error") {
+function authRedirect(path: string, message: string, kind: "error" | "success" = "error"): never {
   const params = new URLSearchParams({ [kind]: message });
   if (path.startsWith("/") && !path.startsWith("//")) params.set("next", path);
   redirect("/ingia?" + params.toString());
@@ -33,10 +33,34 @@ export async function signIn(formData: FormData) {
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
   }
-  if (data.user?.id) {
-    await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
-  }
+  const user = data.user;
+  if (!user) authRedirect(safeNext, "Imeshindikana kuthibitisha akaunti. Jaribu tena.");
+  if (!user.id) authRedirect(safeNext, "Imeshindikana kuthibitisha akaunti. Jaribu tena.");
+  await captureServerEvent(user.id, "user_logged_in", { method: "email" });
   redirect(safeNext);
+}
+
+export async function signInForClient(formData: FormData) {
+  const supabase = await createClient();
+  const next = String(formData.get("next") ?? "");
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const { data, error } = await supabase.auth.signInWithPassword({ email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") });
+  if (error) return { ok: false as const, error: error.message };
+  const { data: factors } = await supabase.auth.mfa.listFactors();
+  for (const factor of factors?.totp ?? []) {
+    if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
+  }
+  if (!data.user?.id) return { ok: false as const, error: "Imeshindikana kuthibitisha akaunti. Jaribu tena." };
+  await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
+  return {
+    ok: true as const,
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? "",
+      name: String(data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? ""),
+    },
+    redirectTo: safeNext,
+  };
 }
 export async function signOut() {
   const supabase = await createClient();

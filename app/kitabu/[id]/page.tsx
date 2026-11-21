@@ -7,10 +7,13 @@ import { CopyPhoneButton } from "@/components/copy-phone-button";
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { data: book } = await supabase.from("books")
     .select("id,title,author_name,description,language,category,format,price_tzs,cover_path,status,seller_id")
     .eq("id", id).eq("status", "approved").maybeSingle();
   if (!book) notFound();
+
+  const isSellerOwner = Boolean(user && user.id === book.seller_id);
 
   let coverUrl: string | null = null;
   if (book.cover_path) {
@@ -20,7 +23,7 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
 
   let sellerPhone: string | null = null;
   let whatsappHref: string | null = null;
-  if (book.price_tzs > 0) {
+  if (book.price_tzs > 0 && !isSellerOwner) {
     const { data } = await supabase.rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
     sellerPhone = data ? String(data) : null;
     if (sellerPhone) {
@@ -48,7 +51,10 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
         <p className="book-detail-description">{book.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</p>
         <div className="book-purchase-panel">
           <div><span className="muted">Bei ya kitabu</span><strong>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</strong></div>
-          {book.price_tzs > 0 ? <>
+          {isSellerOwner ? <>
+            <p className="book-payment-note">Hiki ni kitabu chako. Kama mmiliki, unaweza kukisoma kizima bila kununua wala kuomba coupon.</p>
+            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu chako</Link>
+          </> : book.price_tzs > 0 ? <>
             <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {sellerPhone ? <div className="book-seller-contact">
               <p><strong>Namba ya simu ya muuzaji</strong></p>

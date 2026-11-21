@@ -1,12 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { signIn, signUp } from "@/app/auth/actions";
+import { signInForClient, signUp } from "@/app/auth/actions";
 import { PasswordField } from "@/components/password-field";
 
 export function AuthForms({ error, success, next }: { error?: string; success?: string; next?: string }) {
   const signupEventSent = useRef(false);
+  const router = useRouter();
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoginError("");
+    setIsLoggingIn(true);
+    try {
+      const result = await signInForClient(new FormData(event.currentTarget));
+      if (!result.ok) {
+        setLoginError(result.error);
+        return;
+      }
+      // Identify the authenticated user before navigating away from the login page.
+      posthog.identify(result.user.id, {
+        email: result.user.email,
+        name: result.user.name,
+      });
+      router.push(result.redirectTo);
+      router.refresh();
+    } catch {
+      setLoginError("Imeshindikana kuingia. Tafadhali jaribu tena.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }
   useEffect(() => {
     if (!success || signupEventSent.current) return;
     signupEventSent.current = true;
@@ -28,11 +56,12 @@ export function AuthForms({ error, success, next }: { error?: string; success?: 
     {error && <p className="message">{error}</p>}
     {success && <p className="notice">{en ? "Check your email to confirm your account." : success}</p>}
     <div className="auth-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(270px,1fr))", gap: 20 }}>
-      <form className="panel form" action={signIn}><input type="hidden" name="next" value={next || ""}/>
+      <form className="panel form" onSubmit={handleLogin}><input type="hidden" name="next" value={next || ""}/>
         <h2>{en ? "Log in" : "Ingia"}</h2>
+        {loginError && <p className="message" role="alert">{loginError}</p>}
         <div className="field"><label htmlFor="login-email">{en ? "Email address" : "Barua pepe"}</label><input id="login-email" name="email" type="email" autoComplete="email" required /></div>
         <PasswordField name="password" label={en ? "Password" : "Nenosiri"} />
-        <button className="btn">{en ? "Log in" : "Ingia"}</button>
+        <button className="btn" type="submit" disabled={isLoggingIn}>{isLoggingIn ? (en ? "Logging in…" : "Inaingia…") : (en ? "Log in" : "Ingia")}</button>
       </form>
       <form id="jisajili" className="panel form" action={signUp}><input type="hidden" name="next" value={next || ""}/>
         <h2>{en ? "Create an account" : "Jisajili"}</h2>
