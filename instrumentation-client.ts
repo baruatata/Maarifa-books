@@ -8,5 +8,8 @@ if (projectToken) {
   posthog.init(projectToken, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     defaults: "2026-08-30",
+    session_recording: {
+      maskAllInputs: true,
+    },
   });
 }
