@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { reviewBook, reviewSeller, removeBookFromLibrary } from "@/app/admin/actions";
 import { signOut } from "@/app/auth/actions";
 
+type MemberProfile = { id: string; full_name: string | null; email: string | null; phone: string | null; role: string; created_at: string };
 type SellerApplication = { id: string; user_id: string; store_name: string; bio: string | null; phone_number: string; status: string; created_at: string };
 type Book = { id: string; seller_id: string; title: string; author_name: string | null; description: string | null; format: string; language: string; price_tzs: number; status: string; created_at: string; file_path: string | null; cover_path: string | null };
 
@@ -15,15 +16,17 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { data: me } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
   if (me?.role !== "admin") redirect("/dashboard?error=Huna+ruhusa+ya+admin");
 
-  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }] = await Promise.all([
+  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }, { data: members }] = await Promise.all([
     supabase.from("seller_applications").select("id,user_id,store_name,bio,phone_number,status,created_at").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").order("created_at", { ascending: false }),
     supabase.from("seller_applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("books").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "seller"),
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("profiles").select("id,full_name,email,phone,role,created_at").order("created_at", { ascending: false }).limit(500),
   ]);
   const sellerRows = (applications ?? []) as SellerApplication[];
+  const memberRows = (members ?? []) as MemberProfile[];
   const bookRows = (books ?? []) as Book[];
   const libraryRows = (allBooks ?? []) as Book[];
   const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...libraryRows.map(row => row.seller_id)])];
@@ -48,7 +51,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <a className="admin-side-link" href="#seller-review"><span>♙</span> Maombi ya wauzaji <b>{sellerRows.length}</b></a>
       <a className="admin-side-link" href="#book-review"><span>▤</span> Vitabu vya kukagua <b>{bookRows.length}</b></a>
       <a className="admin-side-link" href="#book-library"><span>▣</span> Maktaba ya vitabu <b>{libraryRows.length}</b></a>
-      <a className="admin-side-link" href="#members"><span>♧</span> Wanachama</a>
+      <a className="admin-side-link" href="#all-members"><span>♧</span> Wanachama</a>
       <Link className="admin-side-link" href="/admin/malalamiko"><span>⚑</span> Malalamiko ya wateja <b>↗</b></Link>
       <Link className="admin-side-link" href="/admin/mawasiliano"><span>✉</span> Mawasiliano <b>↗</b></Link>
       <div className="admin-side-bottom">
@@ -69,13 +72,20 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
 
       <section className="admin-metric-grid" id="members">
-        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wauzaji</p><strong>{memberCount ?? 0}</strong><small>Wauzaji walioidhinishwa</small></article>
+        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wanunuzi, wauzaji na wasimamizi</small></article>
         <article className="admin-metric"><span className="metric-icon">♧</span><p>Maombi ya wauzaji</p><strong>{sellerCount ?? 0}</strong><small>Yanasubiri uamuzi</small></article>
         <article className="admin-metric"><span className="metric-icon">▤</span><p>Vitabu vya kukagua</p><strong>{bookCount ?? 0}</strong><small>Vinasubiri idhini</small></article>
       </section>
 
       <div className="admin-content-grid">
         <div className="admin-main-column">
+          <section className="admin-panel" id="all-members">
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2>Wanachama wote</h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
+            <p className="admin-description">Orodha ya akaunti zilizosajiliwa MaarifaBooks, ikijumuisha wanunuzi (Buyer), wauzaji (Seller) na wasimamizi (Admin). Barua pepe zinaonekana kwa Admin pekee.</p>
+            {memberRows.length === 0 ? <div className="admin-empty">Bado hakuna akaunti zilizosajiliwa.</div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
+              <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>
+            </article>)}</div>}
+          </section>
           <section className="admin-panel" id="seller-review">
             <div className="admin-panel-heading"><div><span className="admin-gold-kicker">UKAGUZI WA WAUZAJI</span><h2>Maombi ya wauzaji</h2></div><span className="admin-count">{sellerRows.length} yanasubiri</span></div>
             {sellerRows.length === 0 ? <div className="admin-empty">Hakuna ombi la muuzaji linalosubiri kwa sasa.</div> : <div className="admin-review-list">{sellerRows.map(application => { const profile = profileMap.get(application.user_id); return <article className="admin-review-card" key={application.id}>
