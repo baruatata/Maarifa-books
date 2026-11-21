@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { captureServerEvent } from "@/lib/posthog-server";
 
-function authRedirect(path: string, message: string, kind: "error" | "success" = "error") {
+function authRedirect(path: string, message: string, kind: "error" | "success" = "error"): never {
   const params = new URLSearchParams({ [kind]: message });
   if (path.startsWith("/") && !path.startsWith("//")) params.set("next", path);
   redirect("/ingia?" + params.toString());
