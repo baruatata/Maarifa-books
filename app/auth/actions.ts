@@ -33,8 +33,9 @@ export async function signIn(formData: FormData) {
   for (const factor of factors?.totp ?? []) {
     if (factor.status === "verified") await supabase.auth.mfa.unenroll({ factorId: factor.id });
   }
-  if (!data.user?.id) authRedirect(safeNext, "Imeshindikana kuthibitisha akaunti. Jaribu tena.");
-  await captureServerEvent(data.user.id, "user_logged_in", { method: "email" });
+  const user = data.user;
+  if (!user?.id) authRedirect(safeNext, "Imeshindikana kuthibitisha akaunti. Jaribu tena.");
+  await captureServerEvent(user.id, "user_logged_in", { method: "email" });
   redirect(safeNext);
 }
 
