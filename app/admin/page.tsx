@@ -117,6 +117,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           <section className="admin-quick-panel admin-note-panel"><span className="admin-gold-kicker">USALAMA WA MAUDHUI</span><h3>Kabla ya kuidhinisha</h3><p>Hakiki taarifa za muuzaji, jalada, faili la kitabu na maelezo yake. Vitabu vilivyoidhinishwa ndivyo vinavyoonekana kwa wanunuzi.</p></section>
           <section className="admin-quick-panel"><h3>Muhtasari wa foleni</h3><div className="admin-queue-row"><span>Wauzaji</span><strong>{sellerRows.length}</strong></div><div className="admin-queue-row"><span>Vitabu</span><strong>{bookRows.length}</strong></div><div className="admin-queue-total"><span>Jumla inayosubiri</span><strong>{sellerRows.length + bookRows.length}</strong></div></section>
         </aside>}
+      </div>
       <footer className="admin-console-footer">MaarifaBooks · Sehemu ya Lumbwa Digital</footer>
     </section>
   </main>;
