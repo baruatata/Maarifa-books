@@ -13,6 +13,26 @@ async function requireAdmin() {
   return { supabase, user };
 }
 
+
+export async function promoteMaarifabooksAdmin(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const userId = String(formData.get("user_id") ?? "").trim();
+  if (!userId) redirect("/admin?error=Akaunti+haijachaguliwa");
+
+  const targetEmail = "maarifabooks55@gmail.com";
+  const { data: target, error: lookupError } = await supabase
+    .from("profiles").select("id,email,role").eq("id", userId).eq("email", targetEmail).single();
+  if (lookupError || !target) redirect("/admin?error=Akaunti+ya+MaarifaBooks+haijapatikana");
+  if (target.role === "admin") redirect("/admin?success=Akaunti+ya+MaarifaBooks+tayari+ni+Admin");
+
+  const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", target.id).eq("email", targetEmail);
+  if (error) redirect("/admin?error=" + encodeURIComponent("Imeshindikana kubadilisha nafasi: " + error.message));
+
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+  redirect("/admin?success=Akaunti+ya+MaarifaBooks+imekuwa+Admin");
+}
+
 export async function reviewSeller(formData: FormData) {
   const { supabase, user } = await requireAdmin();
   const applicationId = String(formData.get("application_id") ?? "");
