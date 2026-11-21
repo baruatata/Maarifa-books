@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { signIn, signUp } from "@/app/auth/actions";
+import { signInForClient, signUp } from "@/app/auth/actions";
 import { PasswordField } from "@/components/password-field";
 
 export function AuthForms({ error, success, next }: { error?: string; success?: string; next?: string }) {
@@ -17,7 +17,7 @@ export function AuthForms({ error, success, next }: { error?: string; success?: 
     setLoginError("");
     setIsLoggingIn(true);
     try {
-      const result = await signIn(new FormData(event.currentTarget));
+      const result = await signInForClient(new FormData(event.currentTarget));
       if (!result.ok) {
         setLoginError(result.error);
         return;
