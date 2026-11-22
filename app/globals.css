@@ -522,3 +522,23 @@ body{background:#fff!important;color:#172033!important}
 .home-back-to-top span:first-child{font-size:27px;font-weight:900;line-height:1}
 .home-back-to-top span:last-child{font-size:9px;font-weight:800;line-height:1}
 .home-back-to-top:focus-visible{outline:3px solid #172b4d;outline-offset:3px}
+
+
+/* Accessible coupon popups */
+.coupon-options{border-top:0;padding-top:0}
+.coupon-choice-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.coupon-choice-actions .btn{width:100%;min-height:48px}
+.coupon-modal-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(8,17,34,.68);backdrop-filter:blur(3px);overflow-y:auto}
+.coupon-modal{position:relative;width:min(100%,520px);max-height:min(88vh,820px);overflow-y:auto;padding:20px;border:1px solid #e7eaf0;border-radius:18px;background:#fff;box-shadow:0 22px 70px rgba(0,0,0,.3);color:#172033}
+.coupon-modal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.coupon-modal-heading h2{margin:0;font-size:clamp(20px,4vw,25px);color:#10264f}
+.coupon-modal-close{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:0;border-radius:50%;background:#f0f2f6;color:#26344d;font-size:29px;line-height:1;cursor:pointer}
+.coupon-modal .coupon-redeem{margin-top:0;padding-top:8px;border-top:0}
+.coupon-modal .coupon-redeem h3{margin:0 0 4px}
+.coupon-modal .coupon-redeem-form{gap:9px}
+.coupon-modal .coupon-redeem-form input{font-size:16px}
+@media(max-width:600px){
+ .coupon-modal-backdrop{align-items:flex-end;padding:10px 10px max(10px,env(safe-area-inset-bottom))}
+ .coupon-modal{width:100%;max-height:90vh;padding:17px;border-radius:18px 18px 12px 12px}
+ .coupon-choice-actions{grid-template-columns:1fr}
+}
