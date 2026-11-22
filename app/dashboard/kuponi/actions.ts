@@ -70,5 +70,5 @@ export async function confirmCouponRequestPayment(formData: FormData) {
     .select("id").maybeSingle();
 
   if (error || !data) redirect("/dashboard/kuponi?error=" + encodeURIComponent("Malipo hayakuthibitishwa. Hakikisha fedha zimeingia na ombi bado linasubiri."));
-  redirect("/dashboard/kuponi?confirmed=1");
+  redirect("/dashboard/kuponi?generate=" + encodeURIComponent(requestId) + "#request-" + requestId);
 }
