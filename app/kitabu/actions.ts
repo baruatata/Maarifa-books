@@ -11,8 +11,19 @@ export async function redeemBookCoupon(_previous: RedeemCouponState, formData: F
   if (!/^[0-9a-f-]{36}$/i.test(bookId) || !code) return { error: "Weka coupon sahihi." };
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Ingia au jisajili kwanza, kisha urudi hapa kuweka coupon." };
+  let { data: { user } } = await supabase.auth.getUser();
+
+  // Buyers can redeem coupons without creating an account. An anonymous
+  // Supabase session gives the entitlement a stable owner for this browser.
+  if (!user) {
+    const { data, error: guestError } = await supabase.auth.signInAnonymously({
+      options: { data: { preferred_language: "sw" } }
+    });
+    if (guestError || !data.user) {
+      return { error: "Hatukuweza kuanzisha kikao cha kusoma. Jaribu tena au ingia kwenye akaunti yako." };
+    }
+    user = data.user;
+  }
 
   const { data, error } = await supabase.rpc("redeem_book_access_code", { p_code: code });
   if (error) return { error: error.message || "Coupon si sahihi au imeshatumika." };

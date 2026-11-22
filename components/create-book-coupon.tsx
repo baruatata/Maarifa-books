@@ -5,7 +5,7 @@ import { createBookAccessCoupon, type CouponActionState } from "@/app/dashboard/
 
 const initialState: CouponActionState = {};
 
-export function CreateBookCoupon({ bookId }: { bookId: string }) {
+export function CreateBookCoupon({ bookId, requestId }: { bookId: string; requestId?: string }) {
   const [state, action, pending] = useActionState(createBookAccessCoupon, initialState);
   const [copied, setCopied] = useState(false);
 
@@ -21,7 +21,7 @@ export function CreateBookCoupon({ bookId }: { bookId: string }) {
 
   return <div className="coupon-maker">
     <form action={action}>
-      <input type="hidden" name="book_id" value={bookId}/>
+      <input type="hidden" name="book_id" value={bookId}/>{requestId && <input type="hidden" name="request_id" value={requestId}/>}
       <button className="btn" disabled={pending}>{pending ? "Inatengeneza..." : "Tengeneza Coupon mpya"}</button>
     </form>
     {state.error && <p className="message" role="status">{state.error}</p>}
