@@ -7,10 +7,16 @@ export default async function BookDetailsPage({ params, searchParams }: { params
   const { id } = await params;
   const query = await searchParams;
   const supabase = await createClient();
-  const { data: book } = await supabase.from("books")
-    .select("id,title,author_name,description,language,category,format,price_tzs,cover_path,status,seller_id")
-    .eq("id", id).eq("status", "approved").maybeSingle();
+  const [{ data: { user } }, { data: book }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("books").select("id,title,author_name,description,language,category,format,price_tzs,cover_path,status,seller_id")
+      .eq("id", id).eq("status", "approved").maybeSingle()
+  ]);
   if (!book) notFound();
+
+  // The uploader's authenticated account owns this book; show the full-reader
+  // action instead of buyer checkout/coupon prompts on the book detail page.
+  const isSellerOwner = Boolean(user && user.id === book.seller_id);
 
   let coverUrl: string | null = null;
   if (book.cover_path) {
@@ -19,7 +25,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
   }
 
   let whatsappHref: string | null = null;
-  if (book.price_tzs > 0) {
+  if (book.price_tzs > 0 && !isSellerOwner) {
     const { data: sellerPhone } = await supabase.rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
     if (sellerPhone) {
       const message = `Habari, nahitaji kununua kitabu "${book.title}" cha TSh ${new Intl.NumberFormat("sw-TZ").format(book.price_tzs)} kupitia MaarifaBooks. Naomba maelekezo ya malipo.`;
@@ -44,8 +50,11 @@ export default async function BookDetailsPage({ params, searchParams }: { params
         <h2>Maelezo ya kitabu</h2>
         <p className="book-detail-description">{book.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</p>
         <div className="book-purchase-panel">
-          <div><span className="muted">Bei ya kitabu</span><strong>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</strong></div>
-          {book.price_tzs > 0 ? <>
+          {isSellerOwner ? <>
+            <p className="notice">Hiki ni kitabu chako kama muuzaji. Unaweza kukisoma chote bila kulipia wala kutumia coupon.</p>
+            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu changu</Link>
+          </> : book.price_tzs > 0 ? <>
+            <div><span className="muted">Bei ya kitabu</span><strong>{"TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs)}</strong></div>
             <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
