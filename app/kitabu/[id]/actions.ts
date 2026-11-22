@@ -71,11 +71,10 @@ export async function reviewManualPayment(formData: FormData) {
 export async function requestBookCoupon(bookId: string, formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.is_anonymous) {
-    redirect("/ingia?next=" + encodeURIComponent("/kitabu/" + bookId));
-  }
 
-  const phoneInput = String(formData.get("customer_phone") || "").trim().replace(/\\s+/g, "");
+  // Coupon requests may be submitted by guests. The database RLS policy permits
+  // anonymous inserts only when customer_user_id is null and the book is approved/paid.
+  const phoneInput = String(formData.get("customer_phone") || "").trim().replace(/\s+/g, "");
   const customerPhone = phoneInput.startsWith("0") ? "255" + phoneInput.slice(1) : phoneInput;
   const reference = String(formData.get("transaction_reference") || "").trim();
   const customerName = String(formData.get("customer_name") || "").trim().slice(0, 100);
@@ -93,7 +92,7 @@ export async function requestBookCoupon(bookId: string, formData: FormData) {
   const { error } = await supabase.from("book_coupon_requests").insert({
     book_id: book.id,
     seller_id: book.seller_id,
-    customer_user_id: user.id,
+    customer_user_id: user?.id ?? null,
     customer_name: customerName || null,
     customer_phone: customerPhone,
     transaction_reference: reference,
