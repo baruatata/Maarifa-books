@@ -37,8 +37,8 @@ export default function MafunzoPage() {
       </section>
 
       <div className="training-content">
-        {guideSections.map((section, index) => {
-          const id = section.title.startsWith("2.") ? "mnunuzi" : section.title.startsWith("3.") ? "muuzaji" : section.title.startsWith("4.") ? "usalama" : undefined;
+        {guideSections.map((section) => {
+          const id = section.title === "2. Mwongozo kwa mnunuzi" ? "mnunuzi" : section.title === "3. Mwongozo kwa muuzaji" ? "muuzaji" : section.title === "4. Usalama na uwajibikaji" ? "usalama" : undefined;
           return (
             <article className="training-card" key={section.title} id={id}>
               <h2>{section.title}</h2>
