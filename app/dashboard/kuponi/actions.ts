@@ -11,6 +11,7 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   if (!user) return { error: "Ingia kwanza kwenye akaunti yako." };
 
   const bookId = String(formData.get("book_id") ?? "");
+  const requestId = String(formData.get("request_id") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(bookId)) return { error: "Kitabu hakijatambulika." };
 
   const { data: application } = await supabase.from("seller_applications")
@@ -21,6 +22,14 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
     .select("id,price_tzs,status").eq("id", bookId).eq("seller_id", user.id).maybeSingle();
   if (!book || book.status !== "approved" || book.price_tzs <= 0) {
     return { error: "Coupon inaweza kutengenezwa kwa kitabu cha kulipia kilichoidhinishwa pekee." };
+  }
+
+  let request: { id: string } | null = null;
+  if (requestId) {
+    const { data } = await supabase.from("book_coupon_requests").select("id,book_id,seller_id,status,payment_status")
+      .eq("id", requestId).eq("book_id", bookId).eq("seller_id", user.id).eq("status", "pending").eq("payment_status", "received").maybeSingle();
+    if (!data) return { error: "Thibitisha malipo ya ombi hili kabla ya kutengeneza coupon." };
+    request = { id: data.id };
   }
 
   const raw = randomBytes(12).toString("hex").toUpperCase();
@@ -36,4 +45,22 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
 
   return { code };
+}
+
+export async function confirmCouponRequestPayment(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/ingia");
+  const requestId = String(formData.get("request_id") || "");
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) redirect("/dashboard/kuponi");
+
+  const { data, error } = await supabase.from("book_coupon_requests").update({
+    payment_status: "received",
+    payment_confirmed_at: new Date().toISOString(),
+    payment_confirmed_by: user.id
+  }).eq("id", requestId).eq("seller_id", user.id).eq("status", "pending").eq("payment_status", "unverified")
+    .select("id").maybeSingle();
+
+  if (error || !data) redirect("/dashboard/kuponi?error=" + encodeURIComponent("Malipo hayakuthibitishwa. Hakikisha fedha zimeingia na ombi bado linasubiri."));
+  redirect("/dashboard/kuponi?confirmed=1");
 }
