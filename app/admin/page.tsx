@@ -10,31 +10,78 @@ type Book = { id: string; seller_id: string; title: string; author_name: string 
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string; tab?: string }> }) {
   const params = await searchParams;
-  const tab = ["overview", "members", "sellers", "books", "library"].includes(params.tab ?? "") ? (params.tab ?? "overview") : "overview";
+  const tab = ["overview", "buyers", "members", "sellers", "books", "library"].includes(params.tab ?? "") ? (params.tab ?? "overview") : "overview";
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/ingia");
   const { data: me } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
   if (me?.role !== "admin") redirect("/dashboard?error=Huna+ruhusa+ya+admin");
 
-  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }, { data: members }] = await Promise.all([
+  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }, { data: members }, { data: allCouponRequests }, { data: redeemedCodes }, { data: paidOrders }, { data: confirmedPayments }] = await Promise.all([
     supabase.from("seller_applications").select("id,user_id,store_name,bio,phone_number,status,created_at").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").order("created_at", { ascending: false }),
     supabase.from("seller_applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("books").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("profiles").select("id,full_name,email,phone,role,created_at").order("created_at", { ascending: false }).limit(500),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).neq("role", "buyer"),
+    supabase.from("profiles").select("id,full_name,email,phone,role,created_at").neq("role", "buyer").order("created_at", { ascending: false }).limit(500),
+    supabase.from("book_coupon_requests").select("id,customer_user_id,customer_name,customer_phone,book_id,created_at,payment_status").order("created_at", { ascending: false }).limit(2000),
+    supabase.from("book_access_codes").select("id,book_id,redeemed_by,redeemed_at,request_id").not("redeemed_at", "is", null).order("redeemed_at", { ascending: false }).limit(2000),
+    supabase.from("orders").select("id,buyer_id,paid_at,created_at,order_items(book_id,books(title))").eq("status", "paid").order("paid_at", { ascending: false }).limit(1000),
+    supabase.from("payment_submissions").select("order_id,payer_phone").eq("status", "confirmed").limit(1000),
   ]);
   const sellerRows = (applications ?? []) as SellerApplication[];
   const memberRows = (members ?? []) as MemberProfile[];
   const bookRows = (books ?? []) as Book[];
   const libraryRows = (allBooks ?? []) as Book[];
-  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...libraryRows.map(row => row.seller_id)])];
+  const buyerRequestRows = (allCouponRequests ?? []) as Array<{ id: string; customer_user_id: string | null; customer_name: string | null; customer_phone: string; book_id: string; created_at: string; payment_status: string }>;
+  const redeemedCodeRows = (redeemedCodes ?? []) as Array<{ id: string; book_id: string; redeemed_by: string | null; redeemed_at: string; request_id: string | null }>;
+  const paidOrderRows = (paidOrders ?? []) as unknown as Array<{ id: string; buyer_id: string; paid_at: string | null; created_at: string; order_items: Array<{ book_id: string; books: { title: string } | { title: string }[] | null }> }>;
+  const confirmedPaymentRows = (confirmedPayments ?? []) as Array<{ order_id: string; payer_phone: string | null }>;
+  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...libraryRows.map(row => row.seller_id), ...buyerRequestRows.map(row => row.customer_user_id).filter((id): id is string => Boolean(id)), ...redeemedCodeRows.map(row => row.redeemed_by).filter((id): id is string => Boolean(id)), ...paidOrderRows.map(row => row.buyer_id)])];
   const { data: profiles } = profileIds.length
     ? await supabase.from("profiles").select("id,full_name,email,phone").in("id", profileIds)
     : { data: [] as { id: string; full_name: string | null; email: string | null; phone: string | null }[] };
   const profileMap = new Map((profiles ?? []).map(profile => [profile.id, profile]));
+  const buyerMap = new Map<string, { name: string; phone: string; books: Set<string>; lastPurchase: string }>();
+  const addBuyerPurchase = (key: string, name: string, phone: string, bookTitle: string, date: string) => {
+    const existing = buyerMap.get(key) ?? { name: name || "Jina halijawekwa", phone: phone || "Haijawekwa", books: new Set<string>(), lastPurchase: date };
+    if (name && existing.name === "Jina halijawekwa") existing.name = name;
+    if (phone && existing.phone === "Haijawekwa") existing.phone = phone;
+    if (bookTitle) existing.books.add(bookTitle);
+    if (date > existing.lastPurchase) existing.lastPurchase = date;
+    buyerMap.set(key, existing);
+  };
+  const requestById = new Map(buyerRequestRows.map(request => [request.id, request]));
+  for (const request of buyerRequestRows) {
+    if (request.payment_status !== "received") continue;
+    const profile = request.customer_user_id ? profileMap.get(request.customer_user_id) : null;
+    const phone = profile?.phone || request.customer_phone;
+    const key = request.customer_user_id || phone;
+    const book = libraryRows.find(row => row.id === request.book_id);
+    if (key) addBuyerPurchase(key, profile?.full_name || request.customer_name || "", phone, book?.title || "Kitabu kilicholipiwa", request.created_at);
+  }
+  for (const code of redeemedCodeRows) {
+    const request = code.request_id ? requestById.get(code.request_id) : null;
+    const profileId = request?.customer_user_id || code.redeemed_by;
+    const profile = profileId ? profileMap.get(profileId) : null;
+    const phone = profile?.phone || request?.customer_phone || "";
+    const key = request?.customer_user_id || phone || code.redeemed_by;
+    const book = libraryRows.find(row => row.id === code.book_id);
+    if (key) addBuyerPurchase(key, profile?.full_name || request?.customer_name || "", phone, book?.title || "Kitabu kilichofunguliwa kwa coupon", code.redeemed_at);
+  }
+  const paymentPhoneByOrder = new Map(confirmedPaymentRows.map(payment => [payment.order_id, payment.payer_phone || ""]));
+  for (const order of paidOrderRows) {
+    const profile = profileMap.get(order.buyer_id);
+    const phone = profile?.phone || paymentPhoneByOrder.get(order.id) || "";
+    const key = profile ? order.buyer_id : phone || order.buyer_id;
+    const date = order.paid_at || order.created_at;
+    for (const item of order.order_items ?? []) {
+      const nestedBook = Array.isArray(item.books) ? item.books[0] : item.books;
+      if (key) addBuyerPurchase(key, profile?.full_name || "", phone, nestedBook?.title || "Kitabu kilicholipiwa", date);
+    }
+  }
+  const buyerRows = [...buyerMap.entries()].map(([id, buyer]) => ({ id, ...buyer })).sort((a, b) => b.lastPurchase.localeCompare(a.lastPurchase));
   const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
   const bookLinks = new Map(await Promise.all(libraryRows.map(async book => {
     const [file, cover] = await Promise.all([
@@ -52,6 +99,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <Link className={`admin-side-link ${tab === "sellers" ? "active" : ""}`} href="/admin?tab=sellers"><span>♙</span> Maombi ya wauzaji <b>{sellerRows.length}</b></Link>
       <Link className={`admin-side-link ${tab === "books" ? "active" : ""}`} href="/admin?tab=books"><span>▤</span> Vitabu vya kukagua <b>{bookRows.length}</b></Link>
       <Link className={`admin-side-link ${tab === "library" ? "active" : ""}`} href="/admin?tab=library"><span>▣</span> Maktaba ya vitabu <b>{libraryRows.length}</b></Link>
+      <Link className={`admin-side-link ${tab === "buyers" ? "active" : ""}`} href="/admin?tab=buyers"><span>♙</span> Wanunuzi <b>{buyerRows.length}</b></Link>
       <Link className={`admin-side-link ${tab === "members" ? "active" : ""}`} href="/admin?tab=members"><span>♧</span> Wanachama</Link>
       <Link className="admin-side-link" href="/admin/malalamiko"><span>⚑</span> Malalamiko ya wateja <b>↗</b></Link>
       <Link className="admin-side-link" href="/admin/mawasiliano"><span>✉</span> Mawasiliano <b>↗</b></Link>
@@ -73,19 +121,26 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
 
       <section className="admin-metric-grid" id="members">
-        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wanunuzi, wauzaji na wasimamizi</small></article>
+        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wauzaji na wasimamizi</small></article>
         <article className="admin-metric"><span className="metric-icon">♧</span><p>Maombi ya wauzaji</p><strong>{sellerCount ?? 0}</strong><small>Yanasubiri uamuzi</small></article>
         <article className="admin-metric"><span className="metric-icon">▤</span><p>Vitabu vya kukagua</p><strong>{bookCount ?? 0}</strong><small>Vinasubiri idhini</small></article>
       </section></>}
 
-      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "members" ? "Wanachama wote" : tab === "sellers" ? "Maombi ya wauzaji" : tab === "books" ? "Vitabu vya kukagua" : "Maktaba ya vitabu"}</h1></div></header>}
+      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "buyers" ? "Wanunuzi wa vitabu" : tab === "members" ? "Wanachama (wauzaji na wasimamizi)" : tab === "sellers" ? "Maombi ya wauzaji" : tab === "books" ? "Vitabu vya kukagua" : "Maktaba ya vitabu"}</h1></div></header>}
       <div className="admin-content-grid">
         <div className="admin-main-column">
           {tab === "members" && <section className="admin-panel" id="all-members">
             <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2>Wanachama wote</h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
-            <p className="admin-description">Orodha ya akaunti zilizosajiliwa MaarifaBooks, ikijumuisha wanunuzi (Buyer), wauzaji (Seller) na wasimamizi (Admin). Barua pepe zinaonekana kwa Admin pekee.</p>
+            <p className="admin-description">Orodha hii ina akaunti za wauzaji na wasimamizi pekee. Taarifa za wanunuzi zimetenganishwa kwenye sehemu maalumu ya Wanunuzi ya Admin.</p>
             {memberRows.length === 0 ? <div className="admin-empty">Bado hakuna akaunti zilizosajiliwa.</div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
               <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>{member.email?.toLowerCase() === "maarifabooks55@gmail.com" && member.role !== "admin" && <form action={promoteMaarifabooksAdmin} className="admin-review-form"><input type="hidden" name="user_id" value={member.id}/><button className="btn" type="submit">Muweke Admin</button></form>}
+            </article>)}</div>}
+          </section>}
+          {tab === "buyers" && <section className="admin-panel" id="buyer-list">
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">TAARIFA ZA WATEJA</span><h2>Wanunuzi waliothibitisha malipo</h2></div><span className="admin-count">{buyerRows.length} wanunuzi</span></div>
+            <p className="admin-description">Sehemu hii inaonekana kwa Admin pekee. Inaonyesha wateja ambao malipo yao yamethibitishwa na muuzaji au oda zao zimewekwa kuwa zimelipwa. Maombi ambayo bado hayajathibitishwa hayahesabiwi kama ununuzi.</p>
+            {buyerRows.length === 0 ? <div className="admin-empty">Bado hakuna mteja aliyethibitishwa kununua kitabu.</div> : <div className="admin-review-list">{buyerRows.map(buyer => <article className="admin-review-card" key={buyer.id}>
+              <div className="admin-review-top"><div><h3>{buyer.name}</h3><p><strong>Namba ya simu:</strong> {buyer.phone}</p><p><strong>Vitabu alivyonunua:</strong> {[...buyer.books].join(", ") || "Haijatajwa"}</p><small>Ununuzi wa mwisho: {new Date(buyer.lastPurchase).toLocaleString("sw-TZ")}</small></div><span className="admin-count">{buyer.books.size} vitabu</span></div>
             </article>)}</div>}
           </section>}
           {tab === "sellers" && <section className="admin-panel" id="seller-review">
