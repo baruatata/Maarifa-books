@@ -5,7 +5,8 @@ import { RedeemBookCoupon } from "@/components/redeem-book-coupon";
 import { RequestBookCoupon } from "@/components/request-book-coupon";
 
 export default async function BookDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ requested?: string; error?: string }> }) {
-  const { id } = await params;\n  const query = await searchParams;
+  const { id } = await params;
+  const query = await searchParams;
   const supabase = await createClient();
   const { data: book } = await supabase.from("books")
     .select("id,title,author_name,description,language,category,format,price_tzs,cover_path,status,seller_id")
@@ -49,7 +50,8 @@ export default async function BookDetailsPage({ params, searchParams }: { params
             <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
-            {query.error && <p className="message" role="status">{query.error}</p>}\n            {query.requested === "1" ? <><p className="notice">Ombi lako limetumwa kwa muuzaji. Baada ya kuthibitisha malipo na kukutumia coupon, ingiza hapa chini.</p><RedeemBookCoupon bookId={book.id}/></> : <RequestBookCoupon bookId={book.id}/>}
+            {query.error && <p className="message" role="status">{query.error}</p>}
+            {query.requested === "1" ? <><p className="notice">Ombi lako limetumwa kwa muuzaji. Baada ya kuthibitisha malipo na kukutumia coupon, ingiza hapa chini.</p><RedeemBookCoupon bookId={book.id}/></> : <RequestBookCoupon bookId={book.id}/>}
           </> : <>
             <p className="book-payment-note">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
             <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link>
