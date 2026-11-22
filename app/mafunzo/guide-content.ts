@@ -13,15 +13,7 @@ export const guideSections: GuideSection[] = [
   },
   {
     title: "2. Mwongozo kwa mnunuzi",
-    intro: "Kutafuta na kuchagua kitabu",
-    steps: [
-      "Fungua https://maarifabooks.vercel.app.",
-      "Tumia kisanduku cha utafutaji kwenye ukurasa wa mwanzo kuandika jina la kitabu au mwandishi.",
-      "Chagua kitabu ili kufungua ukurasa wake na kusoma maelezo, lugha, aina ya faili na bei."
-    ]
-  },
-  {
-    title: "2.1 Kufungua akaunti au kuingia",
+    intro: "Fungua akaunti au ingia",
     steps: [
       "Bonyeza Jisajili kama huna akaunti, au Ingia ikiwa tayari una akaunti.",
       "Jaza taarifa zinazotakiwa na ukamilishe hatua za uthibitishaji zitakazoonyeshwa.",
@@ -29,7 +21,19 @@ export const guideSections: GuideSection[] = [
     ]
   },
   {
-    title: "2.2 Kununua kitabu cha kulipia",
+    title: "2.1 Kutafuta kitabu",
+    steps: [
+      "Fungua https://maarifabooks.vercel.app.",
+      "Tumia kisanduku cha utafutaji kwenye ukurasa wa mwanzo kuandika jina la kitabu au mwandishi.",
+      "Chagua kitabu ili kufungua ukurasa wake na kusoma maelezo, lugha, aina ya faili na bei."
+    ]
+  },
+  {
+    title: "2.2 Kufungua akaunti au kuingia - hatua za ziada",
+    intro: "Ikiwa tayari umeingia, endelea na hatua za kutafuta na kuchagua kitabu. Ikiwa bado huna akaunti, kamilisha usajili kwanza."
+  },
+  {
+    title: "2.3 Kununua kitabu cha kulipia",
     steps: [
       "Kwenye ukurasa wa kitabu, kagua bei na taarifa za kitabu.",
       "Bonyeza Wasiliana na muuzaji WhatsApp ili kuomba maelekezo ya malipo.",
@@ -39,7 +43,7 @@ export const guideSections: GuideSection[] = [
     note: "Muuzaji hupokea 100% ya mauzo yake. Hakikisha unalipa kwa muuzaji sahihi."
   },
   {
-    title: "2.3 Kuomba coupon baada ya malipo",
+    title: "2.4 Kuomba coupon baada ya malipo",
     steps: [
       "Rudi kwenye ukurasa wa kitabu ulicholipia.",
       "Kwenye sehemu ya coupon, chagua Sina Coupon. Fomu ya ombi itafunguka.",
@@ -49,7 +53,7 @@ export const guideSections: GuideSection[] = [
     note: "Tuma ombi kwa kitabu husika na tumia namba ya simu unayoweza kupatikana nayo."
   },
   {
-    title: "2.4 Kuweka coupon na kusoma kitabu",
+    title: "2.5 Kuweka coupon na kusoma kitabu",
     steps: [
       "Baada ya muuzaji kukutumia coupon, fungua tena ukurasa wa kitabu husika.",
       "Chagua Nina Coupon, weka msimbo uliotumwa na bonyeza Fungua kitabu.",
