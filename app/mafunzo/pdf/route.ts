@@ -91,7 +91,8 @@ export async function GET() {
   });
 
   const bytes = await pdf.save();
-  return new Response(bytes, {
+  const body = new Uint8Array(bytes).buffer;
+  return new Response(body, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": 'attachment; filename="MaarifaBooks-Mwongozo-wa-Matumizi.pdf"',
