@@ -1,5 +1,7 @@
 "use server";
 
+import { redirect } from "next/navigation";
+
 import { createHash, randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,8 +43,14 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
     book_id: book.id,
     seller_id: user.id,
     code_hash: codeHash,
+    request_id: request?.id ?? null,
   });
   if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
+
+  if (request) {
+    const { error: requestError } = await supabase.from("book_coupon_requests").update({ status: "fulfilled", fulfilled_at: new Date().toISOString() }).eq("id", request.id).eq("seller_id", user.id).eq("status", "pending");
+    if (requestError) return { error: "Coupon imetengenezwa lakini hali ya ombi haikuhifadhiwa. Wasiliana na msaada kabla ya kutengeneza nyingine." };
+  }
 
   return { code };
 }
