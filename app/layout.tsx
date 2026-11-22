@@ -6,6 +6,9 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
   title: "MaarifaBooks | Vitabu vya Kidijitali",
   description: "Soma, sikiliza na uza vitabu vya kidijitali kwa Kiswahili na Kiingereza.",
+  verification: {
+    google: "VwIPWIolhogVFqUanq6c9kV2nmbm74Vuox6ubicY-wE",
+  },
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
