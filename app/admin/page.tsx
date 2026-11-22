@@ -66,7 +66,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     const profileId = request?.customer_user_id || code.redeemed_by;
     const profile = profileId ? profileMap.get(profileId) : null;
     const phone = profile?.phone || request?.customer_phone || "";
-    const key = request?.customer_user_id || code.redeemed_by || phone;
+    const key = request?.customer_user_id || phone || code.redeemed_by;
     const book = libraryRows.find(row => row.id === code.book_id);
     if (key) addBuyerPurchase(key, profile?.full_name || request?.customer_name || "", phone, book?.title || "Kitabu kilichofunguliwa kwa coupon", code.redeemed_at);
   }
@@ -74,7 +74,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   for (const order of paidOrderRows) {
     const profile = profileMap.get(order.buyer_id);
     const phone = profile?.phone || paymentPhoneByOrder.get(order.id) || "";
-    const key = order.buyer_id || phone;
+    const key = profile ? order.buyer_id : phone || order.buyer_id;
     const date = order.paid_at || order.created_at;
     for (const item of order.order_items ?? []) {
       const nestedBook = Array.isArray(item.books) ? item.books[0] : item.books;
@@ -131,7 +131,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <div className="admin-main-column">
           {tab === "members" && <section className="admin-panel" id="all-members">
             <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2>Wanachama wote</h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
-            <p className="admin-description">Orodha hii ina akaunti za wauzaji na wasimamizi pekee. Wanunuzi wana taarifa zao kwenye sehemu maalumu ya Wanunuzi.</p>
+            <p className="admin-description">Orodha hii ina akaunti za wauzaji na wasimamizi pekee. Taarifa za wanunuzi zimetenganishwa kwenye sehemu maalumu ya Wanunuzi ya Admin.</p>
             {memberRows.length === 0 ? <div className="admin-empty">Bado hakuna akaunti zilizosajiliwa.</div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
               <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>{member.email?.toLowerCase() === "maarifabooks55@gmail.com" && member.role !== "admin" && <form action={promoteMaarifabooksAdmin} className="admin-review-form"><input type="hidden" name="user_id" value={member.id}/><button className="btn" type="submit">Muweke Admin</button></form>}
             </article>)}</div>}
