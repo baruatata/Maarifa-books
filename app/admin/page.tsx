@@ -17,7 +17,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { data: me } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
   if (me?.role !== "admin") redirect("/dashboard?error=Huna+ruhusa+ya+admin");
 
-  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }, { data: members }, { data: confirmedCouponRequests }, { data: paidOrders }, { data: confirmedPayments }] = await Promise.all([
+  const [{ data: applications }, { data: books }, { data: allBooks }, { count: sellerCount }, { count: bookCount }, { count: memberCount }, { data: members }, { data: allCouponRequests }, { data: redeemedCodes }, { data: paidOrders }, { data: confirmedPayments }] = await Promise.all([
     supabase.from("seller_applications").select("id,user_id,store_name,bio,phone_number,status,created_at").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").eq("status", "pending").order("created_at", { ascending: true }),
     supabase.from("books").select("id,seller_id,title,author_name,description,format,language,price_tzs,status,created_at,file_path,cover_path").order("created_at", { ascending: false }),
@@ -25,7 +25,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     supabase.from("books").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("profiles").select("*", { count: "exact", head: true }).neq("role", "buyer"),
     supabase.from("profiles").select("id,full_name,email,phone,role,created_at").neq("role", "buyer").order("created_at", { ascending: false }).limit(500),
-    supabase.from("book_coupon_requests").select("id,customer_user_id,customer_name,customer_phone,book_id,created_at,payment_status").eq("payment_status", "received").order("created_at", { ascending: false }).limit(1000),
+    supabase.from("book_coupon_requests").select("id,customer_user_id,customer_name,customer_phone,book_id,created_at,payment_status").order("created_at", { ascending: false }).limit(2000),
+    supabase.from("book_access_codes").select("id,book_id,redeemed_by,redeemed_at,request_id").not("redeemed_at", "is", null).order("redeemed_at", { ascending: false }).limit(2000),
     supabase.from("orders").select("id,buyer_id,paid_at,created_at,order_items(book_id,books(title))").eq("status", "paid").order("paid_at", { ascending: false }).limit(1000),
     supabase.from("payment_submissions").select("order_id,payer_phone").eq("status", "confirmed").limit(1000),
   ]);
@@ -33,10 +34,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const memberRows = (members ?? []) as MemberProfile[];
   const bookRows = (books ?? []) as Book[];
   const libraryRows = (allBooks ?? []) as Book[];
-  const buyerRequestRows = (confirmedCouponRequests ?? []) as Array<{ id: string; customer_user_id: string | null; customer_name: string | null; customer_phone: string; book_id: string; created_at: string; payment_status: string }>;
+  const buyerRequestRows = (allCouponRequests ?? []) as Array<{ id: string; customer_user_id: string | null; customer_name: string | null; customer_phone: string; book_id: string; created_at: string; payment_status: string }>;
+  const redeemedCodeRows = (redeemedCodes ?? []) as Array<{ id: string; book_id: string; redeemed_by: string | null; redeemed_at: string; request_id: string | null }>;
   const paidOrderRows = (paidOrders ?? []) as unknown as Array<{ id: string; buyer_id: string; paid_at: string | null; created_at: string; order_items: Array<{ book_id: string; books: { title: string } | { title: string }[] | null }> }>;
   const confirmedPaymentRows = (confirmedPayments ?? []) as Array<{ order_id: string; payer_phone: string | null }>;
-  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...libraryRows.map(row => row.seller_id), ...buyerRequestRows.map(row => row.customer_user_id).filter((id): id is string => Boolean(id)), ...paidOrderRows.map(row => row.buyer_id)])];
+  const profileIds = [...new Set([...sellerRows.map(row => row.user_id), ...libraryRows.map(row => row.seller_id), ...buyerRequestRows.map(row => row.customer_user_id).filter((id): id is string => Boolean(id)), ...redeemedCodeRows.map(row => row.redeemed_by).filter((id): id is string => Boolean(id)), ...paidOrderRows.map(row => row.buyer_id)])];
   const { data: profiles } = profileIds.length
     ? await supabase.from("profiles").select("id,full_name,email,phone").in("id", profileIds)
     : { data: [] as { id: string; full_name: string | null; email: string | null; phone: string | null }[] };
@@ -50,12 +52,23 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     if (date > existing.lastPurchase) existing.lastPurchase = date;
     buyerMap.set(key, existing);
   };
+  const requestById = new Map(buyerRequestRows.map(request => [request.id, request]));
   for (const request of buyerRequestRows) {
+    if (request.payment_status !== "received") continue;
     const profile = request.customer_user_id ? profileMap.get(request.customer_user_id) : null;
     const phone = profile?.phone || request.customer_phone;
     const key = request.customer_user_id || phone;
     const book = libraryRows.find(row => row.id === request.book_id);
     if (key) addBuyerPurchase(key, profile?.full_name || request.customer_name || "", phone, book?.title || "Kitabu kilicholipiwa", request.created_at);
+  }
+  for (const code of redeemedCodeRows) {
+    const request = code.request_id ? requestById.get(code.request_id) : null;
+    const profileId = request?.customer_user_id || code.redeemed_by;
+    const profile = profileId ? profileMap.get(profileId) : null;
+    const phone = profile?.phone || request?.customer_phone || "";
+    const key = request?.customer_user_id || code.redeemed_by || phone;
+    const book = libraryRows.find(row => row.id === code.book_id);
+    if (key) addBuyerPurchase(key, profile?.full_name || request?.customer_name || "", phone, book?.title || "Kitabu kilichofunguliwa kwa coupon", code.redeemed_at);
   }
   const paymentPhoneByOrder = new Map(confirmedPaymentRows.map(payment => [payment.order_id, payment.payer_phone || ""]));
   for (const order of paidOrderRows) {
@@ -108,7 +121,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
 
       <section className="admin-metric-grid" id="members">
-        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wanunuzi, wauzaji na wasimamizi</small></article>
+        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wauzaji na wasimamizi</small></article>
         <article className="admin-metric"><span className="metric-icon">♧</span><p>Maombi ya wauzaji</p><strong>{sellerCount ?? 0}</strong><small>Yanasubiri uamuzi</small></article>
         <article className="admin-metric"><span className="metric-icon">▤</span><p>Vitabu vya kukagua</p><strong>{bookCount ?? 0}</strong><small>Vinasubiri idhini</small></article>
       </section></>}
