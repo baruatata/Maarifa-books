@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RedeemBookCoupon } from "@/components/redeem-book-coupon";
-import { RequestBookCoupon } from "@/components/request-book-coupon";
+import { BookCouponOptions } from "@/components/book-coupon-options";
 
 export default async function BookDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ requested?: string; error?: string }> }) {
   const { id } = await params;
@@ -50,8 +49,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
             <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
-            {query.error && <p className="message" role="status">{query.error}</p>}
-            {query.requested === "1" ? <><p className="notice">Ombi lako limetumwa kwa muuzaji. Baada ya kuthibitisha malipo na kukutumia coupon, ingiza hapa chini.</p><RedeemBookCoupon bookId={book.id}/></> : <RequestBookCoupon bookId={book.id}/>}
+            <BookCouponOptions bookId={book.id} requested={query.requested === "1"} error={query.error}/>
           </> : <>
             <p className="book-payment-note">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
             <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link>
