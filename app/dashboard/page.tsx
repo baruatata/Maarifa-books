@@ -12,15 +12,19 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
   const { data: profile } = await supabase.from("profiles").select("full_name,role,seller_status").eq("id", user.id).single();
   if (profile?.role === "admin") redirect("/admin");
 
-  const [{ data: books }, { data: application }] = await Promise.all([
+  const [{ data: books }, { data: application }, { data: couponRequests, count: couponRequestCount }] = await Promise.all([
     supabase.from("books").select("id,title,status,price_tzs,format,created_at").eq("seller_id", user.id).order("created_at", { ascending: false }),
     supabase.from("seller_applications").select("store_name,status,review_note,phone_number").eq("user_id", user.id).maybeSingle(),
+    supabase.from("book_coupon_requests").select("id,book_id,customer_phone,created_at", { count: "exact" })
+      .eq("seller_id", user.id).eq("status", "pending").order("created_at", { ascending: false }).limit(5),
   ]);
 
   const rows = books ?? [];
   const approved = rows.filter(book => book.status === "approved").length;
   const pending = rows.filter(book => book.status === "pending").length;
   const paidBooks = rows.filter(book => book.price_tzs > 0).length;
+  const pendingCouponCount = couponRequestCount ?? 0;
+  const bookById = new Map(rows.map(book => [book.id, book]));
 
   if (application?.status === "approved") {
     return <main className="page seller-dashboard">
@@ -30,6 +34,14 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{er
         <article className="panel"><span>Vilivyoidhinishwa</span><strong>{approved}</strong></article>
         <article className="panel"><span>Vinasubiri ukaguzi</span><strong>{pending}</strong></article>
         <article className="panel"><span>Vitabu vya kulipia</span><strong>{paidBooks}</strong></article>
+      </section>
+      <section className="panel seller-books-panel" aria-live="polite">
+        <h2>Maombi ya coupon {pendingCouponCount > 0 && <span className="status">{pendingCouponCount} mapya</span>}</h2>
+        {pendingCouponCount > 0 ? <>
+          <p className="muted">Una maombi {pendingCouponCount} ya coupon yanayosubiri. Kagua taarifa za malipo kabla ya kuthibitisha kupokea fedha.</p>
+          <ul>{(couponRequests ?? []).map(request => <li key={request.id}>{bookById.get(request.book_id)?.title || "Kitabu"} — {request.customer_phone}</li>)}</ul>
+        </> : <p className="muted">Hakuna ombi jipya la coupon linalosubiri kwa sasa.</p>}
+        <Link className="btn btn-outline" href="/dashboard/kuponi">Fungua maombi ya coupon</Link>
       </section>
       <div className="seller-actions"><Link className="btn" href="/dashboard/kitabu">+ Pakia kitabu kipya</Link><Link className="btn btn-outline" href="/dashboard/kuponi">Tengeneza Coupon</Link><Link className="btn btn-outline" href="/dashboard/usalama">Usalama wa akaunti</Link><Link className="btn btn-outline" href="/dashboard/mawasiliano">Wasiliana na Admin</Link><Link className="btn btn-outline" href="/">Tazama maktaba</Link></div><section className="panel seller-books-panel"><h2>WhatsApp ya kupokea oda</h2><p className="muted">Wateja watatumia namba hii kuwasiliana nawe wanapotaka kununua kitabu. Baada ya kuthibitisha malipo, tengeneza coupon kwenye sehemu ya “Tengeneza Coupon” na umtumie mteja.</p><strong>{application.phone_number || "Namba haijawekwa"}</strong></section>
       <section className="panel seller-books-panel"><h2>Vitabu vyangu</h2>{!rows.length ? <p className="muted">Bado hujapakia kitabu. Bonyeza “Pakia kitabu kipya” kuanza kuuza.</p> : <div className="table-wrap"><table className="table"><thead><tr><th>Kitabu</th><th>Aina</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead><tbody>{rows.map(book => <tr key={book.id}><td>{book.title}</td><td>{String(book.format).toUpperCase()}</td><td>{book.price_tzs > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs) : "BURE"}</td><td><span className="status">{book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : "Rasimu"}</span></td><td><Link href={"/dashboard/kitabu/"+book.id}>Hariri</Link></td></tr>)}</tbody></table></div>}</section>
