@@ -17,7 +17,7 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   const price_tzs = Number(formData.get("price_tzs") ?? 0);
   if (!title || title.length > 180 || !["pdf","epub","audiobook"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0 || price_tzs > 100000000) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
   const { data, error } = await supabase.from("books").insert({
-    seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending"
+    seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:format === "audiobook" ? "draft" : "pending"
   }).select("id").single();
   if (error || !data) return {ok:false,error:error?.message ?? "Kitabu hakikuweza kuanzishwa."};
   return {ok:true,bookId:data.id};
@@ -139,7 +139,7 @@ export async function finishAudiobookUpload(bookId:string,coverPath:string,chapt
   const prefix=user.id+"/"+bookId+"/";
   if(!coverPath.startsWith(prefix)||!chapters.length||chapters.length>100) return {ok:false,error:"Taarifa za audiobook si sahihi."};
   if(chapters.some((c,i)=>!c.title.trim()||c.title.trim().length>180||!c.audioPath.startsWith(prefix)||!(/\.(mp3|m4a)$/i.test(c.audioPath))||!Number.isInteger(i+1))) return {ok:false,error:"Kagua majina na faili za sura."};
-  const {data:book}=await supabase.from("books").select("id,price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","pending").eq("format","audiobook").maybeSingle();
+  const {data:book}=await supabase.from("books").select("id,price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","draft").eq("format","audiobook").maybeSingle();
   if(!book) return {ok:false,error:"Rasimu ya audiobook haijapatikana."};
   if(book.price_tzs>0&&!chapters.some(c=>c.isPreview)) return {ok:false,error:"Kwa audiobook ya kulipia, chagua angalau sura moja ya sampuli ya bure."};
   const {data:files,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
@@ -149,7 +149,7 @@ export async function finishAudiobookUpload(bookId:string,coverPath:string,chapt
   const rows=chapters.map((c,i)=>({book_id:bookId,seller_id:user.id,chapter_index:i+1,title:c.title.trim(),audio_path:c.audioPath,is_preview:c.isPreview}));
   const {error:chapterError}=await supabase.from("book_audio_chapters").insert(rows);
   if(chapterError) return {ok:false,error:chapterError.message};
-  const {error}=await supabase.from("books").update({file_path:chapters[0].audioPath,cover_path:coverPath,preview_path:null}).eq("id",bookId).eq("seller_id",user.id).eq("status","pending");
+  const {error}=await supabase.from("books").update({file_path:chapters[0].audioPath,cover_path:coverPath,preview_path:null,status:"pending"}).eq("id",bookId).eq("seller_id",user.id).eq("status","draft");
   if(error){await supabase.from("book_audio_chapters").delete().eq("book_id",bookId).eq("seller_id",user.id);return {ok:false,error:error.message};}
   return {ok:true};
 }
