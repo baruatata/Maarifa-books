@@ -14,12 +14,15 @@ create table if not exists public.book_audio_chapters (
 alter table public.book_audio_chapters enable row level security;
 grant select, insert, update, delete on public.book_audio_chapters to authenticated;
 drop policy if exists "audiobook chapters visible by book access" on public.book_audio_chapters;
-create policy "audiobook chapters visible by book access"
-on public.book_audio_chapters for select to anon, authenticated
-using (
-  exists (select 1 from public.books b where b.id=book_id and
-    (b.status='approved' or b.seller_id=auth.uid() or public.is_admin()))
-);
+drop policy if exists "public reads approved audiobook chapters" on public.book_audio_chapters;
+create policy "public reads approved audiobook chapters"
+on public.book_audio_chapters for select to anon
+using (exists (select 1 from public.books b where b.id=book_id and b.status='approved'));
+drop policy if exists "authenticated reads audiobook chapters" on public.book_audio_chapters;
+create policy "authenticated reads audiobook chapters"
+on public.book_audio_chapters for select to authenticated
+using (exists (select 1 from public.books b where b.id=book_id and
+  (b.status='approved' or b.seller_id=auth.uid() or public.is_admin())));
 drop policy if exists "seller manages own pending audiobook chapters" on public.book_audio_chapters;
 create policy "seller manages own pending audiobook chapters"
 on public.book_audio_chapters for all to authenticated
@@ -34,25 +37,31 @@ create index if not exists book_audio_chapters_book_order_idx on public.book_aud
 -- Permit signed URLs only for chapters whose approved book access is valid.
 grant select on public.book_audio_chapters to anon;
 drop policy if exists "approved audiobook audio access" on storage.objects;
-create policy "approved audiobook audio access"
-on storage.objects for select to anon, authenticated
+drop policy if exists "public approved audiobook audio access" on storage.objects;
+create policy "public approved audiobook audio access"
+on storage.objects for select to anon
 using (
   bucket_id='book-files'
   and exists (
-    select 1
-    from public.book_audio_chapters c
+    select 1 from public.book_audio_chapters c
     join public.books b on b.id=c.book_id
-    where c.audio_path=name
-      and b.status='approved'
+    where c.audio_path=name and b.status='approved'
+      and (b.price_tzs=0 or c.is_preview)
+  )
+);
+drop policy if exists "authenticated approved audiobook audio access" on storage.objects;
+create policy "authenticated approved audiobook audio access"
+on storage.objects for select to authenticated
+using (
+  bucket_id='book-files'
+  and exists (
+    select 1 from public.book_audio_chapters c
+    join public.books b on b.id=c.book_id
+    where c.audio_path=name and b.status='approved'
       and (
-        b.price_tzs=0
-        or c.is_preview
-        or b.seller_id=auth.uid()
+        b.price_tzs=0 or c.is_preview or b.seller_id=auth.uid()
         or public.is_admin()
-        or exists (
-          select 1 from public.book_entitlements e
-          where e.book_id=b.id and e.buyer_id=auth.uid()
-        )
+        or exists (select 1 from public.book_entitlements e where e.book_id=b.id and e.buyer_id=auth.uid())
       )
   )
 );
