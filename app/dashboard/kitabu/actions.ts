@@ -138,7 +138,7 @@ export async function finishAudiobookUpload(bookId:string,coverPath:string,chapt
   if(!user) return {ok:false,error:"Tafadhali ingia tena."};
   const prefix=user.id+"/"+bookId+"/";
   if(!coverPath.startsWith(prefix)||!chapters.length||chapters.length>100) return {ok:false,error:"Taarifa za audiobook si sahihi."};
-  if(chapters.some((c,i)=>!c.title.trim()||c.title.trim().length>180||!c.audioPath.startsWith(prefix)||!(/\\.(mp3|m4a)$/i.test(c.audioPath))||!Number.isInteger(i+1))) return {ok:false,error:"Kagua majina na faili za sura."};
+  if(chapters.some((c,i)=>!c.title.trim()||c.title.trim().length>180||!c.audioPath.startsWith(prefix)||!(/\.(mp3|m4a)$/i.test(c.audioPath))||!Number.isInteger(i+1))) return {ok:false,error:"Kagua majina na faili za sura."};
   const {data:book}=await supabase.from("books").select("id,price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","pending").eq("format","audiobook").maybeSingle();
   if(!book) return {ok:false,error:"Rasimu ya audiobook haijapatikana."};
   if(book.price_tzs>0&&!chapters.some(c=>c.isPreview)) return {ok:false,error:"Kwa audiobook ya kulipia, chagua angalau sura moja ya sampuli ya bure."};
