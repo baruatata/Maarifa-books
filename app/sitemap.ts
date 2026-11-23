@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export const revalidate = 3600;
 
+const siteUrl = "https://maarifabooks.vercel.app";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://maarifabooks-baruatata-7134s-projects.vercel.app").replace(/\/$/, "");
   const supabase = await createClient();
   const { data: books } = await supabase
     .from("books")
