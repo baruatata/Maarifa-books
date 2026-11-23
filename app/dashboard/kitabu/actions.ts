@@ -123,10 +123,10 @@ export async function deleteSellerBook(bookId:string):Promise<{ok:true}|{ok:fals
   const {count,error:countError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(countError) return {ok:false,error:countError.message};
   if((count??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kukifuta kabisa ili kuhifadhi historia ya wanunuzi; badala yake wasiliana na Admin akiondoe kwenye maktaba."};
-  const {error}=await supabase.from("books").delete().eq("id",bookId).eq("seller_id",user.id);
-  if(error) return {ok:false,error:error.message};
   const paths=[book.file_path,book.preview_path,book.cover_path].filter(Boolean) as string[];
   if(book.format==="audiobook"){const {data:chapters}=await supabase.from("book_audio_chapters").select("audio_path").eq("book_id",bookId).eq("seller_id",user.id);for(const chapter of chapters??[])paths.push(chapter.audio_path);}
+  const {error}=await supabase.from("books").delete().eq("id",bookId).eq("seller_id",user.id);
+  if(error) return {ok:false,error:error.message};
   if(paths.length) await supabase.storage.from("book-files").remove([...new Set(paths)]);
   return {ok:true};
 }
