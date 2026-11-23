@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
-export default function robots(): MetadataRoute.Robots {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://maarifabooks-baruatata-7134s-projects.vercel.app").replace(/\/$/, "");
+const siteUrl = "https://maarifabooks.vercel.app";
 
+export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
