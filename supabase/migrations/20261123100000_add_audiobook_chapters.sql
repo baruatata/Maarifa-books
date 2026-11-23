@@ -17,12 +17,22 @@ drop policy if exists "audiobook chapters visible by book access" on public.book
 drop policy if exists "public reads approved audiobook chapters" on public.book_audio_chapters;
 create policy "public reads approved audiobook chapters"
 on public.book_audio_chapters for select to anon
-using (exists (select 1 from public.books b where b.id=book_id and b.status='approved'));
+using (exists (select 1 from public.books b where b.id=book_id and b.status='approved' and (b.price_tzs=0 or is_preview)));
 drop policy if exists "authenticated reads audiobook chapters" on public.book_audio_chapters;
 create policy "authenticated reads audiobook chapters"
 on public.book_audio_chapters for select to authenticated
-using (exists (select 1 from public.books b where b.id=book_id and
-  (b.status='approved' or b.seller_id=auth.uid() or public.is_admin())));
+using (
+  exists (
+    select 1 from public.books b where b.id=book_id and (
+      (b.status='approved' and (
+        b.price_tzs=0 or is_preview or b.seller_id=auth.uid()
+        or public.is_admin()
+        or exists (select 1 from public.book_entitlements e where e.book_id=b.id and e.buyer_id=auth.uid())
+      ))
+      or b.seller_id=auth.uid() or public.is_admin()
+    )
+  )
+);
 drop policy if exists "seller manages own pending audiobook chapters" on public.book_audio_chapters;
 create policy "seller manages own pending audiobook chapters"
 on public.book_audio_chapters for all to authenticated
