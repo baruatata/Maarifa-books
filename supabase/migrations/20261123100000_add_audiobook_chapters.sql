@@ -26,10 +26,10 @@ using (
     select 1 from public.books b where b.id=book_id and (
       (b.status='approved' and (
         b.price_tzs=0 or is_preview or b.seller_id=auth.uid()
-        or public.is_admin()
+        or private.is_admin()
         or exists (select 1 from public.book_entitlements e where e.book_id=b.id and e.buyer_id=auth.uid())
       ))
-      or b.seller_id=auth.uid() or public.is_admin()
+      or b.seller_id=auth.uid() or private.is_admin()
     )
   )
 );
@@ -70,7 +70,7 @@ using (
     where c.audio_path=name and b.status='approved'
       and (
         b.price_tzs=0 or c.is_preview or b.seller_id=auth.uid()
-        or public.is_admin()
+        or private.is_admin()
         or exists (select 1 from public.book_entitlements e where e.book_id=b.id and e.buyer_id=auth.uid())
       )
   )
