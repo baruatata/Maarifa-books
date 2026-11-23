@@ -15,9 +15,9 @@ export async function createBookDraft(formData: FormData): Promise<{ok:true;book
   const format = String(formData.get("format") ?? "pdf");
   const language = String(formData.get("language") ?? "sw");
   const price_tzs = Number(formData.get("price_tzs") ?? 0);
-  if (!title || title.length > 180 || !["pdf","epub"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0 || price_tzs > 100000000) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
+  if (!title || title.length > 180 || !["pdf","epub","audiobook"].includes(format) || !["sw","en","other"].includes(language) || !Number.isSafeInteger(price_tzs) || price_tzs < 0 || price_tzs > 100000000) return {ok:false,error:"Kagua jina, muundo, lugha na bei ya kitabu."};
   const { data, error } = await supabase.from("books").insert({
-    seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:"pending"
+    seller_id:user.id,title,author_name,description,category,format,language,price_tzs,status:format === "audiobook" ? "draft" : "pending"
   }).select("id").single();
   if (error || !data) return {ok:false,error:error?.message ?? "Kitabu hakikuweza kuanzishwa."};
   return {ok:true,bookId:data.id};
@@ -75,8 +75,9 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   const language=String(formData.get("language")||"sw");
   const price_tzs=Number(formData.get("price_tzs")??0);
   if(!title||title.length>180||!["sw","en","other"].includes(language)||!Number.isSafeInteger(price_tzs)||price_tzs<0||price_tzs>100000000) return {ok:false,error:"Kagua taarifa na bei ya kitabu."};
-  const {data:existingBook}=await supabase.from("books").select("preview_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
-  if(price_tzs>0&&!existingBook?.preview_path) return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli ya bure. Wasiliana na Admin ili kuweka sampuli."};
+  const {data:existingBook}=await supabase.from("books").select("preview_path,format").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(price_tzs>0&&!existingBook?.preview_path&&existingBook?.format!=="audiobook") return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli ya bure. Wasiliana na Admin ili kuweka sampuli."};
+  if(price_tzs>0&&existingBook?.format==="audiobook"){const {data:previewChapters}=await supabase.from("book_audio_chapters").select("id").eq("book_id",bookId).eq("is_preview",true).limit(1);if(!previewChapters?.length)return {ok:false,error:"Audiobook ya kulipia inahitaji angalau sura moja ya sampuli ya bure."};}
   const {count: soldCount,error: soldError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(soldError) return {ok:false,error:"Imeshindikana kukagua historia ya mauzo."};
   if((soldCount??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kubadilisha toleo lililonunuliwa; wasiliana na Admin kwa marekebisho."};
@@ -117,14 +118,38 @@ export async function deleteSellerBook(bookId:string):Promise<{ok:true}|{ok:fals
   if(!user) return {ok:false,error:"Ingia kwanza."};
   const {data:application}=await supabase.from("seller_applications").select("status").eq("user_id",user.id).maybeSingle();
   if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
-  const {data:book,error:readError}=await supabase.from("books").select("id,file_path,preview_path,cover_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  const {data:book,error:readError}=await supabase.from("books").select("id,file_path,preview_path,cover_path,format").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
   if(readError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
   const {count,error:countError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(countError) return {ok:false,error:countError.message};
   if((count??0)>0) return {ok:false,error:"Kitabu hiki tayari kimenunuliwa. Huwezi kukifuta kabisa ili kuhifadhi historia ya wanunuzi; badala yake wasiliana na Admin akiondoe kwenye maktaba."};
+  const paths=[book.file_path,book.preview_path,book.cover_path].filter(Boolean) as string[];
+  if(book.format==="audiobook"){const {data:chapters}=await supabase.from("book_audio_chapters").select("audio_path").eq("book_id",bookId).eq("seller_id",user.id);for(const chapter of chapters??[])paths.push(chapter.audio_path);}
   const {error}=await supabase.from("books").delete().eq("id",bookId).eq("seller_id",user.id);
   if(error) return {ok:false,error:error.message};
-  const paths=[book.file_path,book.preview_path,book.cover_path].filter(Boolean) as string[];
-  if(paths.length) await supabase.storage.from("book-files").remove(paths);
+  if(paths.length) await supabase.storage.from("book-files").remove([...new Set(paths)]);
+  return {ok:true};
+}
+
+
+export async function finishAudiobookUpload(bookId:string,coverPath:string,chapters:{title:string;audioPath:string;isPreview:boolean}[]):Promise<{ok:true}|{ok:false;error:string}> {
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return {ok:false,error:"Tafadhali ingia tena."};
+  const prefix=user.id+"/"+bookId+"/";
+  if(!coverPath.startsWith(prefix)||!chapters.length||chapters.length>100) return {ok:false,error:"Taarifa za audiobook si sahihi."};
+  if(chapters.some((c,i)=>!c.title.trim()||c.title.trim().length>180||!c.audioPath.startsWith(prefix)||!(/\.(mp3|m4a)$/i.test(c.audioPath))||!Number.isInteger(i+1))) return {ok:false,error:"Kagua majina na faili za sura."};
+  const {data:book}=await supabase.from("books").select("id,price_tzs").eq("id",bookId).eq("seller_id",user.id).eq("status","draft").eq("format","audiobook").maybeSingle();
+  if(!book) return {ok:false,error:"Rasimu ya audiobook haijapatikana."};
+  if(book.price_tzs>0&&!chapters.some(c=>c.isPreview)) return {ok:false,error:"Kwa audiobook ya kulipia, chagua angalau sura moja ya sampuli ya bure."};
+  const {data:files,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
+  if(listError) return {ok:false,error:"Imeshindikana kuthibitisha faili zilizopakiwa."};
+  const names=new Set((files??[]).map(f=>f.name));
+  if(!names.has(coverPath.split("/").pop()!)||chapters.some(c=>!names.has(c.audioPath.split("/").pop()!))) return {ok:false,error:"Baadhi ya faili hazijafika kwenye hifadhi."};
+  const rows=chapters.map((c,i)=>({book_id:bookId,seller_id:user.id,chapter_index:i+1,title:c.title.trim(),audio_path:c.audioPath,is_preview:c.isPreview}));
+  const {error:chapterError}=await supabase.from("book_audio_chapters").insert(rows);
+  if(chapterError) return {ok:false,error:chapterError.message};
+  const {error}=await supabase.from("books").update({file_path:chapters[0].audioPath,cover_path:coverPath,preview_path:null,status:"pending"}).eq("id",bookId).eq("seller_id",user.id).eq("status","draft");
+  if(error){await supabase.from("book_audio_chapters").delete().eq("book_id",bookId).eq("seller_id",user.id);return {ok:false,error:error.message};}
   return {ok:true};
 }

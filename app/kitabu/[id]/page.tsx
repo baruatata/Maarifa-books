@@ -33,7 +33,7 @@ export default async function BookDetailsPage({ params, searchParams }: { params
     }
   }
 
-  const formatLabel: Record<string, string> = { pdf: "PDF", epub: "EPUB" };
+  const formatLabel: Record<string, string> = { pdf: "PDF", epub: "EPUB", audiobook: "Audiobook" };
   const languageLabel: Record<string, string> = { sw: "Kiswahili", en: "Kiingereza", other: "Lugha nyingine" };
 
   return <main className="page book-detail-page">
@@ -52,16 +52,16 @@ export default async function BookDetailsPage({ params, searchParams }: { params
         <div className="book-purchase-panel">
           {isSellerOwner ? <>
             <p className="notice">Hiki ni kitabu chako kama muuzaji. Unaweza kukisoma chote bila kulipia wala kutumia coupon.</p>
-            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu changu</Link>
+            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma / Sikiliza kitabu changu</Link>
           </> : book.price_tzs > 0 ? <>
             <div><span className="muted">Bei ya kitabu</span><strong>{"TSh " + new Intl.NumberFormat("sw-TZ").format(book.price_tzs)}</strong></div>
-            <p className="book-payment-note">Soma sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
+            <p className="book-payment-note">Soma / Sikiliza sampuli ya bure yenye sura za mwanzo. Ukipenda kuendelea, wasiliana na muuzaji kupitia WhatsApp, lipa moja kwa moja kwake, kisha atakutumia coupon ya kufungua kitabu kizima.</p>
             {whatsappHref ? <a className="btn book-buy-button" href={whatsappHref} target="_blank" rel="noreferrer">Wasiliana na muuzaji WhatsApp</a> : <p className="message">Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</p>}
             <Link className="btn btn-outline book-buy-button" href={"/soma/" + book.id}>Soma sampuli ya bure</Link>
             <BookCouponOptions bookId={book.id} requested={query.requested === "1"} error={query.error}/>
           </> : <>
             <p className="book-payment-note">Kitabu hiki kinapatikana bure kupitia MaarifaBooks.</p>
-            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma kitabu sasa</Link>
+            <Link className="btn book-buy-button" href={"/soma/" + book.id}>Soma / Sikiliza kitabu sasa</Link>
           </>}
         </div>
       </div>
