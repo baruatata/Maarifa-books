@@ -49,8 +49,8 @@ export default async function Home({ searchParams }: HomeProps) {
           <img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" />
         </div>
         <p className="home-kicker">SOMA · JIFUNZE · ENDELEA</p>
-        <h1>Karibu kwenye ulimwengu wa vitabu</h1>
-        <p className="home-intro">Gundua vitabu vya kidijitali, waandishi wapya na maarifa yatakayokusaidia kukua. Kitabu chako, popote ulipo!</p>
+        <h1>Vitabu bora, waandishi mahiri na maarifa yasiyo na mipaka.</h1>
+        <p className="home-intro">Soma, jifunze na ukue popote ulipo.</p>
         <form className="book-search" action="/" method="get" role="search">
           <span aria-hidden="true">⌕</span>
           <input type="search" name="q" defaultValue={q} placeholder="Tafuta kitabu au mwandishi..." aria-label="Tafuta kitabu au mwandishi" />
