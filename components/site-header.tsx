@@ -22,7 +22,7 @@ export async function SiteHeader() {
       </Link>
       <nav aria-label="Menyu kuu">
         <Link className="nav-cta" href="/#vitabu">Vitabu</Link>
-        <Link className="nav-cta" href="/mafunzo">Mafunzo</Link>
+        <Link className="nav-cta" href="/mafunzo">Muongozo</Link>
         {user ? (
           <>
             {profile?.role === "buyer" && <Link className="nav-cta" href="/dashboard/jihudumie">Jihudumie</Link>}
