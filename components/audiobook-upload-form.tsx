@@ -22,7 +22,7 @@ export function AudiobookUploadForm(){
       if(!(cover instanceof File)||!cover.size)throw new Error("Chagua jalada la kitabu.");
       if(cover.size>8*1024*1024||!["image/jpeg","image/png","image/webp"].includes(cover.type))throw new Error("Jalada liwe JPG, PNG au WebP na lisizidi MB 8.");
       if(!chapters.length||chapters.some(c=>!c.title.trim()||!c.file))throw new Error("Jaza jina na faili la kila sura.");
-      if(chapters.some(c=>!c.file||c.file.size>MAX_AUDIO_SIZE||!(/\\.(mp3|m4a)$/i.test(c.file.name))))throw new Error("Sauti ziwe MP3 au M4A na zisizidi MB 100 kila moja.");
+      if(chapters.some(c=>!c.file||c.file.size>MAX_AUDIO_SIZE||!(/\.(mp3|m4a)$/i.test(c.file.name))))throw new Error("Sauti ziwe MP3 au M4A na zisizidi MB 100 kila moja.");
       const price=Number(data.get("price_tzs")||0);
       if(!Number.isSafeInteger(price)||price<0||price>100000000)throw new Error("Weka bei sahihi ya kitabu.");
       if(price>0&&!chapters.some(c=>c.isPreview))throw new Error("Chagua angalau sura moja ya sampuli ya bure kwa kitabu cha kulipia.");
