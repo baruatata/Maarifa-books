@@ -30,3 +30,29 @@ with check (
   seller_id=auth.uid() and exists (select 1 from public.books b where b.id=book_id and b.seller_id=auth.uid() and b.status in ('draft','pending') and b.format='audiobook')
 );
 create index if not exists book_audio_chapters_book_order_idx on public.book_audio_chapters(book_id,chapter_index);
+
+-- Permit signed URLs only for chapters whose approved book access is valid.
+grant select on public.book_audio_chapters to anon;
+drop policy if exists "approved audiobook audio access" on storage.objects;
+create policy "approved audiobook audio access"
+on storage.objects for select to anon, authenticated
+using (
+  bucket_id='book-files'
+  and exists (
+    select 1
+    from public.book_audio_chapters c
+    join public.books b on b.id=c.book_id
+    where c.audio_path=name
+      and b.status='approved'
+      and (
+        b.price_tzs=0
+        or c.is_preview
+        or b.seller_id=auth.uid()
+        or public.is_admin()
+        or exists (
+          select 1 from public.book_entitlements e
+          where e.book_id=b.id and e.buyer_id=auth.uid()
+        )
+      )
+  )
+);
