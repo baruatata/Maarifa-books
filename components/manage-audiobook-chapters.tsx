@@ -26,7 +26,7 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
     return {supabase,path};
   }
   async function addChapter(event:React.FormEvent<HTMLFormElement>){
-    event.preventDefault();if(!file||!title.trim())return;
+    event.preventDefault();const form=event.currentTarget;if(!file||!title.trim())return;
     setBusy(true);setMessage("");
     let uploaded:{supabase:ReturnType<typeof createBrowserClient>;path:string}|null=null;
     try{
@@ -34,7 +34,7 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
       const result=await addAudiobookChapter(bookId,title,uploaded.path,preview);
       if(!result.ok)throw new Error(result.error);
       setChapters(current=>[...current,{id:"new-"+Date.now(),chapter_index:Math.max(0,...current.map(c=>c.chapter_index))+1,title:title.trim(),audio_path:uploaded!.path,is_preview:preview}]);
-      setTitle("");setFile(null);setPreview(false);event.currentTarget.reset();
+      setTitle("");setFile(null);setPreview(false);form.reset();
       setMessage("Sura mpya imeongezwa. Audiobook imerudishwa kwa Admin kwa ukaguzi.");
     }catch(error){
       if(uploaded)await uploaded.supabase.storage.from("book-files").remove([uploaded.path]);
@@ -51,7 +51,6 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
       const result=await updateAudiobookChapter(bookId,chapter.id,nextTitle,uploaded?.path||null,nextPreview);
       if(!result.ok)throw new Error(result.error);
       setChapters(current=>current.map((c,i)=>i===index?{...c,title:nextTitle,is_preview:nextPreview,audio_path:uploaded?.path||c.audio_path}:c));
-      form.reset();
       setMessage("Mabadiliko ya sura yamehifadhiwa. Audiobook imerudishwa kwa Admin kwa ukaguzi.");
     }catch(error){
       if(uploaded)await uploaded.supabase.storage.from("book-files").remove([uploaded.path]);
