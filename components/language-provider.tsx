@@ -33,17 +33,21 @@ export function useLanguage() {
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
   const router = useRouter();
-  const choose = (next: Language) => {
-    setLanguage(next);
+  const nextLanguage: Language = language === "sw" ? "en" : "sw";
+  const choose = () => {
+    setLanguage(nextLanguage);
     router.refresh();
   };
   return (
-    <div className="language-toggle" role="group" aria-label="Choose language">
-      <button type="button" className={language === "sw" ? "language-option active" : "language-option"}
-        aria-pressed={language === "sw"} onClick={() => choose("sw")}><span aria-hidden="true">🇹🇿</span><span>Kiswahili</span></button>
-      <button type="button" className={language === "en" ? "language-option active" : "language-option"}
-        aria-pressed={language === "en"} onClick={() => choose("en")}><span aria-hidden="true">🇬🇧</span><span>English</span></button>
-    </div>
+    <button
+      type="button"
+      className="language-toggle"
+      onClick={choose}
+      aria-label={language === "sw" ? "Switch language to English" : "Badili lugha iwe Kiswahili"}
+      title={language === "sw" ? "English" : "Kiswahili"}
+    >
+      <span aria-hidden="true">{language === "sw" ? "🇹🇿" : "🇬🇧"}</span>
+    </button>
   );
 }
 
