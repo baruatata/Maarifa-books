@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { createBookDraft, finishAudiobookUpload } from "@/app/dashboard/kitabu/actions";
+import { useLanguage } from "@/components/language-provider";
 
 type Chapter={title:string;file:File|null;isPreview:boolean};
 const MAX_AUDIO_SIZE=100*1024*1024;
