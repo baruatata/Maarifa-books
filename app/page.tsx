@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HomeBackToTop } from "@/components/home-back-to-top";
 import { HomeHeroSlider } from "@/components/home-hero-slider";
 import { createClient } from "@/lib/supabase/server";
+import { LanguageText } from "@/components/language-provider";
 
 type Book = {
   id: string;
@@ -53,15 +54,15 @@ export default async function Home({ searchParams }: HomeProps) {
       <section className="home-section" id="vitabu">
         <div className="home-section-head">
           <div>
-            <p className="home-kicker">MAKTABA YETU</p>
-            <h2>{q ? "Matokeo ya utafutaji" : category ? category : "Vitabu vipya"}</h2>
+            <p className="home-kicker"><LanguageText sw="MAKTABA YETU" en="OUR LIBRARY" /></p>
+            <h2>{q ? <LanguageText sw="Matokeo ya utafutaji" en="Search results" /> : category ? category : <LanguageText sw="Vitabu vipya" en="New books" />}</h2>
           </div>
-          <span className="book-count">{books.length} vitabu</span>
+          <span className="book-count">{books.length} <LanguageText sw="vitabu" en="books" /></span>
         </div>
 
         {categories.length > 0 && (
-          <nav className="category-chips" aria-label="Makundi ya vitabu">
-            <Link className={!category ? "active" : ""} href="/">Vyote</Link>
+          <nav className="category-chips" aria-label="Book categories">
+            <Link className={!category ? "active" : ""} href="/"><LanguageText sw="Vyote" en="All" /></Link>
             {categories.map((item) => (
               <Link className={category === item ? "active" : ""} href={`/?category=${encodeURIComponent(item)}`} key={item}>{item}</Link>
             ))}
@@ -71,9 +72,9 @@ export default async function Home({ searchParams }: HomeProps) {
         {books.length === 0 ? (
           <div className="home-empty">
             <div className="empty-book-icon">▤</div>
-            <h3>{q || category ? "Hakuna kitabu kilichopatikana" : "Maktaba inaanza kujengwa"}</h3>
-            <p>{q || category ? "Jaribu neno jingine au ondoa kichujio cha kundi." : "Vitabu vitaonekana hapa baada ya wauzaji kuviwasilisha na msimamizi kuviidhinisha."}</p>
-            {(q || category) && <Link href="/">Ona vitabu vyote</Link>}
+            <h3>{q || category ? <LanguageText sw="Hakuna kitabu kilichopatikana" en="No books found" /> : <LanguageText sw="Maktaba inaanza kujengwa" en="The library is being built" />}</h3>
+            <p>{q || category ? <LanguageText sw="Jaribu neno jingine au ondoa kichujio cha kundi." en="Try another search term or clear the category filter." /> : <LanguageText sw="Vitabu vitaonekana hapa baada ya wauzaji kuviwasilisha na msimamizi kuviidhinisha." en="Books will appear here after sellers submit them and an administrator approves them." />}</p>
+            {(q || category) && <Link href="/"><LanguageText sw="Ona vitabu vyote" en="View all books" /></Link>}
           </div>
         ) : (
           <div className="home-book-grid">
@@ -97,11 +98,11 @@ export default async function Home({ searchParams }: HomeProps) {
 
       <section className="home-seller">
         <div>
-          <p className="home-kicker">KWA WAANDISHI NA WACHAPISHAJI</p>
-          <h2>Kitabu chako kinaweza kuwafikia wasomaji wengi zaidi.</h2>
-          <p>Omba kujiunga kama muuzaji. Chagua kuweka kitabu bure au kwa bei yako. Mteja hulipa moja kwa moja kwako kupitia WhatsApp.</p>
+          <p className="home-kicker"><LanguageText sw="KWA WAANDISHI NA WACHAPISHAJI" en="FOR AUTHORS AND PUBLISHERS" /></p>
+          <h2><LanguageText sw="Kitabu chako kinaweza kuwafikia wasomaji wengi zaidi." en="Your book can reach more readers." /></h2>
+          <p><LanguageText sw="Omba kujiunga kama muuzaji. Chagua kuweka kitabu bure au kwa bei yako. Mteja hulipa moja kwa moja kwako kupitia WhatsApp." en="Apply to become a seller. Offer your book for free or set your own price. Customers pay you directly through WhatsApp." /></p>
         </div>
-        <Link href="/wauzaji">Anza kuuza vitabu <span aria-hidden="true">→</span></Link>
+        <Link href="/wauzaji"><LanguageText sw="Anza kuuza vitabu" en="Start selling books" /> <span aria-hidden="true">→</span></Link>
       </section>
       <footer className="home-footer">MaarifaBooks <span>·</span> Sehemu ya Lumbwa Digital</footer>
       <HomeBackToTop />
