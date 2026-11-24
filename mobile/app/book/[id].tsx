@@ -82,6 +82,14 @@ export default function BookDetailsScreen() {
 
   async function openBook(){
     if(!book)return;
+    if(book.format==="pdf"){
+      router.push("/read/"+book.id);
+      return;
+    }
+    if(book.format==="audiobook"){
+      router.push("/listen/"+book.id);
+      return;
+    }
     try{
       const path=unlocked||book.price_tzs===0||userId===book.seller_id?book.file_path:book.preview_path;
       if(!path)throw new Error("Faili la kitabu halijawekwa.");
