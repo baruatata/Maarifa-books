@@ -774,3 +774,72 @@ body{background:#f7f8fb}
   .hero-slide{animation:none}
   .hero-slider-dot{transition:none}
 }
+
+
+/* Image-based MaarifaBooks promotional hero banners */
+.home-hero{
+  display:block!important;
+  width:min(1240px,calc(100% - 40px))!important;
+  max-width:1240px!important;
+  margin:0 auto 26px!important;
+  padding:0 0 22px!important;
+  overflow:hidden!important;
+  text-align:center!important;
+  border:1px solid #e8e4da!important;
+  border-top:0!important;
+  border-radius:0 0 24px 24px!important;
+  background:linear-gradient(115deg,#f7f5f0 0%,#fbfaf7 60%,#f2ecdf 100%)!important;
+}
+.hero-slider{
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  padding:0!important;
+  color:inherit!important;
+}
+.hero-banner-link{
+  display:block;
+  width:100%;
+  overflow:hidden;
+  line-height:0;
+  background:#101d36;
+}
+.hero-banner-image{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:20/7;
+  object-fit:cover;
+  animation:hero-banner-enter .45s ease both;
+}
+.hero-slider-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:15px 0 3px!important;
+}
+.hero-slider-dot{
+  width:10px;
+  height:10px;
+  min-width:10px;
+  min-height:10px;
+  border:0;
+  border-radius:999px;
+  background:#b9b4a9;
+  cursor:pointer;
+}
+.hero-slider-dot.active{width:28px;background:#a77b31}
+.home-hero .book-search{width:min(720px,calc(100% - 36px));margin:15px auto 0}
+.home-hero .hero-links{justify-content:center!important;padding:0 18px 0!important;margin-top:17px}
+.home-hero .hero-links a{color:#8d6525!important}
+@keyframes hero-banner-enter{from{opacity:.55;transform:scale(1.008)}to{opacity:1;transform:scale(1)}}
+@media(max-width:640px){
+  .home-hero{width:100%!important;margin:0 auto 20px!important;padding-bottom:19px!important;border-radius:0 0 20px 20px!important}
+  .hero-banner-image{aspect-ratio:16/7;object-fit:cover}
+  .hero-slider-controls{padding:11px 0 1px!important}
+  .home-hero .book-search{width:calc(100% - 28px);margin-top:12px}
+}
+@media(prefers-reduced-motion:reduce){.hero-banner-image{animation:none}}
