@@ -18,7 +18,7 @@ Mahitaji: Node.js 20 LTS, Expo SDK 54 na development build. PDF, EPUB na audio h
 3. Nakili `.env.example` kuwa `.env`.
 4. Weka Supabase project URL na publishable key ya MaarifaBooks.
 5. Endesha `npm run start` kwa kuanzisha Expo.
-6. Kwa majaribio ya kifaa, tengeneza development build kupitia EAS Build baada ya EAS project kusanidiwa.
+6. Unganisha folda hii na EAS project ya akaunti yako kwa `eas init` (hatua hii inahitaji kuingia kwenye akaunti ya Expo/EAS na kuweka project ID kwenye app config).\n7. Tengeneza Android APK na iPhone device build kwa `eas build --profile preview --platform all`. iOS device build inahitaji akaunti na provisioning ya Apple Developer; unaweza kutumia `preview-simulator` kwa iOS Simulator pekee.
 
 Usiweke Supabase secret/service-role key ndani ya App.
 
@@ -31,6 +31,6 @@ Usiweke Supabase secret/service-role key ndani ya App.
 - OTP ya simu bado inahitaji kuthibitishwa na mipangilio halisi ya Supabase Auth; hakuna SMS ya E-Hub iliyotumwa wakati wa maendeleo haya.
 
 ## Hali na vikwazo vya majaribio
-Msingi wa app na vipengele vilivyoorodheshwa vipo kwenye branch `mobile-app-development`. GitHub Actions hukagua utegemezi, TypeScript, Expo config na native prebuild ya Android/iOS.
+Msingi wa app na vipengele vilivyoorodheshwa vipo kwenye branch `mobile-app-development`. GitHub Actions hukagua utegemezi, TypeScript, Expo config na native prebuild ya Android/iOS. EAS ina profile ya `preview` kwa Android APK na iPhone ya kifaa halisi, pamoja na `preview-simulator` kwa iOS Simulator.
 
 Bado tunahitaji majaribio kwenye vifaa halisi vya Android na iPhone, kitabu halisi cha EPUB cha majaribio, na kuthibitisha mtiririko wa malipo/coupon na OTP bila kutumia salio la E-Hub. Uendelezaji huu haujaunganishwa na `main`, haujawekwa Production, na app haijachapishwa Play Store/App Store.
