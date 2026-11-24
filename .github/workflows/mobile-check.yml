@@ -14,7 +14,22 @@ on:
       - ".github/workflows/mobile-check.yml"
       - ".github/workflows/eas-project-init.yml"
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
+  enable-eas-workflow:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-enable Expo EAS project workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PUT repos/${GITHUB_REPOSITORY}/actions/workflows/eas-project-init.yml/enable
+          echo "Expo EAS project workflow has been enabled."
+
   validate:
     runs-on: ubuntu-latest
     defaults:
