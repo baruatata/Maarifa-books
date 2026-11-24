@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HomeBackToTop } from "@/components/home-back-to-top";
+import { HomeHeroSlider } from "@/components/home-hero-slider";
 import { createClient } from "@/lib/supabase/server";
 
 type Book = {
@@ -36,32 +37,18 @@ export default async function Home({ searchParams }: HomeProps) {
   const books = (data ?? []) as Book[];
   const categories = Array.from(new Set(books.map((book) => book.category).filter((value): value is string => Boolean(value))));
 
-  const covers = new Map(await Promise.all(books.map(async (book) => {
-    if (!book.cover_path) return [book.id, null] as const;
-    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
-    return [book.id, signed?.signedUrl ?? null] as const;
-  })));
+  // Sign all available covers in one Storage request instead of one request per book.
+  const coverPaths = books.flatMap((book) => book.cover_path ? [book.cover_path] : []);
+  const { data: signedCovers } = coverPaths.length
+    ? await supabase.storage.from("book-files").createSignedUrls(coverPaths, 86400)
+    : { data: [] };
+  const covers = new Map(
+    (signedCovers ?? []).flatMap((item) => item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
+  );
 
   return (
     <main className="home-shell">
-      <section className="home-hero">
-        <div className="home-brand-art">
-          <img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" />
-        </div>
-        <p className="home-kicker">SOMA · JIFUNZE · ENDELEA</p>
-        <h1>Vitabu bora, waandishi mahiri na maarifa yasiyo na mipaka.</h1>
-        <p className="home-intro">Soma, jifunze na ukue popote ulipo.</p>
-        <form className="book-search" action="/" method="get" role="search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" name="q" defaultValue={q} placeholder="Tafuta kitabu au mwandishi..." aria-label="Tafuta kitabu au mwandishi" />
-          {category ? <input type="hidden" name="category" value={category} /> : null}
-          <button type="submit">Tafuta</button>
-        </form>
-        <div className="hero-links">
-          <Link href="#vitabu">Chunguza vitabu</Link>
-          <Link href="/wauzaji">Uza vitabu vyako</Link>
-        </div>
-      </section>
+      <HomeHeroSlider q={q} category={category} />
 
       <section className="home-section" id="vitabu">
         <div className="home-section-head">
@@ -90,10 +77,10 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
         ) : (
           <div className="home-book-grid">
-            {books.map((book) => (
+            {books.map((book, index) => (
               <Link href={`/kitabu/${book.id}`} className="home-book-card" key={book.id} aria-label={`Angalia maelezo ya ${book.title}`}>
-                {covers.get(book.id) ? (
-                  <img className="home-book-cover" src={covers.get(book.id)!} alt={`Jalada la ${book.title}`} />
+                {book.cover_path && covers.get(book.cover_path) ? (
+                  <img className="home-book-cover" src={covers.get(book.cover_path)!} alt={`Jalada la ${book.title}`} loading={index < 4 ? "eager" : "lazy"} fetchPriority={index < 4 ? "high" : "auto"} decoding="async" width={480} height={640} sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw" />
                 ) : (
                   <div className="home-book-placeholder"><span>MAARIFABOOKS</span><strong>{book.title}</strong><small>{book.author_name ?? "Mwandishi"}</small></div>
                 )}
