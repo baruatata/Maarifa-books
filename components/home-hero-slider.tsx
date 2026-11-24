@@ -1,29 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 const slides = [
   {
-    eyebrow: "SOMA · JIFUNZE · ENDELEA",
-    title: "Vitabu bora, waandishi mahiri na maarifa yasiyo na mipaka.",
-    description: "Soma, jifunze na ukue popote ulipo.",
-    action: "Chunguza vitabu",
+    image: "/ads/maarifabooks-soma.svg",
+    alt: "MaarifaBooks: Soma vitabu, panua maarifa. Vitabu vya kidijitali vinavyokupa maarifa popote ulipo.",
     href: "#vitabu",
+    label: "Gundua vitabu",
   },
   {
-    eyebrow: "GUNDUA MAARIFA MAPYA",
-    title: "Kitabu chako kinachofuata kinakusubiri.",
-    description: "Jifunze mambo mapya kupitia vitabu vya kidijitali.",
-    action: "Tazama vitabu",
-    href: "#vitabu",
-  },
-  {
-    eyebrow: "JUKWAA LA WAANDISHI NA WACHAPISHAJI",
-    title: "Kitabu chako kifikie wasomaji wengi zaidi.",
-    description: "Jiunge na MaarifaBooks kama muuzaji wa vitabu.",
-    action: "Anza kuuza vitabu",
+    image: "/ads/maarifabooks-waandishi.svg",
+    alt: "MaarifaBooks: Wewe ni mwandishi? Kitabu chako kisomwe. Jiunge kama muuzaji.",
     href: "/wauzaji",
+    label: "Jiunge kama muuzaji",
+  },
+  {
+    image: "/ads/maarifabooks-jifunze.svg",
+    alt: "MaarifaBooks: Jifunze kila siku, kua kwa kusoma. Maarifa mapya yanaanza na kitabu kimoja.",
+    href: "#vitabu",
+    label: "Anza kusoma",
   },
 ];
 
@@ -46,22 +44,30 @@ export function HomeHeroSlider({ q, category }: HomeHeroSliderProps) {
 
   return (
     <section className="home-hero" aria-label="Matangazo ya MaarifaBooks">
-      <div className="hero-slider" aria-live="polite" aria-atomic="true">
-        <div className="hero-slide" key={active}>
-          <p className="home-kicker">{slide.eyebrow}</p>
-          <h1>{slide.title}</h1>
-          <p className="home-intro">{slide.description}</p>
-          <Link className="hero-slide-action" href={slide.href}>
-            {slide.action} <span aria-hidden="true">→</span>
-          </Link>
-        </div>
+      <div className="hero-slider">
+        <Link
+          className="hero-banner-link"
+          href={slide.href}
+          aria-label={slide.label}
+          key={active}
+        >
+          <Image
+            className="hero-banner-image"
+            src={slide.image}
+            alt={slide.alt}
+            width={1600}
+            height={560}
+            priority={active === 0}
+            unoptimized
+          />
+        </Link>
         <div className="hero-slider-controls" aria-label="Chagua tangazo">
           {slides.map((item, index) => (
             <button
-              aria-label={`Tangazo ${index + 1}: ${item.eyebrow}`}
+              aria-label={`Tangazo ${index + 1}: ${item.label}`}
               aria-current={active === index ? "true" : undefined}
               className={active === index ? "hero-slider-dot active" : "hero-slider-dot"}
-              key={item.eyebrow}
+              key={item.image}
               onClick={() => setActive(index)}
               type="button"
             />
