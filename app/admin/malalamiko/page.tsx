@@ -71,7 +71,7 @@ export default async function AdminCustomerTicketsPage({
             </div>
             <span className="status">{statusLabels[ticket.status] || ticket.status}</span>
           </div>
-          <p className="muted" style={{ fontSize: 13 }}><LanguageText sw="Ruhusa ya SMS: " en="SMS consent: "/>{ticket.sms_notifications_consented ? "<LanguageText sw="Mteja amekubali taarifa za SMS" en="Customer consented to SMS updates"/>" : "<LanguageText sw="Hakuna ruhusa ya SMS" en="No SMS consent"/>"}</p>
+          <p className="muted" style={{ fontSize: 13 }}><LanguageText sw="Ruhusa ya SMS: " en="SMS consent: "/>{ticket.sms_notifications_consented ? <LanguageText sw="Mteja amekubali taarifa za SMS" en="Customer consented to SMS updates"/> : <LanguageText sw="Hakuna ruhusa ya SMS" en="No SMS consent"/>}</p>
           <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
             {(messagesByTicket.get(ticket.id) ?? []).map(message => <div key={message.id} style={{ padding: 11, borderRadius: 10, background: message.sender_id === ticket.user_id ? "var(--surface,#f0eadf)" : "var(--panel,#f7f7f7)", overflowWrap: "anywhere" }}>
               <strong style={{ fontSize: 12 }}>{message.sender_id === ticket.user_id ? "Mteja" : "Admin / Timu"}</strong>
