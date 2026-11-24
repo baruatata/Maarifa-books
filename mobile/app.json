@@ -1,1 +1,31 @@
-{"expo":{"name":"MaarifaBooks","slug":"maarifabooks","scheme":"maarifabooks","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"light","newArchEnabled":true,"ios":{"supportsTablet":true,"bundleIdentifier":"com.lumbwadigital.maarifabooks"},"android":{"package":"com.lumbwadigital.maarifabooks","edgeToEdgeEnabled":true},"plugins":["expo-router"],"experiments":{"typedRoutes":true}}}
+{
+  "expo": {
+    "name": "MaarifaBooks",
+    "slug": "maarifabooks",
+    "scheme": "maarifabooks",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lumbwadigital.maarifabooks",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.lumbwadigital.maarifabooks",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-audio"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
