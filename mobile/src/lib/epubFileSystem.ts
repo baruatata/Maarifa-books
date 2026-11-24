@@ -21,12 +21,7 @@ export function useEpubFileSystem() {
     const destination = new File(Paths.document, toFile);
     setDownloading(true);
     setProgress(0);
-    return File.downloadFileAsync(fromUrl, destination, {
-      idempotent: true,
-      onProgress: ({ bytesWritten, totalBytes }) => {
-        if (totalBytes > 0) setProgress(Math.round((bytesWritten / totalBytes) * 100));
-      },
-    }).then((downloaded) => {
+    return File.downloadFileAsync(fromUrl, destination, { idempotent: true }).then((downloaded) => {
       setSize(downloaded.size);
       setSuccess(true);
       setError(null);
