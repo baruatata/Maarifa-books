@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSupabaseConfigured, getSupabase } from "@/src/lib/supabase";
@@ -27,11 +27,11 @@ export default function HomeScreen() {
   useEffect(() => { void loadBooks(); }, [loadBooks]);
   const refresh = () => { setRefreshing(true); void loadBooks(); };
 
-  const renderBook = ({ item }: { item: Book }) => <View style={styles.bookCard}>
+  const renderBook = ({ item }: { item: Book }) => <Pressable accessibilityRole="button" onPress={() => router.push("/book/" + item.id)} style={styles.bookCard}>
     <View style={styles.bookMark}><Text style={styles.bookMarkText}>MB</Text></View>
     <View style={styles.bookInfo}><Text style={styles.bookTitle}>{item.title}</Text><Text style={styles.author}>{item.author_name || "Mwandishi hajatajwa"}</Text><Text style={styles.format}>{item.format.toUpperCase()}</Text></View>
     <Text style={styles.price}>{item.price_tzs > 0 ? `TSh ${new Intl.NumberFormat("sw-TZ").format(item.price_tzs)}` : "BURE"}</Text>
-  </View>;
+  </Pressable>;
 
   return <SafeAreaView style={styles.safeArea}>
     <View style={styles.hero}>
