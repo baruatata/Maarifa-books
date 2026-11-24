@@ -93,6 +93,10 @@ export default function BookDetailsScreen() {
       router.push("/read/"+book.id);
       return;
     }
+    if(book.format==="epub"){
+      router.push("/read-epub/"+book.id);
+      return;
+    }
     if(book.format==="audiobook"){
       router.push("/listen/"+book.id);
       return;
