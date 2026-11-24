@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensio
 import { Link, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Reader } from "@epubjs-react-native/core";
-import { useFileSystem } from "@epubjs-react-native/expo-file-system";
+import { useEpubFileSystem } from "@/src/lib/epubFileSystem";
 import { getSupabase, isSupabaseConfigured } from "@/src/lib/supabase";
 
 const navy = "#10233F";
@@ -94,7 +94,7 @@ export default function EpubReaderScreen() {
           src={source}
           width={width}
           height={Math.max(320, height - 92)}
-          fileSystem={useFileSystem}
+          fileSystem={useEpubFileSystem}
           enableSwipe
           onDisplayError={(reason: unknown) => setError(reason instanceof Error ? reason.message : "Hitilafu imetokea wakati wa kuonyesha EPUB.")}
           renderLoadingFileComponent={<View style={styles.center}><ActivityIndicator color={gold} size="large" /><Text style={styles.message}>Tunapakia kurasa...</Text></View>}
