@@ -23,6 +23,7 @@ export default function ListenScreen(){
  const [restored,setRestored]=useState(false);
  const lastSave=useRef(0);
  const restoreFor=useRef<string|null>(null);
+ const finishedFor=useRef<string|null>(null);
  const player=useAudioPlayer(null,{updateInterval:1000});
  const status=useAudioPlayerStatus(player);
  const current=chapters[active];
@@ -61,7 +62,7 @@ export default function ListenScreen(){
  const saveProgress=useCallback(async()=>{if(!current)return;try{await AsyncStorage.setItem(progressKey(String(id)),JSON.stringify({chapterId:current.id,time:status.currentTime} satisfies Saved));}catch{}},[current?.id,id,status.currentTime]);
  useEffect(()=>{if(!current||!status.isLoaded||!restored)return;const now=Date.now();if(now-lastSave.current>5000){lastSave.current=now;void saveProgress();}},[status.currentTime,status.isLoaded,restored,saveProgress,current?.id]);
  useEffect(()=>{player.playbackRate=rate;},[rate]);
- useEffect(()=>{if(status.didJustFinish&&active<chapters.length-1){void saveProgress();setActive(v=>Math.min(v+1,chapters.length-1));}},[status.didJustFinish]);
+ useEffect(()=>{if(status.didJustFinish&&current&&finishedFor.current!==current.id){finishedFor.current=current.id;void saveProgress();if(active<chapters.length-1)setActive(v=>Math.min(v+1,chapters.length-1));}},[status.didJustFinish,current?.id,active,chapters.length,saveProgress]);
 
  function changeChapter(index:number){if(index<0||index>=chapters.length||index===active)return;void saveProgress();setActive(index);}
  function toggle(){if(!current)return;if(status.playing)player.pause();else player.play();}
