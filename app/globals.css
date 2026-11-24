@@ -902,3 +902,32 @@ body{background:#f7f8fb}
  .hero-book-empty{height:160px}
 }
 @media(prefers-reduced-motion:reduce){.hero-slider{animation:none}}
+
+
+/* Compact text-only hero and refreshed mobile tab background */
+.home-hero{padding:0 0 18px!important;background:linear-gradient(120deg,#f7f5f0 0%,#fbfaf7 58%,#f2ecdf 100%)!important}
+.hero-slider{display:flex!important;min-height:0!important;padding:30px 22px 20px!important;justify-content:center!important;align-items:center!important;text-align:center!important;background:linear-gradient(120deg,#101d36 0%,#1b2e4e 62%,#263b63 100%)!important}
+.hero-message{width:min(760px,100%);max-width:760px;margin:0 auto}
+.hero-eyebrow{margin:0 0 9px!important}
+.hero-message h1{max-width:760px!important;margin:0 auto 9px!important;font-size:clamp(27px,3.8vw,43px)!important;line-height:1.13!important}
+.hero-description{max-width:650px!important;margin:0 auto 15px!important;font-size:15px!important;line-height:1.5!important}
+.hero-cta{min-height:41px;padding:10px 17px}
+.hero-slider-controls{padding:10px 0 0!important}
+.home-hero .book-search{margin-top:12px!important}
+.home-hero .hero-links{margin-top:12px!important}
+@media(max-width:640px){
+ .home-hero{padding-bottom:15px!important}
+ .hero-slider{padding:23px 16px 17px!important}
+ .hero-eyebrow{font-size:10px!important;letter-spacing:1.7px!important}
+ .hero-message h1{font-size:clamp(25px,7vw,32px)!important;line-height:1.15!important}
+ .hero-description{font-size:13px!important;line-height:1.45!important;margin-bottom:12px!important}
+ .hero-cta{min-height:38px;padding:9px 14px;font-size:13px}
+ .hero-slider-controls{padding-top:8px!important}
+ .home-hero .book-search{margin-top:10px!important}
+ .home-hero .hero-links{margin-top:10px!important}
+ .mobile-app-nav{background:#101d36!important;border-top:1px solid #d7ad5a!important;box-shadow:0 -7px 22px rgba(16,29,54,.22)!important}
+ .mobile-app-nav-item{color:#e9edf5!important;background:transparent!important}
+ .mobile-app-nav-icon{color:#d7ad5a!important}
+ .mobile-app-nav-item.active{color:#101d36!important;background:#d7ad5a!important}
+ .mobile-app-nav-item.active .mobile-app-nav-icon{color:#101d36!important}
+}
