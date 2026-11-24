@@ -31,14 +31,14 @@ export function AudiobookUploadForm(){
       const metadata=new FormData();
       ["title","author_name","description","category","language","price_tzs"].forEach(k=>metadata.set(k,String(data.get(k)||"")));
       metadata.set("format","audiobook");
-      setProgress("{en ? "Preparing audiobook details..." : "Inaandaa taarifa za audiobook..."}");
+      setProgress(en ? "Preparing audiobook details..." : "Inaandaa taarifa za audiobook...");
       const draft=await createBookDraft(metadata);if(!draft.ok)throw new Error(draft.error);
       const supabase=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
       const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error(en ? "Please sign in again to continue." : "Ingia tena ili kuendelea.");
       const base=user.id+"/"+draft.bookId+"/";
       const coverExt=cover.name.split(".").pop()?.toLowerCase()||"jpg";
       const coverPath=base+"cover-audiobook."+coverExt;
-      setProgress("{en ? "Uploading cover..." : "Inapakia jalada..."}");
+      setProgress(en ? "Uploading cover..." : "Inapakia jalada...");
       const coverResult=await supabase.storage.from("book-files").upload(coverPath,cover,{upsert:false,contentType:cover.type});
       if(coverResult.error)throw new Error(coverResult.error.message);uploaded.push(coverPath);
       const uploadedChapters:{title:string;audioPath:string;isPreview:boolean}[]=[];
@@ -51,12 +51,12 @@ export function AudiobookUploadForm(){
         if(result.error)throw new Error(result.error.message);
         uploaded.push(path);uploadedChapters.push({title:chapter.title,audioPath:path,isPreview:chapter.isPreview});
       }
-      setProgress("{en ? "Saving chapter order..." : "Inahifadhi mpangilio wa sura..."}");
+      setProgress(en ? "Saving chapter order..." : "Inahifadhi mpangilio wa sura...");
       const done=await finishAudiobookUpload(draft.bookId,coverPath,uploadedChapters);if(!done.ok)throw new Error(done.error);
-      uploaded.length=0;setMessage("{en ? "Audiobook submitted to the administrator for review." : "Audiobook imewasilishwa kwa Admin kwa ukaguzi."}");setProgress("");form.reset();setChapters([{title:"Sura ya Kwanza",file:null,isPreview:true}]);
+      uploaded.length=0;setMessage(en ? "Audiobook submitted to the administrator for review." : "Audiobook imewasilishwa kwa Admin kwa ukaguzi.");setProgress("");form.reset();setChapters([{title:"Sura ya Kwanza",file:null,isPreview:true}]);
     }catch(error){
       if(uploaded.length){try{const supabase=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);await supabase.storage.from("book-files").remove(uploaded);}catch{}}
-      setMessage(error instanceof Error?error.message:"{en ? "Could not upload the audiobook." : "Imeshindikana kupakia audiobook."}");setProgress("");
+      setMessage(error instanceof Error?error.message:(en ? "Could not upload the audiobook." : "Imeshindikana kupakia audiobook."));setProgress("");
     }finally{setBusy(false);}
   }
   return <form onSubmit={submit} className="panel form" style={{marginTop:24}}>
