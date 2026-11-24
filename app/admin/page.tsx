@@ -127,7 +127,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <article className="admin-metric"><span className="metric-icon">▤</span><p><LanguageText sw="Vitabu vya kukagua" en="Books to review"/></p><strong>{bookCount ?? 0}</strong><small><LanguageText sw="Vinasubiri idhini" en="Awaiting approval"/></small></article>
       </section></>}
 
-      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "buyers" ? "Wanunuzi wa vitabu" : tab === "members" ? "Wanachama (wauzaji na wasimamizi)" : tab === "sellers" ? "Maombi ya wauzaji" : tab === "books" ? "Vitabu vya kukagua" : "Maktaba ya vitabu"}</h1></div></header>}
+      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "buyers" ? <LanguageText sw="Wanunuzi wa vitabu" en="Book buyers"/> : tab === "members" ? <LanguageText sw="Wanachama (wauzaji na wasimamizi)" en="Members (sellers and administrators)"/> : tab === "sellers" ? <LanguageText sw="Maombi ya wauzaji" en="Seller applications"/> : tab === "books" ? <LanguageText sw="Vitabu vya kukagua" en="Books to review"/> : <LanguageText sw="Maktaba ya vitabu" en="Book library"/>}</h1></div></header>}
       <div className="admin-content-grid">
         <div className="admin-main-column">
           {tab === "members" && <section className="admin-panel" id="all-members">
