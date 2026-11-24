@@ -75,7 +75,7 @@ export default function ListenScreen(){
   <View style={styles.hero}><Text style={styles.eyebrow}>MAARIFABOOKS AUDIO</Text><View style={styles.disc}><Text style={styles.discText}>♫</Text></View><Text style={styles.heading}>{title}</Text><Text style={styles.mutedLight}>{current?.title??"Sura ya kitabu"}</Text><Text style={styles.counter}>SURA {active+1} / {chapters.length}</Text></View>
   <View style={styles.playerCard}>
    <Text style={styles.section}>Sikiliza kitabu</Text>
-   <View style={styles.progressTrack}><View style={[styles.progressFill,{width:(status.duration>0?Math.min(100,status.currentTime/status.duration*100):0)+"%"}]}/></View>
+   <View style={styles.progressTrack}><View style={[styles.progressFill,{width:`${status.duration>0?Math.min(100,status.currentTime/status.duration*100):0}%` as `${number}%`}]}/></View>
    <View style={styles.times}><Text style={styles.muted}>{timeLabel(status.currentTime)}</Text><Text style={styles.muted}>{timeLabel(status.duration)}</Text></View>
    <View style={styles.controls}><Pressable onPress={()=>seek(-15)} style={styles.skip}><Text style={styles.skipText}>−15s</Text></Pressable><Pressable onPress={toggle} disabled={!status.isLoaded} style={styles.play}><Text style={styles.playText}>{status.isBuffering?"…":status.playing?"Ⅱ":"▶"}</Text></Pressable><Pressable onPress={()=>seek(30)} style={styles.skip}><Text style={styles.skipText}>+30s</Text></Pressable></View>
    <Text style={styles.rateLabel}>Kasi ya usomaji</Text><View style={styles.rates}>{[0.75,1,1.25,1.5,1.75,2].map(v=><Pressable key={v} onPress={()=>setRate(v)} style={[styles.rateButton,rate===v&&styles.rateActive]}><Text style={[styles.rateText,rate===v&&styles.rateTextActive]}>{v}×</Text></Pressable>)}</View>
