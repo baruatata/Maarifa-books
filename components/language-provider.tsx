@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 export type Language = "sw" | "en";
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; en: boolean };
@@ -31,13 +32,22 @@ export function useLanguage() {
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
+  const router = useRouter();
+  const choose = (next: Language) => {
+    setLanguage(next);
+    router.refresh();
+  };
   return (
-    <button type="button" className="language-toggle"
-      aria-label={language === "sw" ? "Switch language to English" : "Badili lugha iwe Kiswahili"}
-      title={language === "sw" ? "English" : "Kiswahili"}
-      onClick={() => setLanguage(language === "sw" ? "en" : "sw")}>
-      <span aria-hidden="true">文A</span>
-      <span>{language === "sw" ? "EN" : "SW"}</span>
-    </button>
+    <div className="language-toggle" role="group" aria-label="Choose language">
+      <button type="button" className={language === "sw" ? "language-option active" : "language-option"}
+        aria-pressed={language === "sw"} onClick={() => choose("sw")}><span aria-hidden="true">🇹🇿</span><span>Kiswahili</span></button>
+      <button type="button" className={language === "en" ? "language-option active" : "language-option"}
+        aria-pressed={language === "en"} onClick={() => choose("en")}><span aria-hidden="true">🇬🇧</span><span>English</span></button>
+    </div>
   );
+}
+
+export function LanguageText({ sw, en }: { sw: string; en: string }) {
+  const { en: isEnglish } = useLanguage();
+  return <>{isEnglish ? en : sw}</>;
 }
