@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
+import { MobileAppNav } from "@/components/mobile-app-nav";
 
 const siteUrl = "https://maarifabooks.vercel.app";
 
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <SiteHeader />
         {children}
+        <MobileAppNav />
         <Analytics />
         <SpeedInsights />
       </body>
