@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "expo-router";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isSupabaseConfigured, getSupabase } from "@/src/lib/supabase";
@@ -34,7 +35,7 @@ export default function HomeScreen() {
 
   return <SafeAreaView style={styles.safeArea}>
     <View style={styles.hero}>
-      <View style={styles.topLine}><View><Text style={styles.brand}>MAARIFA<Text style={styles.brandGold}>BOOKS</Text></Text><Text style={styles.tagline}>Maarifa yako, safari yako.</Text></View><View style={styles.languagePill}><Text style={styles.languageText}>SW | EN</Text></View></View>
+      <View style={styles.topLine}><View><Text style={styles.brand}>MAARIFA<Text style={styles.brandGold}>BOOKS</Text></Text><Text style={styles.tagline}>Maarifa yako, safari yako.</Text></View><Link href="/auth" style={styles.languagePill}><Text style={styles.languageText}>Ingia / Akaunti</Text></Link></View>
       <Text style={styles.welcome}>Karibu kwenye maktaba yako.</Text>
       <Text style={styles.subtitle}>Gundua vitabu, soma na sikiliza maarifa mapya.</Text>
       <View style={styles.searchPlaceholder}><Text style={styles.searchIcon}>⌕</Text><Text style={styles.searchText}>Tafuta kitabu au mwandishi...</Text></View>
