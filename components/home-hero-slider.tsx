@@ -3,17 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type FeaturedBook = {
-  id: string;
-  title: string;
-  author: string;
-  coverUrl: string | null;
-};
-
 type HomeHeroSliderProps = {
   q: string;
   category: string;
-  books: FeaturedBook[];
 };
 
 const messages = [
@@ -22,9 +14,8 @@ const messages = [
   { eyebrow: "SOMA POPOTE ULIPO", title: "Kitabu kizuri hubadili mtazamo.", body: "Pata vitabu vya kidijitali na endelea kujifunza kwa urahisi.", action: "Tazama maktaba" },
 ];
 
-export function HomeHeroSlider({ q, category, books }: HomeHeroSliderProps) {
+export function HomeHeroSlider({ q, category }: HomeHeroSliderProps) {
   const [active, setActive] = useState(0);
-  const featured = books.filter((book) => book.coverUrl).slice(0, 3);
   const slide = messages[active];
 
   useEffect(() => {
@@ -40,16 +31,6 @@ export function HomeHeroSlider({ q, category, books }: HomeHeroSliderProps) {
           <h1>{slide.title}</h1>
           <p className="hero-description">{slide.body}</p>
           <Link className="hero-cta" href={active === 1 ? "/wauzaji" : "#vitabu"}>{slide.action}<span aria-hidden="true"> →</span></Link>
-        </div>
-        <div className="hero-books" aria-label="Vitabu vilivyopo MaarifaBooks">
-          {featured.length > 0 ? featured.map((book, index) => (
-            <Link className={`hero-book hero-book-${index + 1}`} href={`/kitabu/${book.id}`} key={book.id} aria-label={`Fungua kitabu ${book.title}`}>
-              <img src={book.coverUrl!} alt={`Jalada la ${book.title}`} />
-              <span>{book.title}</span>
-            </Link>
-          )) : (
-            <div className="hero-book-empty"><span>MAARIFABOOKS</span><strong>Vitabu vya maarifa</strong></div>
-          )}
         </div>
       </div>
       <div className="hero-slider-controls" aria-label="Chagua tangazo">
