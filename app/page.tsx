@@ -45,7 +45,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="home-shell">
-      <HomeHeroSlider q={q} category={category} books={books.map((book) => ({ id: book.id, title: book.title, author: book.author_name ?? "Mwandishi", coverUrl: covers.get(book.id) ?? null }))} />
+      <HomeHeroSlider q={q} category={category} />
 
       <section className="home-section" id="vitabu">
         <div className="home-section-head">
