@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getSupabase, isSupabaseConfigured } from "@/src/lib/supabase";
@@ -8,7 +8,7 @@ const navy = "#10233F";
 const gold = "#C9A34A";
 
 function toE164(value: string) {
-  const digits = value.replace(/\\D/g, "");
+  const digits = value.replace(/\D/g, "");
   if (digits.startsWith("0") && digits.length === 10) return "+255" + digits.slice(1);
   if (digits.startsWith("255") && digits.length === 12) return "+" + digits;
   if ((digits.startsWith("6") || digits.startsWith("7")) && digits.length === 9) return "+255" + digits;
@@ -56,7 +56,7 @@ export default function AuthScreen() {
   }
 
   async function verifyOtp() {
-    if (!/^\\d{6}$/.test(otp.trim())) throw new Error("Ingiza OTP yenye tarakimu 6.");
+    if (!/^\d{6}$/.test(otp.trim())) throw new Error("Ingiza OTP yenye tarakimu 6.");
     const normalized = toE164(phone);
     const supabase = getSupabase();
     const { data, error } = await supabase.auth.verifyOtp({ phone: normalized, token: otp.trim(), type: "sms" });
@@ -91,7 +91,7 @@ export default function AuthScreen() {
         </View>
         {mode === "signup" && <><Text style={styles.label}>Jina kamili</Text><TextInput accessibilityLabel="Jina kamili" value={name} onChangeText={setName} placeholder="Andika jina lako" style={styles.input} autoCapitalize="words" /></>}
         {mode === "phone" ? <>
-          {step === "details" ? <><Text style={styles.label}>Namba ya simu</Text><TextInput accessibilityLabel="Namba ya simu" value={phone} onChangeText={setPhone} placeholder="0652245742" keyboardType="phone-pad" style={styles.input} /></> : <><Text style={styles.label}>OTP ya tarakimu 6</Text><TextInput accessibilityLabel="OTP" value={otp} onChangeText={v=>setOtp(v.replace(/\\D/g,"").slice(0,6))} placeholder="123456" keyboardType="number-pad" maxLength={6} style={styles.input} /><Pressable onPress={()=>{setStep("details");setOtp("");setNotice("");}}><Text style={styles.link}>Badili namba ya simu</Text></Pressable></>}
+          {step === "details" ? <><Text style={styles.label}>Namba ya simu</Text><TextInput accessibilityLabel="Namba ya simu" value={phone} onChangeText={setPhone} placeholder="0652245742" keyboardType="phone-pad" style={styles.input} /></> : <><Text style={styles.label}>OTP ya tarakimu 6</Text><TextInput accessibilityLabel="OTP" value={otp} onChangeText={v=>setOtp(v.replace(/\D/g,"").slice(0,6))} placeholder="123456" keyboardType="number-pad" maxLength={6} style={styles.input} /><Pressable onPress={()=>{setStep("details");setOtp("");setNotice("");}}><Text style={styles.link}>Badili namba ya simu</Text></Pressable></>}
         </> : <>
           <Text style={styles.label}>Barua pepe</Text><TextInput accessibilityLabel="Barua pepe" value={email} onChangeText={setEmail} placeholder="jina@example.com" keyboardType="email-address" autoCapitalize="none" style={styles.input} />
           <Text style={styles.label}>Nenosiri</Text><TextInput accessibilityLabel="Nenosiri" value={password} onChangeText={setPassword} placeholder="Angalau herufi 8" secureTextEntry style={styles.input} />
