@@ -50,6 +50,13 @@ export default function BookDetailsScreen() {
   })();return()=>{active=false};},[id]);
 
   async function requestCoupon(){
+    if(!userId){
+      Alert.alert("Ingia kwanza","Ili ombi la coupon lifuatiliwe kwenye akaunti yako na uweze kufungua kitabu, ingia au jisajili kwanza.",[
+        {text:"Baadaye",style:"cancel"},
+        {text:"Ingia / Jisajili",onPress:()=>router.push({pathname:"/auth",params:{next:"/book/"+book?.id}})}
+      ]);
+      return;
+    }
     setBusy(true);
     try{
       if(!book)throw new Error("Kitabu hakijapakiwa.");
