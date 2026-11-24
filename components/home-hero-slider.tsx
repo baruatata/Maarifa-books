@@ -9,9 +9,11 @@ type HomeHeroSliderProps = {
 };
 
 const messages = [
-  { eyebrow: "MAKTABA YA MAARIFABOOKS", title: "Maarifa mapya yanaanza hapa.", body: "Chagua kitabu, soma na ujiongezee maarifa kila siku.", action: "Gundua vitabu" },
-  { eyebrow: "JUKWAA LA WAANDISHI", title: "Kazi yako inastahili kusomwa.", body: "Fikisha kitabu chako kwa wasomaji kupitia MaarifaBooks.", action: "Jiunge kama muuzaji" },
-  { eyebrow: "SOMA POPOTE ULIPO", title: "Kitabu kizuri hubadili mtazamo.", body: "Pata vitabu vya kidijitali na endelea kujifunza kwa urahisi.", action: "Tazama maktaba" },
+  { eyebrow: "MAKTABA YA MAARIFABOOKS", title: "Maarifa mapya yanaanza hapa.", body: "Chagua kitabu, soma na ujiongezee maarifa kila siku.", action: "Gundua vitabu", href: "#vitabu" },
+  { eyebrow: "JUKWAA LA WAANDISHI", title: "Kazi yako inastahili kusomwa.", body: "Fikisha kitabu chako kwa wasomaji kupitia MaarifaBooks.", action: "Jiunge kama muuzaji", href: "/wauzaji" },
+  { eyebrow: "SOMA POPOTE ULIPO", title: "Kitabu kizuri hubadili mtazamo.", body: "Pata vitabu vya kidijitali na endelea kujifunza kwa urahisi.", action: "Tazama maktaba", href: "#vitabu" },
+  { eyebrow: "JIFUNZE KILA SIKU", title: "Hatua moja ya maarifa huleta mabadiliko.", body: "Gundua mawazo mapya na panua uelewa wako kupitia vitabu.", action: "Anza kusoma", href: "#vitabu" },
+  { eyebrow: "SOKO LA VITABU MTANDAONI", title: "Kitabu chako kinakusubiri.", body: "Chunguza maktaba ya vitabu vya kidijitali na uchague kinachokuvutia.", action: "Chunguza maktaba", href: "#vitabu" },
 ];
 
 export function HomeHeroSlider({ q, category }: HomeHeroSliderProps) {
@@ -30,7 +32,7 @@ export function HomeHeroSlider({ q, category }: HomeHeroSliderProps) {
           <p className="hero-eyebrow">{slide.eyebrow}</p>
           <h1>{slide.title}</h1>
           <p className="hero-description">{slide.body}</p>
-          <Link className="hero-cta" href={active === 1 ? "/wauzaji" : "#vitabu"}>{slide.action}<span aria-hidden="true"> →</span></Link>
+          <Link className="hero-cta" href={slide.href}>{slide.action}<span aria-hidden="true"> →</span></Link>
         </div>
       </div>
       <div className="hero-slider-controls" aria-label="Chagua tangazo">
