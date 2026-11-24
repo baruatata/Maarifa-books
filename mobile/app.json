@@ -2,6 +2,7 @@
   "expo": {
     "name": "MaarifaBooks",
     "slug": "maarifabooks",
+    "owner": "lumbwadigital",
     "scheme": "maarifabooks",
     "version": "1.0.0",
     "orientation": "portrait",
