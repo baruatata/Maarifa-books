@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
 import { createCustomerTicket, replyToCustomerTicket, updateCustomerProfile } from "./actions";
+import { LanguageText } from "@/components/language-provider";
 
 const categoryLabels: Record<string, string> = {
   payment: "Tatizo la malipo",
@@ -73,50 +74,50 @@ export default async function CustomerSelfServicePage({
 
   return <main className="page" style={{ maxWidth: 1120 }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-      <div><p className="eyebrow">HUDUMA ZA MTEJA</p><h1>Jihudumie</h1><p className="muted">Karibu, {profile?.full_name || user.email}. Simamia akaunti na huduma zako hapa.</p></div>
-      <form action={signOut}><button className="btn btn-outline" type="submit">Toka kwenye akaunti</button></form>
+      <div><p className="eyebrow"><LanguageText sw="HUDUMA ZA MTEJA" en="CUSTOMER SERVICES"/></p><h1><LanguageText sw="Jihudumie" en="Self-service"/></h1><p className="muted"><LanguageText sw={`Karibu, ${profile?.full_name || user.email}. Simamia akaunti na huduma zako hapa.`} en={`Welcome, ${profile?.full_name || user.email}. Manage your account and services here.`}/></p></div>
+      <form action={signOut}><button className="btn btn-outline" type="submit"><LanguageText sw="Toka kwenye akaunti" en="Sign out"/></button></form>
     </div>
 
     {params.error && <p className="message" role="alert">{params.error}</p>}
-    {params.saved === "profile" && <p className="notice">Taarifa za akaunti zimehifadhiwa.</p>}
-    {params.created && <p className="notice">Malalamiko yako yamepokelewa. Namba ya kumbukumbu: <strong>{params.created}</strong></p>}
-    {params.replied && <p className="notice">Ujumbe wako umetumwa.</p>}
+    {params.saved === "profile" && <p className="notice"><LanguageText sw="Taarifa za akaunti zimehifadhiwa." en="Account details saved."/></p>}
+    {params.created && <p className="notice"><LanguageText sw="Malalamiko yako yamepokelewa. Namba ya kumbukumbu: " en="Your complaint has been received. Reference number: "/><strong>{params.created}</strong></p>}
+    {params.replied && <p className="notice"><LanguageText sw="Ujumbe wako umetumwa." en="Your message has been sent."/></p>}
 
     <section className="panel" style={{ padding: 20, marginTop: 20 }}>
-      <h2 style={{ marginTop: 0 }}>Akaunti yangu</h2>
+      <h2 style={{ marginTop: 0 }}><LanguageText sw="Akaunti yangu" en="My account"/></h2>
       <form action={updateCustomerProfile} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
-        <label style={{ display: "grid", gap: 6 }}>Jina kamili
+        <label style={{ display: "grid", gap: 6 }}><LanguageText sw="Jina kamili" en="Full name"/>
           <input name="full_name" defaultValue={profile?.full_name ?? ""} required minLength={2} maxLength={120}/>
         </label>
-        <label style={{ display: "grid", gap: 6 }}>Namba ya simu (kwa taarifa za SMS)
+        <label style={{ display: "grid", gap: 6 }}><LanguageText sw="Namba ya simu (kwa taarifa za SMS)" en="Phone number (for SMS updates)"/>
           <input name="phone" type="tel" defaultValue={profile?.phone ?? ""} placeholder="07XXXXXXXX au 2557XXXXXXXX" maxLength={24}/>
         </label>
-        <label style={{ display: "grid", gap: 6 }}>Barua pepe
+        <label style={{ display: "grid", gap: 6 }}><LanguageText sw="Barua pepe" en="Email address"/>
           <input value={user.email ?? ""} readOnly aria-label="Barua pepe ya akaunti"/>
         </label>
-        <div style={{ display: "flex", alignItems: "end" }}><button className="btn" type="submit">Hifadhi taarifa</button></div>
+        <div style={{ display: "flex", alignItems: "end" }}><button className="btn" type="submit"><LanguageText sw="Hifadhi taarifa" en="Save details"/></button></div>
       </form>
-      <p className="muted" style={{ marginBottom: 0 }}>Kubadilisha nenosiri, tumia sehemu ya <Link href="/dashboard/usalama">Usalama wa akaunti</Link>.</p>
+      <p className="muted" style={{ marginBottom: 0 }}><LanguageText sw="Kubadilisha nenosiri, tumia sehemu ya " en="To change your password, use the "/><Link href="/dashboard/usalama"><LanguageText sw="Usalama wa akaunti" en="Account security"/></Link>.</p>
     </section>
 
     <section className="panel" style={{ padding: 20, marginTop: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <div><h2 style={{ margin: 0 }}>Vitabu vyangu</h2><p className="muted">Vitabu ulivyonunua au ulivyofunguliwa kwa akaunti yako.</p></div>
-        <Link className="btn btn-outline" href="/dashboard/vitabu">Maktaba ya bure</Link>
+        <div><h2 style={{ margin: 0 }}><LanguageText sw="Vitabu vyangu" en="My books"/></h2><p className="muted"><LanguageText sw="Vitabu ulivyonunua au ulivyofunguliwa kwa akaunti yako." en="Books you purchased or unlocked with your account."/></p></div>
+        <Link className="btn btn-outline" href="/dashboard/vitabu"><LanguageText sw="Maktaba ya bure" en="Free library"/></Link>
       </div>
-      {!purchasedBooks.size ? <p className="muted">Bado hakuna kitabu cha kulipia kilichounganishwa na akaunti hii.</p> :
+      {!purchasedBooks.size ? <p className="muted"><LanguageText sw="Bado hakuna kitabu cha kulipia kilichounganishwa na akaunti hii." en="No paid books are linked to this account yet."/></p> :
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
           {[...purchasedBooks.values()].map(book => <article key={book.id} style={{ border: "1px solid var(--border,#e5e5e5)", borderRadius: 12, padding: 14 }}>
             <strong>{book.title}</strong><p className="muted">{book.author_name || "Mwandishi"} · {String(book.format).toUpperCase()}</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link className="btn" href={"/soma/" + book.id}>Soma kitabu</Link>{book.downloadUrl && <a className="btn btn-outline" href={book.downloadUrl}>Pakua</a>}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link className="btn" href={"/soma/" + book.id}><LanguageText sw="Soma kitabu" en="Read book"/></Link>{book.downloadUrl && <a className="btn btn-outline" href={book.downloadUrl}><LanguageText sw="Pakua" en="Download"/></a>}</div>
           </article>)}
         </div>}
     </section>
 
     <section className="panel" style={{ padding: 20, marginTop: 18 }}>
-      <h2 style={{ marginTop: 0 }}>Historia ya malipo</h2>
-      {!orders?.length ? <p className="muted">Bado hakuna oda au malipo yaliyorekodiwa.</p> :
-        <div className="table-wrap"><table className="table"><thead><tr><th>Tarehe</th><th>Kiasi</th><th>Njia</th><th>Hali</th></tr></thead><tbody>
+      <h2 style={{ marginTop: 0 }}><LanguageText sw="Historia ya malipo" en="Payment history"/></h2>
+      {!orders?.length ? <p className="muted"><LanguageText sw="Bado hakuna oda au malipo yaliyorekodiwa." en="No orders or payments have been recorded yet."/></p> :
+        <div className="table-wrap"><table className="table"><thead><tr><th><LanguageText sw="Tarehe" en="Date"/></th><th><LanguageText sw="Kiasi" en="Amount"/></th><th><LanguageText sw="Njia" en="Method"/></th><th><LanguageText sw="Hali" en="Status"/></th></tr></thead><tbody>
           {orders.map(order => <tr key={order.id}><td>{new Date(order.created_at).toLocaleDateString("sw-TZ")}</td><td>{money(order.total_tzs)}</td><td>{order.payment_provider || "Haijatajwa"}</td><td>{order.status === "paid" ? "Imelipwa" : order.status === "pending" ? "Inasubiri" : order.status === "failed" ? "Imeshindikana" : order.status === "refunded" ? "Imerejeshwa" : "Imeghairiwa"}</td></tr>)}
         </tbody></table></div>}
       <h3 style={{ marginTop: 22 }}>Uthibitisho wa malipo uliotuma</h3>
@@ -128,8 +129,8 @@ export default async function CustomerSelfServicePage({
     </section>
 
     <section className="panel" style={{ padding: 20, marginTop: 18 }}>
-      <h2 style={{ marginTop: 0 }}>Tuma malalamiko au ombi la msaada</h2>
-      <p className="muted">Utapewa namba ya kumbukumbu utakayotumia kufuatilia ombi lako.</p>
+      <h2 style={{ marginTop: 0 }}><LanguageText sw="Tuma malalamiko au ombi la msaada" en="Send a complaint or support request"/></h2>
+      <p className="muted"><LanguageText sw="Utapewa namba ya kumbukumbu utakayotumia kufuatilia ombi lako." en="You will receive a reference number to track your request."/></p>
       <form action={createCustomerTicket} style={{ display: "grid", gap: 12 }}>
         <label style={{ display: "grid", gap: 6 }}>Aina ya tatizo
           <select name="category" required defaultValue="payment">
