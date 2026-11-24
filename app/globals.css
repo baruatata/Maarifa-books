@@ -542,3 +542,72 @@ body{background:#fff!important;color:#172033!important}
  .coupon-modal{width:100%;max-height:90vh;padding:17px;border-radius:18px 18px 12px 12px}
  .coupon-choice-actions{grid-template-columns:1fr}
 }
+
+
+/* Responsive storefront preview — preserve existing MaarifaBooks palette and copy */
+.home-shell{background:#fff!important;color:#172033!important}
+.home-hero{
+  width:min(1240px,calc(100% - 40px));max-width:1240px;margin:0 auto 26px;
+  padding:clamp(28px,4vw,58px);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+  grid-template-rows:auto auto auto auto auto;column-gap:clamp(24px,4vw,58px);align-items:center;
+  text-align:left;border:1px solid #e8e4da!important;border-radius:0 0 24px 24px;
+  background:linear-gradient(115deg,#f7f5f0 0%,#fbfaf7 60%,#f2ecdf 100%)!important;
+}
+.home-brand-art{display:grid!important;grid-column:2;grid-row:1 / span 5;align-self:center;width:100%;max-width:390px;margin:0 auto;padding:18px;background:#fff;border:1px solid #e8e4da;border-radius:22px;box-shadow:0 20px 48px #101d3618}
+.home-brand-art img{width:100%;max-height:280px;object-fit:contain}
+.home-kicker,.home-hero h1,.home-intro,.book-search,.hero-links{grid-column:1}
+.home-kicker{align-self:end;color:#a77b31!important}
+.home-hero h1{max-width:720px;margin:10px 0 12px;text-align:left;color:#101d36!important;font-size:clamp(32px,4.3vw,54px);line-height:1.12}
+.home-intro{margin:0 0 20px;text-align:left;color:#5f6878!important}
+.book-search{margin:0;width:100%;max-width:680px;border:1px solid #e3dfd5;box-shadow:0 8px 22px #101d360a}
+.hero-links{justify-content:flex-start}
+.hero-links a{color:#8d6525!important}
+.home-section{max-width:1240px;padding:34px 22px 58px}
+.home-section-head h2{color:#101d36!important}
+.home-book-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.home-book-card{background:#fff;border:1px solid #e8e4da;border-radius:15px;box-shadow:0 8px 24px #101d360b}
+.home-book-cover,.home-book-placeholder{height:250px;background:#f7f5f0}
+.home-book-info h3{color:#101d36}
+.home-book-info p{color:#687184}
+.home-book-meta strong{color:#101d36}
+.home-seller{max-width:1196px;background:#101d36;border-color:#101d36}
+.home-seller h2{color:#fff}
+.home-seller>a{background:#d7ad5a;color:#101d36}
+.site-header{min-height:82px!important;padding:12px clamp(18px,4vw,64px)!important;flex-direction:row!important;justify-content:space-between!important;gap:24px!important}
+.site-header .brand{width:auto!important;justify-content:flex-start!important}
+.site-header nav{justify-content:flex-end!important;gap:10px!important}
+.site-header nav .nav-cta{background:#101d36!important;color:#fff!important;border:1px solid #101d36!important}
+.site-header nav .nav-cta:hover{background:#d7ad5a!important;color:#101d36!important;border-color:#d7ad5a!important}
+@media(max-width:900px){
+ .site-header{flex-direction:column!important;gap:8px!important}
+ .site-header .brand{justify-content:center!important}
+ .site-header nav{justify-content:center!important;gap:7px!important}
+ .home-hero{width:calc(100% - 28px);grid-template-columns:minmax(0,1fr) minmax(190px,.75fr);column-gap:18px;padding:28px}
+ .home-brand-art{max-width:280px}
+ .home-book-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ .site-header{padding:12px 12px 14px!important}
+ .site-header nav{width:100%;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;padding:2px 2px 7px;scrollbar-width:thin}
+ .site-header nav>a,.site-header nav summary{white-space:nowrap}
+ .home-hero{width:100%;display:flex;flex-direction:column;align-items:stretch;padding:26px 17px 28px;border-radius:0 0 20px 20px}
+ .home-brand-art{order:6;width:min(230px,75vw);margin:22px auto 0;padding:12px}
+ .home-kicker{order:0}
+ .home-hero h1{order:1;font-size:clamp(29px,8vw,38px);margin:8px 0 10px}
+ .home-intro{order:2;font-size:15px;margin-bottom:16px}
+ .book-search{order:3;gap:5px;padding:6px 7px 6px 12px}
+ .book-search input{font-size:14px}
+ .book-search button{padding:0 12px}
+ .hero-links{order:4;gap:16px;margin-top:15px}
+ .home-section{padding:26px 14px 40px}
+ .home-section-head{align-items:center}
+ .home-section-head h2{font-size:25px}
+ .home-book-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .home-book-cover,.home-book-placeholder{height:185px}
+ .home-book-info{padding:11px}
+ .home-book-info h3{font-size:14px}
+ .home-book-meta{align-items:flex-start;flex-direction:column;gap:5px}
+ .home-seller{margin:0 14px 22px;padding:22px}
+ .home-seller h2{font-size:23px}
+}
+@media(min-width:1200px){.home-book-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.home-book-cover,.home-book-placeholder{height:260px}}
