@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HomeBackToTop } from "@/components/home-back-to-top";
+import { HomeHeroSlider } from "@/components/home-hero-slider";
 import { createClient } from "@/lib/supabase/server";
 
 type Book = {
@@ -44,21 +45,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="home-shell">
-      <section className="home-hero">
-        <p className="home-kicker">SOMA · JIFUNZE · ENDELEA</p>
-        <h1>Vitabu bora, waandishi mahiri na maarifa yasiyo na mipaka.</h1>
-        <p className="home-intro">Soma, jifunze na ukue popote ulipo.</p>
-        <form className="book-search" action="/" method="get" role="search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" name="q" defaultValue={q} placeholder="Tafuta kitabu au mwandishi..." aria-label="Tafuta kitabu au mwandishi" />
-          {category ? <input type="hidden" name="category" value={category} /> : null}
-          <button type="submit">Tafuta</button>
-        </form>
-        <div className="hero-links">
-          <Link href="#vitabu">Chunguza vitabu</Link>
-          <Link href="/wauzaji">Uza vitabu vyako</Link>
-        </div>
-      </section>
+      <HomeHeroSlider q={q} category={category} />
 
       <section className="home-section" id="vitabu">
         <div className="home-section-head">
