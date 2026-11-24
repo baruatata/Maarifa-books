@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getSupabase, isSupabaseConfigured } from "@/src/lib/supabase";
 
@@ -16,6 +16,8 @@ function toE164(value: string) {
 }
 
 export default function AuthScreen() {
+  const { next } = useLocalSearchParams<{ next?: string }>();
+  const returnPath = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : "/";
   const [mode, setMode] = useState<"login" | "signup" | "phone">("login");
   const [step, setStep] = useState<"details" | "verify">("details");
   const [name, setName] = useState("");
@@ -39,7 +41,7 @@ export default function AuthScreen() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
     }
-    router.replace("/");
+    router.replace(returnPath);
   }
 
   async function requestOtp() {
@@ -64,7 +66,7 @@ export default function AuthScreen() {
     if (!data.user) throw new Error("Imeshindikana kuthibitisha akaunti.");
     const { error: profileError } = await supabase.from("profiles").update({ phone: normalized, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);
     if (profileError) throw profileError;
-    router.replace("/");
+    router.replace(returnPath);
   }
 
   async function handleSubmit() {
