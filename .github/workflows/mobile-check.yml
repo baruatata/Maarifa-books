@@ -31,3 +31,5 @@ jobs:
         run: npm run typecheck
       - name: Validate Expo configuration
         run: npx expo config --type public
+      - name: Generate Android and iOS native projects
+        run: npx expo prebuild --platform all --no-install --clean
