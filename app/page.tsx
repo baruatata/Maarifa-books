@@ -77,10 +77,10 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
         ) : (
           <div className="home-book-grid">
-            {books.map((book) => (
+            {books.map((book, index) => (
               <Link href={`/kitabu/${book.id}`} className="home-book-card" key={book.id} aria-label={`Angalia maelezo ya ${book.title}`}>
                 {book.cover_path && covers.get(book.cover_path) ? (
-                  <img className="home-book-cover" src={covers.get(book.cover_path)!} alt={`Jalada la ${book.title}`} loading="lazy" decoding="async" />
+                  <img className="home-book-cover" src={covers.get(book.cover_path)!} alt={`Jalada la ${book.title}`} loading={index < 4 ? "eager" : "lazy"} fetchPriority={index < 4 ? "high" : "auto"} decoding="async" width={480} height={640} sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw" />
                 ) : (
                   <div className="home-book-placeholder"><span>MAARIFABOOKS</span><strong>{book.title}</strong><small>{book.author_name ?? "Mwandishi"}</small></div>
                 )}
