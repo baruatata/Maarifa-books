@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/", label: "Mwanzo", icon: "⌂", exact: true },
-  { href: "/#vitabu", label: "Vitabu", icon: "▤" },
+  { href: "/dashboard/jihudumie", label: "Jihudumie", icon: "▣" },
   { href: "/mafunzo", label: "Muongozo", icon: "◇" },
   { href: "/ingia?next=%2Fdashboard", label: "Akaunti", icon: "○" },
 ];
