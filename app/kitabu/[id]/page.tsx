@@ -1,7 +1,72 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BookCouponOptions } from "@/components/book-coupon-options";
+
+
+const siteUrl = "https://maarifabooks.vercel.app";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: book } = await supabase
+    .from("books")
+    .select("id,title,author_name,description,language,category")
+    .eq("id", id)
+    .eq("status", "approved")
+    .maybeSingle();
+
+  if (!book) {
+    return {
+      title: "Kitabu hakipatikani",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const author = book.author_name?.trim();
+  const rawDescription = book.description?.replace(/\\s+/g, " ").trim();
+  const description = (
+    rawDescription ||
+    `Soma maelezo ya kitabu ${book.title}${author ? ` kilichoandikwa na ${author}` : ""} kupitia MaarifaBooks.`
+  ).slice(0, 160);
+  const title = author ? `${book.title} — ${author}` : book.title;
+  const canonicalUrl = `${siteUrl}/kitabu/${encodeURIComponent(book.id)}`;
+  const keywords = [
+    book.title,
+    author,
+    book.category,
+    book.language === "sw" ? "kitabu cha Kiswahili" : null,
+    book.language === "en" ? "book in English" : null,
+    "MaarifaBooks",
+    "vitabu vya kidijitali",
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    title,
+    description,
+    keywords,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      type: "book",
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: "MaarifaBooks",
+      locale: book.language === "en" ? "en_TZ" : "sw_TZ",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function BookDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ requested?: string; error?: string }> }) {
   const { id } = await params;
