@@ -21,20 +21,20 @@ export function AudiobookUploadForm(){
     try{
       const form=event.currentTarget;const data=new FormData(form);
       const cover=data.get("cover_file");
-      if(!(cover instanceof File)||!cover.size)throw new Error("{en ? "Choose a book cover." : "Chagua jalada la kitabu."}");
-      if(cover.size>8*1024*1024||!["image/jpeg","image/png","image/webp"].includes(cover.type))throw new Error("{en ? "The cover must be JPG, PNG or WebP and no larger than 8 MB." : "Jalada liwe JPG, PNG au WebP na lisizidi MB 8."}");
-      if(!chapters.length||chapters.some(c=>!c.title.trim()||!c.file))throw new Error("{en ? "Enter a title and choose a file for every chapter." : "Jaza jina na faili la kila sura."}");
-      if(chapters.some(c=>!c.file||c.file.size>MAX_AUDIO_SIZE||!(/\.(mp3|m4a)$/i.test(c.file.name))))throw new Error("{en ? "Audio files must be MP3 or M4A and no larger than 100 MB each." : "Sauti ziwe MP3 au M4A na zisizidi MB 100 kila moja."}");
+      if(!(cover instanceof File)||!cover.size)throw new Error(en ? "Choose a book cover." : "Chagua jalada la kitabu.");
+      if(cover.size>8*1024*1024||!["image/jpeg","image/png","image/webp"].includes(cover.type))throw new Error(en ? "The cover must be JPG, PNG or WebP and no larger than 8 MB." : "Jalada liwe JPG, PNG au WebP na lisizidi MB 8.");
+      if(!chapters.length||chapters.some(c=>!c.title.trim()||!c.file))throw new Error(en ? "Enter a title and choose a file for every chapter." : "Jaza jina na faili la kila sura.");
+      if(chapters.some(c=>!c.file||c.file.size>MAX_AUDIO_SIZE||!(/\.(mp3|m4a)$/i.test(c.file.name))))throw new Error(en ? "Audio files must be MP3 or M4A and no larger than 100 MB each." : "Sauti ziwe MP3 au M4A na zisizidi MB 100 kila moja.");
       const price=Number(data.get("price_tzs")||0);
-      if(!Number.isSafeInteger(price)||price<0||price>100000000)throw new Error("{en ? "Enter a valid book price." : "Weka bei sahihi ya kitabu."}");
-      if(price>0&&!chapters.some(c=>c.isPreview))throw new Error("{en ? "Select at least one free preview chapter for a paid audiobook." : "Chagua angalau sura moja ya sampuli ya bure kwa kitabu cha kulipia."}");
+      if(!Number.isSafeInteger(price)||price<0||price>100000000)throw new Error(en ? "Enter a valid book price." : "Weka bei sahihi ya kitabu.");
+      if(price>0&&!chapters.some(c=>c.isPreview))throw new Error(en ? "Select at least one free preview chapter for a paid audiobook." : "Chagua angalau sura moja ya sampuli ya bure kwa kitabu cha kulipia.");
       const metadata=new FormData();
       ["title","author_name","description","category","language","price_tzs"].forEach(k=>metadata.set(k,String(data.get(k)||"")));
       metadata.set("format","audiobook");
       setProgress("{en ? "Preparing audiobook details..." : "Inaandaa taarifa za audiobook..."}");
       const draft=await createBookDraft(metadata);if(!draft.ok)throw new Error(draft.error);
       const supabase=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
-      const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("{en ? "Please sign in again to continue." : "Ingia tena ili kuendelea."}");
+      const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error(en ? "Please sign in again to continue." : "Ingia tena ili kuendelea.");
       const base=user.id+"/"+draft.bookId+"/";
       const coverExt=cover.name.split(".").pop()?.toLowerCase()||"jpg";
       const coverPath=base+"cover-audiobook."+coverExt;
