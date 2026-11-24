@@ -47,7 +47,7 @@ export default function HomeScreen() {
         <Pressable accessibilityRole="button" onPress={loadBooks} style={styles.retryButton}><Text style={styles.retryText}>Jaribu tena</Text></Pressable>
       </View> : <FlatList data={books} keyExtractor={(book) => book.id} renderItem={renderBook} contentContainerStyle={books.length ? styles.bookList : styles.emptyList} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={gold} />} ListEmptyComponent={<View style={styles.messageCard}><Text style={styles.messageTitle}>Vitabu vinaandaliwa</Text><Text style={styles.messageText}>Vitabu vilivyoidhinishwa vitaonekana hapa.</Text></View>} />}
     </View>
-    <View style={styles.bottomNav}><Text style={styles.activeNav}>⌂{"\n"}Nyumbani</Text><Text style={styles.navItem}>▤{"\n"}Maktaba</Text><Text style={styles.navItem}>◉{"\n"}Sikiliza</Text><Text style={styles.navItem}>◎{"\n"}Akaunti</Text></View>
+    <View style={styles.bottomNav}><Pressable onPress={() => router.replace("/")}><Text style={styles.activeNav}>⌂{"\\n"}Nyumbani</Text></Pressable><Pressable onPress={() => router.push("/library")}><Text style={styles.navItem}>▤{"\\n"}Maktaba</Text></Pressable><Pressable onPress={() => router.push("/account")}><Text style={styles.navItem}>◎{"\\n"}Akaunti</Text></Pressable></View>
   </SafeAreaView>;
 }
 
