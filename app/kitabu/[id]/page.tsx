@@ -29,7 +29,7 @@ export async function generateMetadata({
   }
 
   const author = book.author_name?.trim();
-  const rawDescription = book.description?.replace(/\\s+/g, " ").trim();
+  const rawDescription = book.description?.replace(/\s+/g, " ").trim();
   const description = (
     rawDescription ||
     `Soma maelezo ya kitabu ${book.title}${author ? ` kilichoandikwa na ${author}` : ""} kupitia MaarifaBooks.`
