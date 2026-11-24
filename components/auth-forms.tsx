@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { signIn, signUp } from "@/app/auth/actions";
 import { PasswordField } from "@/components/password-field";
+import { useLanguage } from "@/components/language-provider";
 
 export function AuthForms({ error, success, next }: { error?: string; success?: string; next?: string }) {
-  const [language, setLanguage] = useState<"sw" | "en">("sw");
+  const { language, en } = useLanguage();
   const [mode, setMode] = useState<"login" | "signup">("signup");
-  const en = language === "en";
 
   const optionStyle = (active: boolean) => ({
     flex: 1,
@@ -22,24 +22,12 @@ export function AuthForms({ error, success, next }: { error?: string; success?: 
   });
 
   return <section>
-    <div className="field language-choice">
-      <label htmlFor="auth-language">{en ? "Choose language" : "Chagua lugha"}</label>
-      <select id="auth-language" value={language} onChange={e => setLanguage(e.target.value as "sw" | "en")}>
-        <option value="sw">Kiswahili</option><option value="en">English</option>
-      </select>
-    </div>
     {error && <p className="message" role="alert">{error}</p>}
     {success && <p className="notice" role="status">{en ? "Check your email to confirm your account." : success}</p>}
-
     <div role="group" aria-label={en ? "Choose account action" : "Chagua huduma ya akaunti"} style={{ display: "flex", gap: 10, margin: "18px 0 14px", maxWidth: 540 }}>
-      <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")} style={optionStyle(mode === "login")}>
-        {en ? "I have an account" : "Nina akaunti"}
-      </button>
-      <button type="button" aria-pressed={mode === "signup"} onClick={() => setMode("signup")} style={optionStyle(mode === "signup")}>
-        {en ? "I don't have an account" : "Sina akaunti"}
-      </button>
+      <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")} style={optionStyle(mode === "login")}>{en ? "I have an account" : "Nina akaunti"}</button>
+      <button type="button" aria-pressed={mode === "signup"} onClick={() => setMode("signup")} style={optionStyle(mode === "signup")}>{en ? "I don't have an account" : "Sina akaunti"}</button>
     </div>
-
     {mode === "login" ? (
       <form className="panel form" action={signIn} aria-label={en ? "Login form" : "Fomu ya kuingia"}>
         <input type="hidden" name="next" value={next || ""}/>
