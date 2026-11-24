@@ -1,9 +1,11 @@
 "use client";
 
 import {useEffect,useRef,useState} from "react";
+import { useLanguage } from "@/components/language-provider";
 
 type Chapter={id:string;title:string;url:string;chapterIndex:number};
 export default function AudiobookPlayer({bookId,chapters}:{bookId:string;chapters:Chapter[]}){
+ const { en } = useLanguage();
  const audioRef=useRef<HTMLAudioElement>(null);
  const key="maarifabooks-audio-progress-"+bookId;
  const [active,setActive]=useState(0);const [speed,setSpeed]=useState("1");
@@ -15,13 +17,13 @@ export default function AudiobookPlayer({bookId,chapters}:{bookId:string;chapter
  function next(){if(active<chapters.length-1){setActive(active+1);}}
  function previous(){if(active>0){setActive(active-1);}}
  const chapter=chapters[active];
- if(!chapter)return <p className="message">Sauti za kitabu hazipatikani kwa sasa.</p>;
+ if(!chapter)return <p className="message">{en ? "Book audio is currently unavailable." : "Sauti za kitabu hazipatikani kwa sasa."}</p>;
  return <section className="panel" style={{padding:20}}>
-  <p className="eyebrow">SIKILIZA KITABU</p><h2>{chapter.title}</h2>
+  <p className="eyebrow">{en ? "LISTEN TO THE BOOK" : "SIKILIZA KITABU"}</p><h2>{chapter.title}</h2>
   <audio key={chapter.id} ref={audioRef} controls preload="metadata" src={chapter.url} onLoadedMetadata={restoreChapterPosition} onTimeUpdate={saveProgress} onPause={saveProgress} onEnded={next} style={{width:"100%"}}/>
-  <div className="field" style={{marginTop:16}}><label htmlFor="audio-speed">Kasi ya usomaji</label><select id="audio-speed" value={speed} onChange={e=>setSpeed(e.target.value)}><option value="0.75">0.75×</option><option value="1">1× Kawaida</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select></div>
-  <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"12px 0"}}><button type="button" className="btn btn-outline" onClick={previous} disabled={active===0}>Sura iliyotangulia</button><button type="button" className="btn btn-outline" onClick={next} disabled={active===chapters.length-1}>Sura inayofuata</button></div>
-  <h3>Orodha ya sura</h3><ol>{chapters.map((item,index)=><li key={item.id} style={{marginBottom:8}}><button type="button" className={index===active?"btn":"btn btn-outline"} onClick={()=>selectChapter(index)}>{index+1}. {item.title}</button></li>)}</ol>
-  <p className="muted">Maendeleo ya kusikiliza yanahifadhiwa kwenye kifaa hiki. Unaweza kusitisha na kuendelea wakati wowote.</p>
+  <div className="field" style={{marginTop:16}}><label htmlFor="audio-speed">{en ? "Playback speed" : "Kasi ya usomaji"}</label><select id="audio-speed" value={speed} onChange={e=>setSpeed(e.target.value)}><option value="0.75">0.75×</option><option value="1">1× {en ? "Normal" : "Kawaida"}</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select></div>
+  <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"12px 0"}}><button type="button" className="btn btn-outline" onClick={previous} disabled={active===0}>{en ? "Previous chapter" : "Sura iliyotangulia"}</button><button type="button" className="btn btn-outline" onClick={next} disabled={active===chapters.length-1}>{en ? "Next chapter" : "Sura inayofuata"}</button></div>
+  <h3>{en ? "Chapter list" : "Orodha ya sura"}</h3><ol>{chapters.map((item,index)=><li key={item.id} style={{marginBottom:8}}><button type="button" className={index===active?"btn":"btn btn-outline"} onClick={()=>selectChapter(index)}>{index+1}. {item.title}</button></li>)}</ol>
+  <p className="muted">{en ? "Listening progress is saved on this device. You can pause and resume at any time." : "Maendeleo ya kusikiliza yanahifadhiwa kwenye kifaa hiki. Unaweza kusitisha na kuendelea wakati wowote."}</p>
  </section>;
 }
