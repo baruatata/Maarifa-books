@@ -97,8 +97,8 @@ export default function EpubReaderScreen() {
           fileSystem={useEpubFileSystem}
           enableSwipe
           onDisplayError={(reason: unknown) => setError(reason instanceof Error ? reason.message : "Hitilafu imetokea wakati wa kuonyesha EPUB.")}
-          renderLoadingFileComponent={<View style={styles.center}><ActivityIndicator color={gold} size="large" /><Text style={styles.message}>Tunapakia kurasa...</Text></View>}
-          renderOpeningBookComponent={<View style={styles.center}><ActivityIndicator color={gold} size="large" /><Text style={styles.message}>Tunaandaa kitabu...</Text></View>}
+          renderLoadingFileComponent={() => <View style={styles.center}><ActivityIndicator color={gold} size="large" /><Text style={styles.message}>Tunapakia kurasa...</Text></View>}
+          renderOpeningBookComponent={() => <View style={styles.center}><ActivityIndicator color={gold} size="large" /><Text style={styles.message}>Tunaandaa kitabu...</Text></View>}
         />
       ) : null}
     </SafeAreaView>
