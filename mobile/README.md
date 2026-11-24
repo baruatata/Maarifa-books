@@ -5,7 +5,7 @@ Mradi wa Android na iOS unaotumia Expo React Native. App imewekwa ndani ya repos
 ## Muundo wa sasa
 - Expo Router kwa urambazaji.
 - Supabase client yenye session persistence kwenye kifaa.
-- Supabase PostgreSQL kwa orodha ya vitabu vilivyoidhinishwa.
+- Supabase PostgreSQL kwa orodha, utafutaji wa vitabu kwa jina/mwandishi na katalogi ya vitabu vilivyoidhinishwa.
 - Kuingia kwa barua pepe/nenosiri na usajili kupitia Supabase Auth.
 - Kuingia kwa simu kwa OTP kumewekwa kama mtiririko wa Supabase Auth; ulinganifu na E-Hub ya tovuti bado unahitaji kuhakikiwa kabla ya Production.
 - Ukurasa wa akaunti, taarifa za mtumiaji na kutoka kwenye akaunti.
@@ -26,10 +26,10 @@ Usitumie Supabase secret/service-role key ndani ya App.
 - App inatumia Supabase project ileile na RLS iliyopo.
 - Hakuna schema, table, bucket, au data ya Production inayobadilishwa na msingi huu.
 - Malipo yanaendelea kwenda moja kwa moja kwa muuzaji.
-- Maombi ya coupon na kufungua vitabu vinatumia jedwali/RPC zilizopo na RLS; uthibitisho wa mwisho wa mtiririko unahitaji majaribio ya akaunti halisi.\n- PDF reader hutengeneza signed URL kwa faili la sampuli au faili kamili kulingana na ruhusa za mnunuzi.
+- Maombi ya coupon na kufungua vitabu vinatumia jedwali/RPC zilizopo na RLS; uthibitisho wa mwisho wa mtiririko unahitaji majaribio ya akaunti halisi.\n- PDF na EPUB readers hutengeneza signed URL kwa sampuli au faili kamili kulingana na ruhusa za mnunuzi. EPUB reader hutumia Expo FileSystem API ya SDK 54 na WebView; uthibitisho wa kifaa halisi bado unasubiri.
 - API secrets zibaki server-side.
 
 ## Hali ya utekelezaji
-Msingi wa App, orodha ya vitabu, akaunti, maelezo ya kitabu, ombi la coupon, maktaba, PDF reader ya ndani ya App na audiobook player vimeongezwa kwenye branch ya maendeleo. EPUB reader, utafutaji kamili, uthibitisho wa E-Hub OTP, push notifications na majaribio ya vifaa halisi bado havijakamilika.
+Msingi wa App, orodha ya vitabu, akaunti, maelezo ya kitabu, ombi la coupon, maktaba, PDF reader ya ndani ya App na audiobook player vimeongezwa kwenye branch ya maendeleo. Utafutaji na EPUB reader vimeongezwa kwenye branch ya maendeleo. Uthibitisho wa E-Hub OTP, push notifications na majaribio ya vifaa halisi bado havijakamilika. Hakuna kitabu cha EPUB kilichoonekana kwenye orodha ya Production wakati wa ukaguzi, hivyo EPUB reader inahitaji kitabu halisi cha majaribio kabla ya kuthibitishwa.
 
 App haijaunganishwa kwenye Production wala kuchapishwa Play Store/App Store. Kabla ya hatua hizo, lazima zipite typecheck, Expo validation, majaribio ya Android/iOS na ukaguzi wa mtiririko wa akaunti/SMS kwenye mazingira halisi.
