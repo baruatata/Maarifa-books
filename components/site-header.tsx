@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { LanguageToggle } from "@/components/language-provider";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -48,6 +49,7 @@ export async function SiteHeader() {
           </>
         )}
       </nav>
+      <LanguageToggle />
     </header>
   );
 }
