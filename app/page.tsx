@@ -37,11 +37,14 @@ export default async function Home({ searchParams }: HomeProps) {
   const books = (data ?? []) as Book[];
   const categories = Array.from(new Set(books.map((book) => book.category).filter((value): value is string => Boolean(value))));
 
-  const covers = new Map(await Promise.all(books.map(async (book) => {
-    if (!book.cover_path) return [book.id, null] as const;
-    const { data: signed } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
-    return [book.id, signed?.signedUrl ?? null] as const;
-  })));
+  // Sign all available covers in one Storage request instead of one request per book.
+  const coverPaths = books.flatMap((book) => book.cover_path ? [book.cover_path] : []);
+  const { data: signedCovers } = coverPaths.length
+    ? await supabase.storage.from("book-files").createSignedUrls(coverPaths, 86400)
+    : { data: [] };
+  const covers = new Map(
+    (signedCovers ?? []).flatMap((item) => item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
+  );
 
   return (
     <main className="home-shell">
@@ -76,8 +79,8 @@ export default async function Home({ searchParams }: HomeProps) {
           <div className="home-book-grid">
             {books.map((book) => (
               <Link href={`/kitabu/${book.id}`} className="home-book-card" key={book.id} aria-label={`Angalia maelezo ya ${book.title}`}>
-                {covers.get(book.id) ? (
-                  <img className="home-book-cover" src={covers.get(book.id)!} alt={`Jalada la ${book.title}`} />
+                {book.cover_path && covers.get(book.cover_path) ? (
+                  <img className="home-book-cover" src={covers.get(book.cover_path)!} alt={`Jalada la ${book.title}`} loading="lazy" decoding="async" />
                 ) : (
                   <div className="home-book-placeholder"><span>MAARIFABOOKS</span><strong>{book.title}</strong><small>{book.author_name ?? "Mwandishi"}</small></div>
                 )}
