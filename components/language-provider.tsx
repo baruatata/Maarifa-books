@@ -10,7 +10,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>("sw");
   useEffect(() => {
     const saved = document.cookie.split("; ").find((part) => part.startsWith("maarifa-language="))?.split("=")[1];
-    if (saved === "en" || saved === "sw") setLanguageState(saved);
+    const initial: Language = saved === "en" ? "en" : "sw";
+    setLanguageState(initial);
+    document.documentElement.lang = initial;
   }, []);
   const setLanguage = (next: Language) => {
     setLanguageState(next);
@@ -30,13 +32,10 @@ export function useLanguage() {
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
   return (
-    <button
-      type="button"
-      className="language-toggle"
+    <button type="button" className="language-toggle"
       aria-label={language === "sw" ? "Switch language to English" : "Badili lugha iwe Kiswahili"}
       title={language === "sw" ? "English" : "Kiswahili"}
-      onClick={() => setLanguage(language === "sw" ? "en" : "sw")}
-    >
+      onClick={() => setLanguage(language === "sw" ? "en" : "sw")}>
       <span aria-hidden="true">文A</span>
       <span>{language === "sw" ? "EN" : "SW"}</span>
     </button>
