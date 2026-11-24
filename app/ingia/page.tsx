@@ -5,7 +5,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const isCustomerSelfService = params.next === "/dashboard/jihudumie";
   return <main className="page">
-    <div style={{ display: "flex", justifyContent: "center", margin: "0 auto 24px" }}><img src="/maarifabooks-brand.svg" alt="MaarifaBooks — Soma, Jifunze, Endelea" width="300" height="74" style={{ width: "min(320px, 84vw)", height: "auto", objectFit: "contain" }} /></div>
     <p className="eyebrow">{isCustomerSelfService ? "HUDUMA ZA MTEJA" : "KARIBU MAARIFABOOKS"}</p>
     <h1>{isCustomerSelfService ? "Ingia au fungua akaunti ya mteja" : "Ingia au fungua akaunti"}</h1>
     {isCustomerSelfService ? (
