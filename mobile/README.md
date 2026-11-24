@@ -6,6 +6,9 @@ Mradi wa Android na iOS unaotumia Expo React Native. App imewekwa ndani ya repos
 - Expo Router kwa urambazaji.
 - Supabase client yenye session persistence kwenye kifaa.
 - Supabase PostgreSQL kwa orodha ya vitabu vilivyoidhinishwa.
+- Kuingia kwa barua pepe/nenosiri na usajili kupitia Supabase Auth.
+- Kuingia kwa simu kwa OTP kupitia usanidi wa SMS wa Supabase uliopo.
+- Ukurasa wa akaunti, taarifa za mtumiaji na kutoka kwenye akaunti.
 - Muonekano wa mwanzo wa navy, gold na white.
 - Kiswahili kama lugha ya mwanzo.
 
@@ -26,12 +29,7 @@ Usitumie Supabase secret/service-role key ndani ya App.
 - OTP, coupon, na ruhusa za kusoma vitabu zitatumia sheria zilizopo za backend.
 - API secrets zibaki server-side.
 
-## Hatua zinazofuata
-1. Kuingia/kusajili kwa njia zilezile za Supabase Auth.
-2. Utafutaji, ukurasa wa kitabu na mtiririko wa coupon.
-3. Maktaba ya mnunuzi na ruhusa za kitabu.
-4. PDF/EPUB reader na audiobook player.
-5. Push notifications.
-6. Majaribio ya vifaa halisi na builds za Android/iOS.
+## Hali ya utekelezaji
+Msingi wa App, orodha ya vitabu, kuingia/kusajili na OTP, na ukurasa wa akaunti vimeongezwa kwenye branch ya maendeleo. Vipengele vya utafutaji, maelezo ya kitabu, ombi la coupon, maktaba, PDF/EPUB reader, audiobook player na push notifications bado vinahitaji kuunganishwa na kupimwa kabla ya toleo la mwisho.
 
-Huu ni msingi wa maendeleo (scaffold), si toleo la App lililo tayari kuchapishwa. Kabla ya kuunganisha au kusambaza, endesha typecheck, Expo validation na majaribio ya Android/iOS.
+App haijaunganishwa kwenye Production wala kuchapishwa Play Store/App Store. Kabla ya hatua hizo, lazima zipite typecheck, Expo validation, majaribio ya Android/iOS na ukaguzi wa mtiririko wa akaunti/SMS kwenye mazingira halisi.
