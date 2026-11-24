@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "MaarifaBooks",
+    "slug": "maarifabooks",
+    "owner": "lumbwadigital",
+    "scheme": "maarifabooks",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lumbwadigital.maarifabooks",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.lumbwadigital.maarifabooks",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-audio",
+      "@config-plugins/react-native-blob-util",
+      "@config-plugins/react-native-pdf"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "74e04001-4c03-43b5-91d3-c35a44816c4e"
+      }
+    }
+  }
+}
