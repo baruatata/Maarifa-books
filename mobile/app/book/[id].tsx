@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getSupabase, isSupabaseConfigured } from "@/src/lib/supabase";
 
@@ -104,6 +104,7 @@ export default function BookDetailsScreen() {
       <View style={styles.headInfo}><Text style={styles.eyebrow}>TAARIFA ZA KITABU</Text><Text style={styles.title}>{book.title}</Text><Text style={styles.author}>Na {book.author_name||"Mwandishi hajatajwa"}</Text><Text style={styles.tag}>{format}  •  {book.language==="sw"?"Kiswahili":book.language==="en"?"Kiingereza":"Lugha nyingine"}</Text><Text style={styles.price}>{book.price_tzs>0?"TSh "+new Intl.NumberFormat("sw-TZ").format(book.price_tzs):"BURE"}</Text></View>
     </View>
     <View style={styles.card}><Text style={styles.sectionTitle}>Maelezo ya kitabu</Text><Text style={styles.description}>{book.description||"Maelezo ya kitabu hiki hayajawekwa bado."}</Text>{!!book.category&&<Text style={styles.category}>Aina: {book.category}</Text>}</View>
+    {book.format==="audiobook"&&<View style={styles.card}><Text style={styles.sectionTitle}>Sikiliza kitabu</Text><Text style={styles.description}>Sikiliza sura za kitabu, sitisha na endelea, badilisha kasi na hifadhi sehemu uliyofikia.</Text><Pressable onPress={()=>router.push("/listen/"+book.id)} style={styles.primary}><Text style={styles.primaryText}>Fungua kicheza sauti</Text></Pressable></View>}
     {canRead?<View style={styles.card}><Text style={styles.sectionTitle}>Kitabu kiko tayari</Text><Text style={styles.description}>Una ruhusa ya kufungua kitabu hiki.</Text><Pressable onPress={openBook} style={styles.primary}><Text style={styles.primaryText}>Fungua kitabu</Text></Pressable></View>:<View style={styles.card}>
       <Text style={styles.sectionTitle}>Nunua kitabu</Text><Text style={styles.description}>Lipa moja kwa moja kwa muuzaji kupitia WhatsApp. Baada ya malipo, tuma ombi la coupon hapa chini. Muuzaji akithibitisha kupokea fedha atakutumia coupon ya kufungua kitabu kizima.</Text>
       {sellerPhone?<Pressable onPress={()=>Linking.openURL("https://wa.me/"+sellerPhone+"?text="+encodeURIComponent("Habari, nahitaji kununua kitabu "+book.title+" kupitia MaarifaBooks. Naomba maelekezo ya malipo.") )} style={styles.secondary}><Text style={styles.secondaryText}>Wasiliana na muuzaji WhatsApp</Text></Pressable>:<Text style={styles.error}>Namba ya WhatsApp ya muuzaji haipatikani.</Text>}
