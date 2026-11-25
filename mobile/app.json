@@ -21,6 +21,11 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "owner": "lumbwadigitals-team"
+    "owner": "lumbwadigitals-team",
+    "extra": {
+      "eas": {
+        "projectId": "74e04001-4c03-43b5-91d3-c35a44816c4e"
+      }
+    }
   }
 }
