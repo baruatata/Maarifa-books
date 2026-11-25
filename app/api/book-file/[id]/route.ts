@@ -17,6 +17,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const search = new URL(request.url).searchParams;
   const asset = search.get("asset");
   const asDownload = search.get("download") === "1";
+  const asDownload = search.get("download") === "1";
   const supabase = await createClient();
 
   const [{ data: book, error: bookError }, { data: { session } }] = await Promise.all([
@@ -64,7 +65,8 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   const encodedPath = storagePath.split("/").map(encodeURIComponent).join("/");
-  const storageUrl = `${baseUrl.replace(/\\/$/, "")}/storage/v1/object/authenticated/book-files/${encodedPath}`;
+  const storageBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const storageUrl = `${storageBase}/storage/v1/object/authenticated/book-files/${encodedPath}`;
   const upstreamHeaders = new Headers({
     apikey: apiKey,
     Authorization: `Bearer ${session?.access_token ?? apiKey}`,
