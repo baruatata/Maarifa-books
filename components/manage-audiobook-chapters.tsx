@@ -17,10 +17,10 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState("");
   async function uploadAudio(selected:File){
-    if(selected.size>MAX_AUDIO_SIZE||!(/\.(mp3|m4a)$/i.test(selected.name))) throw new Error("{en ? "Audio must be MP3 or M4A and no larger than 100 MB." : "Sauti iwe MP3 au M4A na isizidi MB 100."}");
+    if(selected.size>MAX_AUDIO_SIZE||!(/\.(mp3|m4a)$/i.test(selected.name))) throw new Error(en ? "Audio must be MP3 or M4A and no larger than 100 MB." : "Sauti iwe MP3 au M4A na isizidi MB 100.");
     const supabase=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
     const {data:{user}}=await supabase.auth.getUser();
-    if(!user) throw new Error("{en ? "Please sign in again to continue." : "Ingia tena ili kuendelea."}");
+    if(!user) throw new Error(en ? "Please sign in again to continue." : "Ingia tena ili kuendelea.");
     const ext=selected.name.toLowerCase().endsWith(".m4a")?"m4a":"mp3";
     const path=user.id+"/"+bookId+"/audio-chapter-"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
     const {error}=await supabase.storage.from("book-files").upload(path,selected,{upsert:false,contentType:ext==="m4a"?"audio/mp4":"audio/mpeg"});
@@ -37,10 +37,10 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
       if(!result.ok)throw new Error(result.error);
       setChapters(current=>[...current,{id:"new-"+Date.now(),chapter_index:Math.max(0,...current.map(c=>c.chapter_index))+1,title:title.trim(),audio_path:uploaded!.path,is_preview:preview}]);
       setTitle("");setFile(null);setPreview(false);form.reset();
-      setMessage("{en ? "New chapter added. The audiobook has been returned to the administrator for review." : "Sura mpya imeongezwa. Audiobook imerudishwa kwa Admin kwa ukaguzi."}");
+      setMessage(en ? "New chapter added. The audiobook has been returned to the administrator for review." : "Sura mpya imeongezwa. Audiobook imerudishwa kwa Admin kwa ukaguzi.");
     }catch(error){
       if(uploaded)await uploaded.supabase.storage.from("book-files").remove([uploaded.path]);
-      setMessage(error instanceof Error?error.message:"{en ? "Could not add the chapter." : "Imeshindikana kuongeza sura."}");
+      setMessage(error instanceof Error?error.message:(en ? "Could not add the chapter." : "Imeshindikana kuongeza sura."));
     }finally{setBusy(false);}
   }
   async function saveChapter(chapter:Chapter,index:number,form:HTMLFormElement){
@@ -53,10 +53,10 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
       const result=await updateAudiobookChapter(bookId,chapter.id,nextTitle,uploaded?.path||null,nextPreview);
       if(!result.ok)throw new Error(result.error);
       setChapters(current=>current.map((c,i)=>i===index?{...c,title:nextTitle,is_preview:nextPreview,audio_path:uploaded?.path||c.audio_path}:c));
-      setMessage("{en ? "Chapter changes saved. The audiobook has been returned to the administrator for review." : "Mabadiliko ya sura yamehifadhiwa. Audiobook imerudishwa kwa Admin kwa ukaguzi."}");
+      setMessage(en ? "Chapter changes saved. The audiobook has been returned to the administrator for review." : "Mabadiliko ya sura yamehifadhiwa. Audiobook imerudishwa kwa Admin kwa ukaguzi.");
     }catch(error){
       if(uploaded)await uploaded.supabase.storage.from("book-files").remove([uploaded.path]);
-      setMessage(error instanceof Error?error.message:"{en ? "Could not save the chapter." : "Imeshindikana kuhifadhi sura."}");
+      setMessage(error instanceof Error?error.message:(en ? "Could not save the chapter." : "Imeshindikana kuhifadhi sura."));
     }finally{setBusy(false);}
   }
   return <section className="panel form" style={{marginTop:24}}>
