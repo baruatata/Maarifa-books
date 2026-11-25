@@ -23,7 +23,6 @@ export async function GET(request: Request, { params }: RouteContext) {
       .from("books")
       .select("id,status,cover_path,file_path,preview_path")
       .eq("id", id)
-      .eq("status", "approved")
       .maybeSingle(),
     supabase.auth.getSession(),
   ]);
