@@ -57,7 +57,7 @@ export function SellerPhoneOtp({ phone, verified }: { phone: string; verified: b
         </button>
         <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
           <input
-            aria-label=(en ? "OTP code" : "Namba ya OTP")
+            aria-label={en ? "OTP code" : "Namba ya OTP"}
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
