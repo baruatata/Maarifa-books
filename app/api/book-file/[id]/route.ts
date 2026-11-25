@@ -17,7 +17,6 @@ export async function GET(request: Request, { params }: RouteContext) {
   const search = new URL(request.url).searchParams;
   const asset = search.get("asset");
   const asDownload = search.get("download") === "1";
-  const asDownload = search.get("download") === "1";
   const supabase = await createClient();
 
   const [{ data: book, error: bookError }, { data: { session } }] = await Promise.all([
