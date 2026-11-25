@@ -65,10 +65,10 @@ export default async function CustomerSelfServicePage({
   for (const entitlement of entitlements ?? []) {
     const book = Array.isArray(entitlement.books) ? entitlement.books[0] : entitlement.books;
     if (!book?.id) continue;
-    const { data: signed } = book.file_path
-      ? await supabase.storage.from("book-files").createSignedUrl(book.file_path, 600, { download: true })
-      : { data: null };
-    purchasedBooks.set(book.id, { ...book, downloadUrl: signed?.signedUrl ?? null });
+    purchasedBooks.set(book.id, {
+      ...book,
+      downloadUrl: book.file_path ? `/api/book-file/${book.id}?asset=full&download=1` : null,
+    });
   }
   const money = (amount: number) => "TSh " + new Intl.NumberFormat("sw-TZ").format(amount);
 
