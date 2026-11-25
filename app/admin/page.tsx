@@ -84,13 +84,13 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   }
   const buyerRows = [...buyerMap.entries()].map(([id, buyer]) => ({ id, ...buyer })).sort((a, b) => b.lastPurchase.localeCompare(a.lastPurchase));
   const money = (amount: number) => new Intl.NumberFormat("sw-TZ").format(amount);
-  const bookLinks = new Map(await Promise.all(libraryRows.map(async book => {
-    const [file, cover] = await Promise.all([
-      book.file_path ? supabase.storage.from("book-files").createSignedUrl(book.file_path, 86400) : Promise.resolve({data:null}),
-      book.cover_path ? supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400) : Promise.resolve({data:null}),
-    ]);
-    return [book.id, {fileUrl:file.data?.signedUrl ?? null, coverUrl:cover.data?.signedUrl ?? null}] as const;
-  })));
+  const bookLinks = new Map(libraryRows.map(book => [
+    book.id,
+    {
+      fileUrl: book.file_path ? `/api/book-file/${book.id}?asset=full` : null,
+      coverUrl: book.cover_path ? `/api/book-file/${book.id}?asset=cover` : null,
+    },
+  ] as const));
 
   return <main className="admin-console">
     <aside className="admin-sidebar">
