@@ -84,11 +84,9 @@ export default async function BookDetailsPage({ params, searchParams }: { params
   // action instead of buyer checkout/coupon prompts on the book detail page.
   const isSellerOwner = Boolean(user && user.id === book.seller_id);
 
-  let coverUrl: string | null = null;
-  if (book.cover_path) {
-    const { data } = await supabase.storage.from("book-files").createSignedUrl(book.cover_path, 86400);
-    coverUrl = data?.signedUrl ?? null;
-  }
+  const coverUrl = book.cover_path
+    ? `/api/book-file/${book.id}?asset=cover`
+    : null;
 
   let whatsappHref: string | null = null;
   if (book.price_tzs > 0 && !isSellerOwner) {
