@@ -1,37 +1,36 @@
-# MaarifaBooks Android App
+# MaarifaBooks Mobile App (Android + iPhone)
 
-This is an Android application shell built with Expo and React Native. It opens the existing MaarifaBooks production website inside a controlled WebView, so current Supabase authentication, catalogue, reading, audio, and coupon workflows remain on the existing backend.
+This Expo / React Native app shell opens the existing MaarifaBooks website in a controlled WebView. It reuses the current Supabase authentication, catalogue, reading, audio, seller and coupon workflows; it does not duplicate backend business logic.
 
-## Why this first version uses a WebView
+## Platforms
+- Android: preview profile builds an installable APK.
+- iPhone: production profile builds an iOS App Store-compatible IPA for TestFlight submission.
+- iOS bundle identifier: `com.maarifabooks.app`.
 
-- Reuses the existing production application and its tested business rules.
-- Avoids duplicating authentication, payment/coupon, seller, and admin logic.
-- Keeps the Android app isolated in `mobile/`; it does not change the Next.js website or database.
-- External links such as WhatsApp, phone, and email are opened by Android.
+## iPhone / TestFlight requirements
+An Apple Developer Program membership is required for a physical-device App Store/TestFlight build.
 
-This is an initial reader-facing APK shell, not a full native rewrite. PDF/audio behavior, OTP delivery, downloads, and Android navigation must be checked on physical Android devices before release.
+1. Confirm access to the Apple Developer account that will own the app.
+2. From `mobile/`, sign in with `npx eas-cli login`.
+3. Run `npx eas-cli credentials --platform ios` and configure the Apple Distribution certificate and provisioning profile, or allow EAS to manage them after signing in with the authorized Apple account.
+4. Build the IPA with `npx eas-cli build --platform ios --profile production`.
+5. Submit the build to App Store Connect/TestFlight with `npx eas-cli submit --platform ios` after App Store Connect access is configured.
+
+Do not share Apple passwords or private keys in chat or commit them to GitHub. Use EAS-managed credentials / secure environment variables.
+
+## Android build
+1. Run `npm install` from this directory.
+2. Build: `npx eas-cli build --platform android --profile preview`.
+3. Download and install the APK from the EAS build page.
 
 ## Local development
-
 1. Install Node.js 20 or newer.
 2. Run `cd mobile && npm install`.
 3. Run `npx expo start`.
-4. Open using Expo Go or an Android emulator.
+4. Open with Expo Go or an emulator/simulator.
 
-## Build an installable APK
-
-1. Install dependencies: `npm install`.
-2. Sign in to the Expo account configured as the project owner (`lumbwadigital`): `npx eas-cli login`.
-3. Initialize/link the EAS project and let Expo write the real project ID into `app.json`: `npx eas-cli init`.
-4. Build an installable APK: `npx eas-cli build --platform android --profile preview`.
-5. Download the APK from the build page after EAS reports a successful build.
-
-Do not commit Expo passwords, access tokens, or signing secrets to GitHub. The `owner` field is already set to `lumbwadigital`; `eas init` still needs to link this app to an actual EAS project.
-
-The production profile creates an Android App Bundle for a future Google Play release.
-
-## Security and scope
-
+## Scope and safety
 - No Supabase service-role key or other secret is included in the app.
-- The website remains responsible for authentication and access control.
-- No database schema, RLS policy, payment workflow, or production website setting is changed by this app shell.
+- The website remains responsible for authentication and authorization.
+- No database schema, RLS policy, payment workflow, or production website setting is changed by this app.
+- This is a WebView-based mobile shell, not a native rewrite. OTP delivery, downloads, PDF/audio playback, navigation and iOS safe-area behavior must be tested on real devices before public release.
