@@ -1,10 +1,10 @@
-name: Build MaarifaBooks Android APK
+name: Build and publish MaarifaBooks Android APK
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   android-apk:
@@ -32,4 +32,41 @@ jobs:
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest build --platform android --profile preview --non-interactive
+        run: |
+          npx --yes eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > eas-build.json
+          BUILD_ID="$(node -e "const fs=require('fs'); const v=JSON.parse(fs.readFileSync('eas-build.json','utf8')); const b=Array.isArray(v)?v[0]:(v.builds?.[0]??v); const id=b?.id??b?.build?.id; if(!id) { console.error('Could not read EAS build ID from JSON output'); process.exit(1); } process.stdout.write(id);")"
+          echo "EAS_BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
+          npx --yes eas-cli@latest build:download --build-id "$BUILD_ID" --non-interactive
+          mkdir -p dist
+          APK_PATH="$(find . -type f -name '*.apk' -not -path './node_modules/*' -not -path './dist/*' -print -quit)"
+          if [ -z "$APK_PATH" ]; then
+            echo "EAS download completed but no APK file was found."
+            exit 1
+          fi
+          cp "$APK_PATH" dist/maarifabooks.apk
+          test -s dist/maarifabooks.apk
+          ls -lh dist/maarifabooks.apk
+
+      - name: Save APK as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maarifabooks-android-apk
+          path: mobile/dist/maarifabooks.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish permanent GitHub Release download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: MaarifaBooks Android APK (Latest)
+          body: |
+            Latest installable Android APK for MaarifaBooks.
+            Built from the Android app shell using Expo EAS.
+            EAS build ID: ${{ env.EAS_BUILD_ID }}
+          prerelease: true
+          make_latest: false
+          files: mobile/dist/maarifabooks.apk
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
