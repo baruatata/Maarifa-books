@@ -38,14 +38,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const books = (data ?? []) as Book[];
   const categories = Array.from(new Set(books.map((book) => book.category).filter((value): value is string => Boolean(value))));
 
-  // Sign all available covers in one Storage request instead of one request per book.
-  const coverPaths = books.flatMap((book) => book.cover_path ? [book.cover_path] : []);
-  const { data: signedCovers } = coverPaths.length
-    ? await supabase.storage.from("book-files").createSignedUrls(coverPaths, 86400)
-    : { data: [] };
-  const covers = new Map(
-    (signedCovers ?? []).flatMap((item) => item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
-  );
+
 
   return (
     <main className="home-shell">
