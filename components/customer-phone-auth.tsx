@@ -38,7 +38,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       phone,
       options: {
         shouldCreateUser: mode === "signup",
-        ...(mode === "signup" ? { data: { full_name: name.trim(), preferred_language: "sw" } } : {}),
+        ...(mode === "signup" ? { data: { full_name: name.trim(), preferred_language: en ? "en" : "sw" } } : {}),
       },
     });
     if (otpError) throw otpError;
@@ -72,7 +72,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
     e.preventDefault();
     setBusy(true); setError(""); setMessage("");
     try {
-      const phone = toE164(phoneInput);
+      const phone = toE164(phoneInput, en);
       if (!/^\d{6}$/.test(code.trim())) throw new Error(en ? "Enter the 6-digit OTP." : "Ingiza OTP yenye tarakimu 6.");
       const supabase = createClient();
       const { data, error: verifyError } = await supabase.auth.verifyOtp({ phone, token: code.trim(), type: "sms" });
@@ -88,7 +88,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       if (profileUpdateError) throw profileUpdateError;
       window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");
+      setError(err instanceof Error ? err.message : (en ? "OTP verification failed." : "OTP haijathibitishwa."));
     } finally { setBusy(false); }
   }
 
