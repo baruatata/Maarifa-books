@@ -2,6 +2,11 @@ name: Build and publish MaarifaBooks Android APK
 
 on:
   workflow_dispatch:
+    inputs:
+      existing_build_id:
+        description: "Optional: reuse a completed EAS build ID instead of starting a new paid build"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -28,21 +33,35 @@ jobs:
         working-directory: mobile
         run: npx tsc --noEmit
 
-      - name: Build Android APK with EAS
+      - name: Build or reuse Android APK with EAS
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXISTING_BUILD_ID: ${{ inputs.existing_build_id }}
         run: |
-          npx --yes eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > eas-build.json
-          BUILD_ID="$(node -e "const fs=require('fs'); const v=JSON.parse(fs.readFileSync('eas-build.json','utf8')); const b=Array.isArray(v)?v[0]:(v.builds?.[0]??v); const id=b?.id??b?.build?.id; if(!id) { console.error('Could not read EAS build ID from JSON output'); process.exit(1); } process.stdout.write(id);")"
+          if [ -n "$EXISTING_BUILD_ID" ]; then
+            BUILD_ID="$EXISTING_BUILD_ID"
+            echo "Reusing completed EAS build: $BUILD_ID"
+          else
+            npx --yes eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > eas-build.json
+            BUILD_ID="$(node -e "const fs=require('fs'); const v=JSON.parse(fs.readFileSync('eas-build.json','utf8')); const b=Array.isArray(v)?v[0]:(v.builds?.[0]??v); const id=b?.id??b?.build?.id; if(!id) { console.error('Could not read EAS build ID from JSON output'); process.exit(1); } process.stdout.write(id);")"
+          fi
+
           echo "EAS_BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
-          npx --yes eas-cli@latest build:download --build-id "$BUILD_ID" --non-interactive
           mkdir -p dist
-          APK_PATH="$(find . -type f -name '*.apk' -not -path './node_modules/*' -not -path './dist/*' -print -quit)"
-          if [ -z "$APK_PATH" ]; then
+          DOWNLOAD_LOG="$(npx --yes eas-cli@latest build:download --build-id "$BUILD_ID" --non-interactive 2>&1 | tee /dev/stderr)"
+          APK_PATH="$(printf '%s\n' "$DOWNLOAD_LOG" | sed -n 's/^Build downloaded to //p' | tail -n 1)"
+
+          if [ -z "$APK_PATH" ] || [ ! -s "$APK_PATH" ]; then
+            echo "Could not resolve the APK path reported by EAS. Searching runner temporary directories..."
+            APK_PATH="$(find /tmp "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -type f -name '*.apk' -not -path '*/node_modules/*' -not -path '*/dist/*' -print -quit 2>/dev/null || true)"
+          fi
+
+          if [ -z "$APK_PATH" ] || [ ! -s "$APK_PATH" ]; then
             echo "EAS download completed but no APK file was found."
             exit 1
           fi
+
           cp "$APK_PATH" dist/maarifabooks.apk
           test -s dist/maarifabooks.apk
           ls -lh dist/maarifabooks.apk
