@@ -62,6 +62,43 @@ export async function saveSellerPayoutMethod(formData:FormData):Promise<{ok:true
   return {ok:true};
 }
 
+export async function getSellerBookPreviewSource(bookId:string):Promise<{ok:true;url:string;format:"pdf"|"epub"}|{ok:false;error:string}> {
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return {ok:false,error:"Ingia tena ili kuendelea."};
+  const {data:book,error}=await supabase.from("books").select("file_path,format,price_tzs,preview_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(error||!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  if(book.price_tzs<=0) return {ok:false,error:"Kitabu hiki hakihitaji sampuli ya kulipia."};
+  if(book.preview_path) return {ok:false,error:"Sampuli ya bure tayari ipo."};
+  if(book.format!=="pdf"&&book.format!=="epub") return {ok:false,error:"Muundo huu hautumii sampuli ya PDF/EPUB."};
+  if(!book.file_path||!book.file_path.startsWith(user.id+"/"+bookId+"/")) return {ok:false,error:"Faili la kitabu halijapatikana kwenye akaunti yako."};
+  const {data,error:signError}=await supabase.storage.from("book-files").createSignedUrl(book.file_path,300);
+  if(signError||!data?.signedUrl) return {ok:false,error:"Imeshindikana kufungua faili la kitabu kwa ajili ya kutengeneza sampuli."};
+  return {ok:true,url:data.signedUrl,format:book.format};
+}
+
+export async function saveGeneratedSellerBookPreview(bookId:string,previewPath:string):Promise<{ok:true}|{ok:false;error:string}> {
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return {ok:false,error:"Ingia tena ili kuendelea."};
+  const prefix=user.id+"/"+bookId+"/";
+  if(!previewPath.startsWith(prefix)||!/^.+\\.(pdf|epub)$/i.test(previewPath)) return {ok:false,error:"Njia ya sampuli si sahihi."};
+  const {data:book,error:bookError}=await supabase.from("books").select("id,price_tzs,preview_path,format").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  if(book.price_tzs<=0||book.preview_path) return {ok:false,error:"Sampuli haihitaji kubadilishwa."};
+  const expectedExtension=book.format==="epub"?"epub":"pdf";
+  if(!previewPath.toLowerCase().endsWith("."+expectedExtension)) return {ok:false,error:"Muundo wa sampuli haulingani na kitabu."};
+  const filename=previewPath.split("/").pop();
+  const {data:files,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
+  const file=files?.find(item=>item.name===filename);
+  if(listError||!file) return {ok:false,error:"Sampuli iliyotengenezwa haijapatikana kwenye hifadhi."};
+  const size=Number(file.metadata?.size??file.metadata?.contentLength??0);
+  if(size<=0||size>35*1024*1024) return {ok:false,error:"Sampuli lazima iwe na ukubwa kati ya 1 byte na MB 35."};
+  const {error}=await supabase.from("books").update({preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id).is("preview_path",null);
+  if(error) return {ok:false,error:"Imeshindikana kuhifadhi sampuli ya bure."};
+  return {ok:true};
+}
+
 export async function updateSellerBook(bookId:string,formData:FormData):Promise<{ok:true}|{ok:false;error:string}> {
   const supabase=await createClient();
   const {data:{user}}=await supabase.auth.getUser();
@@ -76,7 +113,7 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
   const price_tzs=Number(formData.get("price_tzs")??0);
   if(!title||title.length>180||!["sw","en","other"].includes(language)||!Number.isSafeInteger(price_tzs)||price_tzs<0||price_tzs>100000000) return {ok:false,error:"Kagua taarifa na bei ya kitabu."};
   const {data:existingBook}=await supabase.from("books").select("preview_path,format").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
-  if(price_tzs>0&&!existingBook?.preview_path&&existingBook?.format!=="audiobook") return {ok:false,error:"Kitabu cha kulipia kinahitaji sampuli ya bure. Wasiliana na Admin ili kuweka sampuli."};
+  if(price_tzs>0&&!existingBook?.preview_path&&existingBook?.format!=="audiobook") return {ok:false,error:"Mfumo bado haujakamilisha kutengeneza sampuli ya Sura ya Kwanza. Fungua tena ukurasa wa kuhariri kitabu na subiri sampuli ikamilike."};
   if(price_tzs>0&&existingBook?.format==="audiobook"){const {data:previewChapters}=await supabase.from("book_audio_chapters").select("id").eq("book_id",bookId).eq("is_preview",true).limit(1);if(!previewChapters?.length)return {ok:false,error:"Audiobook ya kulipia inahitaji angalau sura moja ya sampuli ya bure."};}
   const {count: soldCount,error: soldError}=await supabase.from("order_items").select("id",{count:"exact",head:true}).eq("book_id",bookId);
   if(soldError) return {ok:false,error:"Imeshindikana kukagua historia ya mauzo."};
