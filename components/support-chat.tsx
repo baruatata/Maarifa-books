@@ -1,3 +1,5 @@
+"use client";
+
 import { sendSupportMessage } from "@/app/mawasiliano/actions";
 import { useLanguage } from "@/components/language-provider";
 
@@ -19,6 +21,7 @@ export default function SupportChat({
   messages: Message[];
   adminMode?: boolean;
 }) {
+  const { en } = useLanguage();
   return <section className="panel" style={{ padding: 18, marginTop: 18 }}>
     <div style={{ display: "grid", gap: 12 }}>
       <div>
@@ -40,7 +43,7 @@ export default function SupportChat({
           }}>
             <strong style={{ fontSize: 12 }}>{mine ? (en ? "You" : "Wewe") : adminMode ? (en ? "Seller" : "Muuzaji") : "Admin"}</strong>
             <p style={{ margin: "5px 0", whiteSpace: "pre-wrap" }}>{message.body}</p>
-            <small className="muted">{new Date(message.created_at).toLocaleString("sw-TZ")}</small>
+            <small className="muted">{new Date(message.created_at).toLocaleString(en ? "en-GB" : "sw-TZ")}</small>
           </article>;
         })}
       </div>
