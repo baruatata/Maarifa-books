@@ -35,7 +35,7 @@ export async function SiteHeader() {
                 <summary className="nav-cta"><LanguageText sw="Akaunti yangu" en="My account" /></summary>
                 <div className="account-menu-panel">
                   <Link href="/dashboard"><LanguageText sw="Dashibodi" en="Dashboard" /></Link>
-                  {profile?.role === "buyer" && <Link href="/dashboard/jihudumie">Jihudumie</Link>}
+                  {profile?.role === "buyer" && <Link href="/dashboard/jihudumie"><LanguageText sw="Jihudumie" en="Self-service" /></Link>}
                   {sellerApproved && <Link href="/dashboard/kitabu"><LanguageText sw="Pakia kitabu" en="Upload a book" /></Link>}
                   <form action={signOut}><button type="submit"><LanguageText sw="Toka" en="Sign out" /></button></form>
                 </div>
@@ -44,7 +44,7 @@ export async function SiteHeader() {
           </>
         ) : (
           <>
-            <Link className="nav-cta" href="/ingia?next=%2Fdashboard%2Fjihudumie">Jihudumie</Link>
+            <Link className="nav-cta" href="/ingia?next=%2Fdashboard%2Fjihudumie"><LanguageText sw="Jihudumie" en="Self-service" /></Link>
             <Link className="nav-cta" href="/ingia#jisajili"><LanguageText sw="Jisajili" en="Sign up" /></Link>
           </>
         )}
