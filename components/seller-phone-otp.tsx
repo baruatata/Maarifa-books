@@ -48,10 +48,10 @@ export function SellerPhoneOtp({ phone, verified }: { phone: string; verified: b
     <label htmlFor="account-seller-phone">{en ? "Registered phone number" : "Namba iliyosajiliwa"}</label>
     <input id="account-seller-phone" type="tel" value={phone ? "+" + phone.replace(/^\+/, "") : (en ? "No registered number" : "Hakuna namba iliyosajiliwa")} readOnly disabled />
     {isVerified ? (
-      <p className="notice" role="status">Namba imethibitishwa. Akaunti yako imelindwa.</p>
+      <p className="notice" role="status">{en ? "Phone number verified. Your account is protected." : "Namba imethibitishwa. Akaunti yako imelindwa."}</p>
     ) : (
       <>
-        <p className="muted">Msimbo wa tarakimu 6 utatumwa kwa SMS kwenye namba hii. OTP itaisha baada ya dakika 5.</p>
+        <p className="muted">{en ? "A 6-digit code will be sent to this number by SMS. The OTP expires after 5 minutes." : "Msimbo wa tarakimu 6 utatumwa kwa SMS kwenye namba hii. OTP itaisha baada ya dakika 5."}</p>
         <button type="button" className="btn" disabled={busy || !phone} onClick={() => call("send")}>
           {busy ? (en ? "Sending..." : "Inatuma...") : (en ? "Send OTP" : "Tuma OTP")}
         </button>
@@ -63,7 +63,7 @@ export function SellerPhoneOtp({ phone, verified }: { phone: string; verified: b
             maxLength={6}
             value={code}
             onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder=(en ? "Enter the 6-digit OTP" : "Ingiza OTP ya tarakimu 6")
+            placeholder={en ? "Enter the 6-digit OTP" : "Ingiza OTP ya tarakimu 6"}
             disabled={busy}
           />
           <button type="button" className="btn" disabled={busy || code.length !== 6} onClick={() => call("verify")}>
