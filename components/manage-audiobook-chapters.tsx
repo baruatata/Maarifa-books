@@ -63,7 +63,7 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
     <h2>{en ? "Manage audiobook chapters" : "Simamia sura za audiobook"}</h2>
     <p className="muted">{en ? "Add a new chapter or edit the title, audio file and preview setting of an existing chapter. Other chapters will not be affected. Changes will be sent to the administrator for approval." : "Unaweza kuongeza sura mpya au kubadilisha jina, faili na sampuli ya sura iliyopo. Sura nyingine hazitaathirika. Mabadiliko yatapelekwa kwa Admin kuidhinishwa tena."}</p>
     {chapters.length?chapters.map((chapter,index)=><form key={chapter.id} className="notice" style={{marginBottom:14}} onSubmit={e=>{e.preventDefault();void saveChapter(chapter,index,e.currentTarget);}}>
-      <h3>{en ? "Chapter {chapter.chapter_index}" : "Sura ya {chapter.chapter_index}"}</h3>
+      <h3>{en ? "Chapter ${chapter.chapter_index}" : "Sura ya ${chapter.chapter_index}"}</h3>
       <div className="field"><label htmlFor={"chapter-title-"+chapter.id}>{en ? "Chapter title" : "Jina la sura"}</label><input id={"chapter-title-"+chapter.id} name="title" defaultValue={chapter.title} required maxLength={180}/></div>
       <div className="field"><label htmlFor={"chapter-audio-"+chapter.id}>{en ? "Replace audio (optional; MP3/M4A, up to 100 MB)" : "Badilisha sauti (hiari; MP3/M4A, hadi MB 100)"}</label><input id={"chapter-audio-"+chapter.id} name="audio" type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a"/></div>
       <label style={{display:"flex",gap:8,alignItems:"center"}}><input name="is_preview" type="checkbox" defaultChecked={chapter.is_preview}/> {en ? "Make this chapter a free preview" : "Ruhusu sura hii kuwa sampuli ya bure"}</label>
@@ -73,7 +73,7 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
       <h3>{en ? "Add another chapter" : "Ongeza sura nyingine"}</h3>
       <div className="field"><label htmlFor="new-chapter-title">{en ? "New chapter title" : "Jina la sura mpya"}</label><input id="new-chapter-title" value={title} onChange={e=>setTitle(e.target.value)} required maxLength={180} placeholder={en ? "Example: Chapter Two" : "Mfano: Sura ya Pili"}/></div>
       <div className="field"><label htmlFor="new-chapter-audio">{en ? "Audio file (MP3/M4A; up to 100 MB)" : "Faili la sauti (MP3/M4A; hadi MB 100)"}</label><input id="new-chapter-audio" type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" onChange={e=>setFile(e.target.files?.[0]||null)} required/></div>
-      <label style={{display:"flex",gap:8,alignItems:"center"}}><input type="checkbox" checked={preview} onChange={e=>setPreview(e.target.checked)}/> Ruhusu sura hii kuwa sampuli ya bure</label>
+      <label style={{display:"flex",gap:8,alignItems:"center"}}><input type="checkbox" checked={preview} onChange={e=>setPreview(e.target.checked)}/> {en ? "Make this chapter a free preview" : "Ruhusu sura hii kuwa sampuli ya bure"}</label>
       <button className="btn" disabled={busy||!file||!title.trim()} style={{marginTop:12}}>{busy?(en?"Processing...":"Inachakata..."):(en?"+ Add chapter":"+ Ongeza sura")}</button>
     </form>}
     {message&&<p className="notice" role="status">{message}</p>}
