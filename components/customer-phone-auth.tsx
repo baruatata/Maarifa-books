@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/language-provider";
 
-function toE164(value: string) {
+function toE164(value: string, en: boolean) {
   const digits = value.replace(/\D/g, "");
   if (digits.startsWith("0") && digits.length === 10) return "+255" + digits.slice(1);
   if (digits.startsWith("255") && digits.length === 12) return "+" + digits;
@@ -31,7 +31,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
   }, [resendCountdown]);
 
   async function sendOtp() {
-    const phone = toE164(phoneInput);
+    const phone = toE164(phoneInput, en);
     if (mode === "signup" && name.trim().length < 2) throw new Error(en ? "Enter your full name." : "Weka jina lako kamili.");
     const supabase = createClient();
     const { error: otpError } = await supabase.auth.signInWithOtp({
