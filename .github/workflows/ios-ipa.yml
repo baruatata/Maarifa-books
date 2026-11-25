@@ -1,0 +1,35 @@
+name: Build MaarifaBooks iPhone IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-ipa:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout mobile app
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-expo-shell
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: TypeScript check
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+      - name: Build iOS IPA with EAS
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive

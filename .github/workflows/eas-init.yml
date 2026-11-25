@@ -1,0 +1,41 @@
+name: Initialize Expo project
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  eas-init:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Android branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-expo-shell
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Initialize and link EAS project
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx --yes eas-cli@latest init --non-interactive
+
+      - name: Commit generated Expo project ID
+        run: |
+          if git diff --quiet -- mobile/app.json; then
+            echo "No app.json changes were generated."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mobile/app.json
+          git commit -m "chore(android): link Expo EAS project"
+          git push origin HEAD:feature/android-expo-shell
