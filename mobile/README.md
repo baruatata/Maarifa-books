@@ -20,10 +20,13 @@ This is an initial reader-facing APK shell, not a full native rewrite. PDF/audio
 
 ## Build an installable APK
 
-1. Install EAS CLI: `npm install -g eas-cli`.
-2. Sign in to an Expo account: `eas login`.
-3. From this folder run `eas build --platform android --profile preview`.
-4. EAS will create an installable APK after the project is configured and the build succeeds.
+1. Install dependencies: `npm install`.
+2. Sign in to the Expo account configured as the project owner (`lumbwadigital`): `npx eas-cli login`.
+3. Initialize/link the EAS project and let Expo write the real project ID into `app.json`: `npx eas-cli init`.
+4. Build an installable APK: `npx eas-cli build --platform android --profile preview`.
+5. Download the APK from the build page after EAS reports a successful build.
+
+Do not commit Expo passwords, access tokens, or signing secrets to GitHub. The `owner` field is already set to `lumbwadigital`; `eas init` still needs to link this app to an actual EAS project.
 
 The production profile creates an Android App Bundle for a future Google Play release.
 
