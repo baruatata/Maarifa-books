@@ -63,7 +63,7 @@ export default function ManageAudiobookChapters({bookId,initialChapters,price}:{
     <h2>{en ? "Manage audiobook chapters" : "Simamia sura za audiobook"}</h2>
     <p className="muted">{en ? "Add a new chapter or edit the title, audio file and preview setting of an existing chapter. Other chapters will not be affected. Changes will be sent to the administrator for approval." : "Unaweza kuongeza sura mpya au kubadilisha jina, faili na sampuli ya sura iliyopo. Sura nyingine hazitaathirika. Mabadiliko yatapelekwa kwa Admin kuidhinishwa tena."}</p>
     {chapters.length?chapters.map((chapter,index)=><form key={chapter.id} className="notice" style={{marginBottom:14}} onSubmit={e=>{e.preventDefault();void saveChapter(chapter,index,e.currentTarget);}}>
-      <h3>{en ? "Chapter ${chapter.chapter_index}" : "Sura ya ${chapter.chapter_index}"}</h3>
+      <h3>{en ? `Chapter ${chapter.chapter_index}` : `Sura ya ${chapter.chapter_index}`}</h3>
       <div className="field"><label htmlFor={"chapter-title-"+chapter.id}>{en ? "Chapter title" : "Jina la sura"}</label><input id={"chapter-title-"+chapter.id} name="title" defaultValue={chapter.title} required maxLength={180}/></div>
       <div className="field"><label htmlFor={"chapter-audio-"+chapter.id}>{en ? "Replace audio (optional; MP3/M4A, up to 100 MB)" : "Badilisha sauti (hiari; MP3/M4A, hadi MB 100)"}</label><input id={"chapter-audio-"+chapter.id} name="audio" type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a"/></div>
       <label style={{display:"flex",gap:8,alignItems:"center"}}><input name="is_preview" type="checkbox" defaultChecked={chapter.is_preview}/> {en ? "Make this chapter a free preview" : "Ruhusu sura hii kuwa sampuli ya bure"}</label>
