@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateCustomerTicket } from "./actions";
+import { LanguageText } from "@/components/language-provider";
 
 const categoryLabels: Record<string, string> = {
   payment: "Tatizo la malipo",
@@ -50,14 +51,14 @@ export default async function AdminCustomerTicketsPage({
   }
 
   return <main className="page" style={{ maxWidth: 1120 }}>
-    <Link href="/admin" className="muted">← Rudi kwenye Admin</Link>
-    <p className="eyebrow">HUDUMA KWA WATEJA</p>
-    <h1>Malalamiko ya wateja</h1>
-    <p className="muted">Pitia maombi, jibu wateja na sasisha hali ya kila ombi. Namba za kumbukumbu ni za kipekee.</p>
+    <Link href="/admin" className="muted"><LanguageText sw="← Rudi kwenye Admin" en="← Back to Admin"/></Link>
+    <p className="eyebrow"><LanguageText sw="HUDUMA KWA WATEJA" en="CUSTOMER SUPPORT"/></p>
+    <h1><LanguageText sw="Malalamiko ya wateja" en="Customer complaints"/></h1>
+    <p className="muted"><LanguageText sw="Pitia maombi, jibu wateja na sasisha hali ya kila ombi. Namba za kumbukumbu ni za kipekee." en="Review requests, reply to customers and update each request status. Every reference number is unique."/></p>
     {params.error && <p className="message" role="alert">{params.error}</p>}
-    {params.saved && <p className="notice">Mabadiliko yamehifadhiwa.</p>}
-    {error && <p className="message">Imeshindikana kupakia malalamiko.</p>}
-    {!tickets?.length && !error && <section className="panel" style={{ padding: 20 }}>Bado hakuna malalamiko kutoka kwa wateja.</section>}
+    {params.saved && <p className="notice"><LanguageText sw="Mabadiliko yamehifadhiwa." en="Changes saved."/></p>}
+    {error && <p className="message"><LanguageText sw="Imeshindikana kupakia malalamiko." en="Could not load complaints."/></p>}
+    {!tickets?.length && !error && <section className="panel" style={{ padding: 20 }}><LanguageText sw="Bado hakuna malalamiko kutoka kwa wateja." en="There are no customer complaints yet."/></section>}
     <div style={{ display: "grid", gap: 16, marginTop: 18 }}>
       {(tickets ?? []).map(ticket => {
         const customer = profileMap.get(ticket.user_id);
@@ -70,7 +71,7 @@ export default async function AdminCustomerTicketsPage({
             </div>
             <span className="status">{statusLabels[ticket.status] || ticket.status}</span>
           </div>
-          <p className="muted" style={{ fontSize: 13 }}>Ruhusa ya SMS: {ticket.sms_notifications_consented ? "Mteja amekubali taarifa za SMS" : "Hakuna ruhusa ya SMS"}</p>
+          <p className="muted" style={{ fontSize: 13 }}><LanguageText sw="Ruhusa ya SMS: " en="SMS consent: "/>{ticket.sms_notifications_consented ? <LanguageText sw="Mteja amekubali taarifa za SMS" en="Customer consented to SMS updates"/> : <LanguageText sw="Hakuna ruhusa ya SMS" en="No SMS consent"/>}</p>
           <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
             {(messagesByTicket.get(ticket.id) ?? []).map(message => <div key={message.id} style={{ padding: 11, borderRadius: 10, background: message.sender_id === ticket.user_id ? "var(--surface,#f0eadf)" : "var(--panel,#f7f7f7)", overflowWrap: "anywhere" }}>
               <strong style={{ fontSize: 12 }}>{message.sender_id === ticket.user_id ? "Mteja" : "Admin / Timu"}</strong>
@@ -80,17 +81,17 @@ export default async function AdminCustomerTicketsPage({
           </div>
           <form action={updateCustomerTicket} style={{ display: "grid", gap: 10, borderTop: "1px solid var(--border,#e5e5e5)", paddingTop: 14 }}>
             <input type="hidden" name="ticket_id" value={ticket.id}/>
-            <label style={{ display: "grid", gap: 6 }}>Hali ya ombi
+            <label style={{ display: "grid", gap: 6 }}><LanguageText sw="Hali ya ombi" en="Request status"/>
               <select name="status" defaultValue={ticket.status}>
                 <option value="received">Limepokelewa</option>
                 <option value="in_progress">Linafanyiwa kazi</option>
                 <option value="resolved">Limetatuliwa</option>
               </select>
             </label>
-            {ticket.status !== "resolved" && <label style={{ display: "grid", gap: 6 }}>Jibu kwa mteja
+            {ticket.status !== "resolved" && <label style={{ display: "grid", gap: 6 }}><LanguageText sw="Jibu kwa mteja" en="Reply to customer"/>
               <textarea name="body" rows={3} maxLength={5000} placeholder="Andika jibu au maelekezo kwa mteja..."/>
             </label>}
-            <button className="btn" type="submit">Hifadhi hali / Tuma jibu</button>
+            <button className="btn" type="submit"><LanguageText sw="Hifadhi hali / Tuma jibu" en="Save status / Send reply"/></button>
           </form>
         </section>;
       })}

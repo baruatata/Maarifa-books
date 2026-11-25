@@ -2,16 +2,18 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/language-provider";
 
-function toE164(value: string) {
+function toE164(value: string, en: boolean) {
   const digits = value.replace(/\D/g, "");
   if (digits.startsWith("0") && digits.length === 10) return "+255" + digits.slice(1);
   if (digits.startsWith("255") && digits.length === 12) return "+" + digits;
   if ((digits.startsWith("6") || digits.startsWith("7")) && digits.length === 9) return "+255" + digits;
-  throw new Error("Weka namba sahihi ya Tanzania, mfano 0652245742.");
+  throw new Error(en ? "Enter a valid Tanzanian phone number, for example 0652245742." : "Weka namba sahihi ya Tanzania, mfano 0652245742.");
 }
 
 export function CustomerPhoneAuth({ next }: { next?: string }) {
+  const { en } = useLanguage();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
@@ -29,20 +31,20 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
   }, [resendCountdown]);
 
   async function sendOtp() {
-    const phone = toE164(phoneInput);
-    if (mode === "signup" && name.trim().length < 2) throw new Error("Weka jina lako kamili.");
+    const phone = toE164(phoneInput, en);
+    if (mode === "signup" && name.trim().length < 2) throw new Error(en ? "Enter your full name." : "Weka jina lako kamili.");
     const supabase = createClient();
     const { error: otpError } = await supabase.auth.signInWithOtp({
       phone,
       options: {
         shouldCreateUser: mode === "signup",
-        ...(mode === "signup" ? { data: { full_name: name.trim(), preferred_language: "sw" } } : {}),
+        ...(mode === "signup" ? { data: { full_name: name.trim(), preferred_language: en ? "en" : "sw" } } : {}),
       },
     });
     if (otpError) throw otpError;
     setStep("verify");
     setResendCountdown(60);
-    setMessage("Ombi la OTP limetumwa. Ingiza msimbo mara tu unapoupokea; ukichelewa unaweza kuomba mwingine baada ya sekunde 60.");
+    setMessage(en ? "Your OTP request has been sent. Enter the code when you receive it; if delayed, you can request another after 60 seconds." : "Ombi la OTP limetumwa. Ingiza msimbo mara tu unapoupokea; ukichelewa unaweza kuomba mwingine baada ya sekunde 60.");
   }
 
   async function requestOtp(e: FormEvent) {
@@ -51,7 +53,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
     try {
       await sendOtp();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Imeshindikana kuomba OTP.");
+      setError(err instanceof Error ? err.message : (en ? "Unable to request OTP." : "Imeshindikana kuomba OTP."));
     } finally { setBusy(false); }
   }
 
@@ -62,7 +64,7 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
       await sendOtp();
       setCode("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Imeshindikana kutuma OTP tena.");
+      setError(err instanceof Error ? err.message : (en ? "Unable to resend OTP." : "Imeshindikana kutuma OTP tena."));
     } finally { setBusy(false); }
   }
 
@@ -70,58 +72,58 @@ export function CustomerPhoneAuth({ next }: { next?: string }) {
     e.preventDefault();
     setBusy(true); setError(""); setMessage("");
     try {
-      const phone = toE164(phoneInput);
-      if (!/^\d{6}$/.test(code.trim())) throw new Error("Ingiza OTP yenye tarakimu 6.");
+      const phone = toE164(phoneInput, en);
+      if (!/^\d{6}$/.test(code.trim())) throw new Error(en ? "Enter the 6-digit OTP." : "Ingiza OTP yenye tarakimu 6.");
       const supabase = createClient();
       const { data, error: verifyError } = await supabase.auth.verifyOtp({ phone, token: code.trim(), type: "sms" });
       if (verifyError) throw verifyError;
-      if (!data.user) throw new Error("Imeshindikana kuthibitisha akaunti.");
+      if (!data.user) throw new Error(en ? "Unable to verify the account." : "Imeshindikana kuthibitisha akaunti.");
       const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
       if (profileError) throw profileError;
       if (profile?.role && profile.role !== "buyer") {
         await supabase.auth.signOut();
-        throw new Error("Huduma ya Jihudumie ni kwa wateja pekee. Tumia ukurasa wa muuzaji.");
+        throw new Error(en ? "Self-service is for customers only. Please use the seller page." : "Huduma ya Jihudumie ni kwa wateja pekee. Tumia ukurasa wa muuzaji.");
       }
       const { error: profileUpdateError } = await supabase.from("profiles").update({ phone, phone_verified_at: new Date().toISOString() }).eq("id", data.user.id);
       if (profileUpdateError) throw profileUpdateError;
       window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/jihudumie");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "OTP haijathibitishwa.");
+      setError(err instanceof Error ? err.message : (en ? "OTP verification failed." : "OTP haijathibitishwa."));
     } finally { setBusy(false); }
   }
 
   return <section className="panel form" style={{ marginBottom: 20 }}>
-    <h2>{mode === "signup" ? "Jisajili kwa simu" : "Ingia kwa simu"}</h2>
-    <p className="muted">Huhitaji barua pepe wala nenosiri. Utatumia OTP ya SMS kuthibitisha namba yako.</p>
+    <h2>{mode === "signup" ? (en ? "Sign up with your phone" : "Jisajili kwa simu") : (en ? "Sign in with your phone" : "Ingia kwa simu")}</h2>
+    <p className="muted">{en ? "You do not need an email address or password. You will use an SMS OTP to verify your phone number." : "Huhitaji barua pepe wala nenosiri. Utatumia OTP ya SMS kuthibitisha namba yako."}</p>
     {error && <p className="message" role="alert">{error}</p>}
     {message && <p className="notice" role="status">{message}</p>}
     {step === "details" ? <form onSubmit={requestOtp}>
       <div className="field">
-        <label htmlFor="customer-phone-mode">Unataka kufanya nini?</label>
+        <label htmlFor="customer-phone-mode">{en ? "What would you like to do?" : "Unataka kufanya nini?"}</label>
         <select id="customer-phone-mode" value={mode} onChange={e => setMode(e.target.value as "signup" | "login")}>
-          <option value="signup">Fungua akaunti mpya</option>
-          <option value="login">Nina akaunti tayari</option>
+          <option value="signup">{en ? "Create a new account" : "Fungua akaunti mpya"}</option>
+          <option value="login">{en ? "I already have an account" : "Nina akaunti tayari"}</option>
         </select>
       </div>
       {mode === "signup" && <div className="field">
-        <label htmlFor="customer-full-name">Jina kamili</label>
+        <label htmlFor="customer-full-name">{en ? "Full name" : "Jina kamili"}</label>
         <input id="customer-full-name" autoComplete="name" value={name} onChange={e => setName(e.target.value)} required />
       </div>}
       <div className="field">
-        <label htmlFor="customer-phone">Namba ya simu</label>
+        <label htmlFor="customer-phone">{en ? "Phone number" : "Namba ya simu"}</label>
         <input id="customer-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="0652245742" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} required />
       </div>
-      <button className="btn" type="submit" disabled={busy}>{busy ? "Subiri..." : "Tuma OTP"}</button>
+      <button className="btn" type="submit" disabled={busy}>{busy ? (en ? "Please wait..." : "Subiri...") : (en ? "Send OTP" : "Tuma OTP")}</button>
     </form> : <form onSubmit={verifyOtp}>
       <div className="field">
-        <label htmlFor="customer-otp">OTP ya tarakimu 6</label>
+        <label htmlFor="customer-otp">{en ? "6-digit OTP" : "OTP ya tarakimu 6"}</label>
         <input id="customer-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} required />
       </div>
-      <button className="btn" type="submit" disabled={busy}>{busy ? "Inathibitisha..." : "Thibitisha na uendelee"}</button>
+      <button className="btn" type="submit" disabled={busy}>{busy ? (en ? "Verifying..." : "Inathibitisha...") : (en ? "Verify and continue" : "Thibitisha na uendelee")}</button>
       <button className="btn secondary" type="button" disabled={busy || resendCountdown > 0} onClick={resendOtp}>
-        {resendCountdown > 0 ? `Tuma OTP tena baada ya sekunde ${resendCountdown}` : "Tuma OTP tena"}
+        {resendCountdown > 0 ? (en ? `Resend OTP in ${resendCountdown} seconds` : `Tuma OTP tena baada ya sekunde ${resendCountdown}`) : (en ? "Resend OTP" : "Tuma OTP tena")}
       </button>
-      <button className="btn secondary" type="button" disabled={busy} onClick={() => { setStep("details"); setCode(""); setMessage(""); setError(""); setResendCountdown(0); }}>Badili namba</button>
+      <button className="btn secondary" type="button" disabled={busy} onClick={() => { setStep("details"); setCode(""); setMessage(""); setError(""); setResendCountdown(0); }}>{en ? "Change phone number" : "Badili namba"}</button>
     </form>}
   </section>;
 }

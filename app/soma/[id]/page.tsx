@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PdfFlipbook from "@/components/pdf-flipbook";
 import AudiobookPlayer from "@/components/audiobook-player";
+import { LanguageText } from "@/components/language-provider";
 
 export default async function ReadBookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,32 +29,32 @@ export default async function ReadBookPage({ params }: { params: Promise<{ id: s
     const { data: rows, error: chaptersError } = await supabase.from("book_audio_chapters")
       .select("id,title,audio_path,chapter_index,is_preview")
       .eq("book_id",book.id).order("chapter_index",{ascending:true});
-    if(chaptersError||!rows?.length) return <main className="page"><h1>Audiobook haijakamilika</h1><p className="muted">Sauti za kitabu hazipatikani kwa sasa. Tafadhali wasiliana na muuzaji.</p><Link className="btn" href={"/kitabu/"+book.id}>Rudi kwenye kitabu</Link></main>;
+    if(chaptersError||!rows?.length) return <main className="page"><h1><LanguageText sw="Audiobook haijakamilika" en="Audiobook is incomplete"/></h1><p className="muted"><LanguageText sw="Sauti za kitabu hazipatikani kwa sasa. Tafadhali wasiliana na muuzaji." en="Book audio is currently unavailable. Please contact the seller."/></p><Link className="btn" href={"/kitabu/"+book.id}><LanguageText sw="Rudi kwenye kitabu" en="Back to book"/></Link></main>;
     const availableRows=isFreePreview?rows.filter(chapter=>chapter.is_preview):rows;
-    if(!availableRows.length) return <main className="page"><h1>Sampuli haijawekwa</h1><p className="muted">Muuzaji bado hajaweka sura ya sampuli ya bure.</p><Link className="btn" href={"/kitabu/"+book.id}>Rudi kwenye kitabu</Link></main>;
+    if(!availableRows.length) return <main className="page"><h1><LanguageText sw="Sampuli haijawekwa" en="Preview not available"/></h1><p className="muted"><LanguageText sw="Muuzaji bado hajaweka sura ya sampuli ya bure." en="The seller has not added a free preview chapter yet."/></p><Link className="btn" href={"/kitabu/"+book.id}>Rudi kwenye kitabu</Link></main>;
     const chapters=[];
     for(const chapter of availableRows){
       const {data:signed}=await supabase.storage.from("book-files").createSignedUrl(chapter.audio_path,3600);
       if(signed?.signedUrl) chapters.push({id:chapter.id,title:chapter.title,url:signed.signedUrl,chapterIndex:chapter.chapter_index});
     }
     return <main className="page online-reader">
-      <nav className="reader-nav"><Link href={"/kitabu/"+book.id}>← Rudi kwenye kitabu</Link><Link href="/">MaarifaBooks</Link></nav>
-      <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name||"Mwandishi hajatajwa"}</p><span className="reader-access-note">{isFreePreview?"Unasikiliza sampuli ya bure":isSellerOwner?"Unasikiliza audiobook yako":"Audiobook imefunguliwa"}</span></header>
+      <nav className="reader-nav"><Link href={"/kitabu/"+book.id}><LanguageText sw="← Rudi kwenye kitabu" en="← Back to book"/></Link><Link href="/">MaarifaBooks</Link></nav>
+      <header className="reader-heading"><p className="eyebrow"><LanguageText sw="MSOMAJI WA MAARIFABOOKS" en="MAARIFABOOKS READER"/></p><h1>{book.title}</h1><p className="muted">{book.author_name||<LanguageText sw="Mwandishi hajatajwa" en="Author not specified"/>}</p><span className="reader-access-note">{isFreePreview?<LanguageText sw="Unasikiliza sampuli ya bure" en="Listening to free preview"/>:isSellerOwner?<LanguageText sw="Unasikiliza audiobook yako" en="Listening to your audiobook"/>:<LanguageText sw="Audiobook imefunguliwa" en="Audiobook unlocked"/>}</span></header>
       <AudiobookPlayer bookId={book.id} chapters={chapters}/>
-      {isFreePreview&&<div className="book-purchase-panel"><p className="book-payment-note">Hii ni sampuli ya bure. Ili kusikiliza kitabu kizima, wasiliana na muuzaji na uombe coupon.</p><Link className="btn" href={"/kitabu/"+book.id}>Wasiliana na muuzaji / Weka Coupon</Link></div>}
+      {isFreePreview&&<div className="book-purchase-panel"><p className="book-payment-note"><LanguageText sw="Hii ni sampuli ya bure. Ili kusikiliza kitabu kizima, wasiliana na muuzaji na uombe coupon." en="This is a free preview. To listen to the full audiobook, contact the seller and request a coupon."/></p><Link className="btn" href={"/kitabu/"+book.id}><LanguageText sw="Wasiliana na muuzaji / Weka Coupon" en="Contact seller / Enter coupon"/></Link></div>}
     </main>;
   }
 
   const pathToRead = isFreePreview ? book.preview_path : book.file_path;
   if (!pathToRead) redirect("/kitabu/" + book.id + "?error=" + encodeURIComponent("Sampuli ya bure bado haijawekwa. Wasiliana na muuzaji."));
   const { data: signed, error: fileError } = await supabase.storage.from("book-files").createSignedUrl(pathToRead, 3600);
-  if (fileError || !signed?.signedUrl) return <main className="page"><h1>Faili la kitabu halijafunguka</h1><p className="muted">Kitabu kipo kwenye orodha, lakini mfumo umeshindwa kukifungua. Tafadhali jaribu tena baadaye.</p><Link className="btn" href={"/kitabu/" + book.id}>Rudi kwenye taarifa za kitabu</Link></main>;
+  if (fileError || !signed?.signedUrl) return <main className="page"><h1><LanguageText sw="Faili la kitabu halijafunguka" en="Book file could not be opened"/></h1><p className="muted"><LanguageText sw="Kitabu kipo kwenye orodha, lakini mfumo umeshindwa kukifungua. Tafadhali jaribu tena baadaye." en="The book is listed, but the system could not open it. Please try again later."/></p><Link className="btn" href={"/kitabu/" + book.id}><LanguageText sw="Rudi kwenye taarifa za kitabu" en="Back to book details"/></Link></main>;
 
   return <main className="page online-reader">
     <nav className="reader-nav"><Link href={"/kitabu/" + book.id}>← Rudi kwenye kitabu</Link><Link href="/">MaarifaBooks</Link></nav>
-    <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p><span className="reader-access-note">{isFreePreview ? "Unasoma sampuli ya bure" : isSellerOwner ? "Unasoma kitabu chako kama muuzaji" : book.price_tzs > 0 ? "Kitabu kizima kimefunguliwa" : "Unasoma kitabu bure"}</span>{isFreePreview && <p className="book-payment-note">Hii ni sampuli ya bure. Ili kuendelea na kitabu kizima, wasiliana na muuzaji na uombe coupon.</p>}</header>
-    {book.format === "pdf" ? <section className="reader-frame-wrap"><PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id}/><p className="reader-footnote">Unaweza kusogeza kurasa kwa kidole au mishale. {isFreePreview ? "Soma sampuli hii kisha wasiliana na muuzaji ili kununua kitabu kizima." : <><a href={signed.signedUrl} target="_blank" rel="noreferrer">Fungua PDF yenyewe</a>.</>}</p></section> : <section className="panel reader-unavailable"><h2>EPUB reader inaandaliwa</h2><p>Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF pekee.</p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer">Fungua EPUB</a></section>}
+    <header className="reader-heading"><p className="eyebrow">MSOMAJI WA MAARIFABOOKS</p><h1>{book.title}</h1><p className="muted">{book.author_name || "Mwandishi hajatajwa"}</p><span className="reader-access-note">{isFreePreview ? <LanguageText sw="Unasoma sampuli ya bure" en="Reading free preview"/> : isSellerOwner ? <LanguageText sw="Unasoma kitabu chako kama muuzaji" en="Reading your book as the seller"/> : book.price_tzs > 0 ? <LanguageText sw="Kitabu kizima kimefunguliwa" en="Full book unlocked"/> : <LanguageText sw="Unasoma kitabu bure" en="Reading a free book"/>}</span>{isFreePreview && <p className="book-payment-note"><LanguageText sw="Hii ni sampuli ya bure. Ili kuendelea na kitabu kizima, wasiliana na muuzaji na uombe coupon." en="This is a free preview. To continue with the full book, contact the seller and request a coupon."/></p>}</header>
+    {book.format === "pdf" ? <section className="reader-frame-wrap"><PdfFlipbook url={signed.signedUrl} title={book.title} closeHref={"/kitabu/" + book.id}/><p className="reader-footnote"><LanguageText sw="Unaweza kusogeza kurasa kwa kidole au mishale. " en="Turn pages using your finger or the arrows. "/>{isFreePreview ? "Soma sampuli hii kisha wasiliana na muuzaji ili kununua kitabu kizima." : <><a href={signed.signedUrl} target="_blank" rel="noreferrer"><LanguageText sw="Fungua PDF yenyewe" en="Open PDF file"/></a>.</>}</p></section> : <section className="panel reader-unavailable"><h2><LanguageText sw="EPUB reader inaandaliwa" en="EPUB reader is being prepared"/></h2><p><LanguageText sw="Kisomaji cha EPUB kinaandaliwa; kwa sasa mfumo huu unaonyesha PDF pekee." en="The EPUB reader is being prepared; currently this system displays PDF files only."/></p><a className="btn" href={signed.signedUrl} target="_blank" rel="noreferrer"><LanguageText sw="Fungua EPUB" en="Open EPUB"/></a></section>}
     {isFreePreview && <div className="book-purchase-panel"><Link className="btn" href={"/kitabu/" + book.id}>Wasiliana na muuzaji / Weka Coupon</Link></div>}
-    <p className="reader-footnote">MaarifaBooks inafungua kitabu kizima baada ya coupon halali kutumika mara moja.</p>
+    <p className="reader-footnote"><LanguageText sw="MaarifaBooks inafungua kitabu kizima baada ya coupon halali kutumika mara moja." en="MaarifaBooks unlocks the full book after a valid coupon has been redeemed once."/></p>
   </main>;
 }

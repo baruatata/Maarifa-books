@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import SupportChat from "@/components/support-chat";
+import { LanguageText } from "@/components/language-provider";
 
 export default async function AdminMessagesPage({ searchParams }: { searchParams: Promise<{ seller?: string; error?: string; sent?: string }> }) {
   const params = await searchParams;
@@ -31,14 +32,14 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
   if (unread.length) await supabase.from("support_messages").update({ read_at: new Date().toISOString() }).in("id", unread);
 
   return <main className="page">
-    <Link href="/admin" className="muted">← Rudi kwenye Admin</Link>
-    <p className="eyebrow">KITUO CHA MAWASILIANO</p><h1>Admin na wauzaji</h1>
-    <p className="muted">Chagua muuzaji ili kusoma na kujibu ujumbe wake. Mazungumzo ni ya faragha.</p>
+    <Link href="/admin" className="muted"><LanguageText sw="← Rudi kwenye Admin" en="← Back to Admin"/></Link>
+    <p className="eyebrow"><LanguageText sw="KITUO CHA MAWASILIANO" en="MESSAGING CENTER"/></p><h1><LanguageText sw="Admin na wauzaji" en="Admin and sellers"/></h1>
+    <p className="muted"><LanguageText sw="Chagua muuzaji ili kusoma na kujibu ujumbe wake. Mazungumzo ni ya faragha." en="Choose a seller to read and reply to their messages. Conversations are private."/></p>
     {params.error && <p className="message">{params.error}</p>}
-    {params.sent && <p className="notice">Ujumbe umetumwa.</p>}
+    {params.sent && <p className="notice"><LanguageText sw="Ujumbe umetumwa." en="Message sent."/></p>}
     <section className="panel" style={{ padding: 16, marginTop: 18 }}>
-      <h2>Orodha ya wauzaji</h2>
-      {!sellers?.length && <p className="muted">Hakuna muuzaji aliyeidhinishwa bado.</p>}
+      <h2><LanguageText sw="Orodha ya wauzaji" en="Seller list"/></h2>
+      {!sellers?.length && <p className="muted"><LanguageText sw="Hakuna muuzaji aliyeidhinishwa bado." en="No sellers have been approved yet."/></p>}
       <div style={{ display: "grid", gap: 8 }}>
         {(sellers ?? []).map(seller => {
           const latest = latestBySeller.get(seller.id);
@@ -46,12 +47,12 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
             className="btn btn-outline" style={{ display: "flex", justifyContent: "space-between", gap: 12, textAlign: "left" }}>
             <span><strong>{seller.full_name || seller.email || "Muuzaji"}</strong>
               {latest && <small style={{ display: "block", opacity: .75 }}>{latest.body.slice(0, 75)}</small>}</span>
-            {latest?.unread ? <strong>{latest.unread} mpya</strong> : <span>Fungua →</span>}
+            {latest?.unread ? <strong>{latest.unread} mpya</strong> : <span><LanguageText sw="Fungua →" en="Open →"/></span>}
           </Link>;
         })}
       </div>
     </section>
-    {selected && (error ? <p className="message">Imeshindikana kupakia ujumbe.</p> :
+    {selected && (error ? <p className="message"><LanguageText sw="Imeshindikana kupakia ujumbe." en="Could not load messages."/></p> :
       <><h2 style={{ marginTop: 24 }}>Mazungumzo: {selected.full_name || selected.email || "Muuzaji"}</h2>
       <SupportChat sellerId={selected.id} currentUserId={user.id} messages={messages ?? []} adminMode/></>)}
   </main>;

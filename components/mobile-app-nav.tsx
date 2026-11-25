@@ -2,24 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/components/language-provider";
 
 const items = [
-  { href: "/", label: "Mwanzo", icon: "⌂", exact: true },
-  { href: "/dashboard/jihudumie", label: "Jihudumie", icon: "▣" },
-  { href: "/mafunzo", label: "Muongozo", icon: "◇" },
-  { href: "/ingia?next=%2Fdashboard", label: "Akaunti", icon: "○" },
+  { href: "/", sw: "Mwanzo", en: "Home", icon: "⌂", exact: true },
+  { href: "/dashboard/jihudumie", sw: "Jihudumie", en: "My account", icon: "▣" },
+  { href: "/mafunzo", sw: "Muongozo", en: "Guide", icon: "◇" },
+  { href: "/ingia?next=%2Fdashboard", sw: "Akaunti", en: "Account", icon: "○" },
 ];
 
 export function MobileAppNav() {
   const pathname = usePathname();
+  const { en } = useLanguage();
   return (
-    <nav className="mobile-app-nav" aria-label="Menyu ya app">
+    <nav className="mobile-app-nav" aria-label={en ? "App navigation" : "Menyu ya app"}>
       {items.map((item) => {
         const active = item.exact ? pathname === "/" : item.href.startsWith("/#") ? pathname === "/" : pathname.startsWith(item.href.split("?")[0]);
         return (
-          <Link className={active ? "mobile-app-nav-item active" : "mobile-app-nav-item"} href={item.href} key={item.label} aria-current={active ? "page" : undefined}>
+          <Link className={active ? "mobile-app-nav-item active" : "mobile-app-nav-item"} href={item.href} key={item.href} aria-current={active ? "page" : undefined}>
             <span className="mobile-app-nav-icon" aria-hidden="true">{item.icon}</span>
-            <span>{item.label}</span>
+            <span>{en ? item.en : item.sw}</span>
           </Link>
         );
       })}

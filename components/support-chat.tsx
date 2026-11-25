@@ -1,4 +1,7 @@
+"use client";
+
 import { sendSupportMessage } from "@/app/mawasiliano/actions";
+import { useLanguage } from "@/components/language-provider";
 
 type Message = {
   id: string;
@@ -18,14 +21,15 @@ export default function SupportChat({
   messages: Message[];
   adminMode?: boolean;
 }) {
+  const { en } = useLanguage();
   return <section className="panel" style={{ padding: 18, marginTop: 18 }}>
     <div style={{ display: "grid", gap: 12 }}>
       <div>
-        <h2 style={{ margin: 0 }}>Mazungumzo</h2>
-        <p className="muted">Ujumbe huu unaonekana kwa Admin na muuzaji husika pekee.</p>
+        <h2 style={{ margin: 0 }}>{en ? "Conversation" : "Mazungumzo"}</h2>
+        <p className="muted">{en ? "These messages are visible only to Admin and the relevant seller." : "Ujumbe huu unaonekana kwa Admin na muuzaji husika pekee."}</p>
       </div>
       <div aria-live="polite" style={{ display: "grid", gap: 10, maxHeight: 440, overflowY: "auto" }}>
-        {messages.length === 0 && <p className="muted">Bado hakuna ujumbe. Andika ujumbe kuanza mazungumzo.</p>}
+        {messages.length === 0 && <p className="muted">{en ? "No messages yet. Write a message to start the conversation." : "Bado hakuna ujumbe. Andika ujumbe kuanza mazungumzo."}</p>}
         {messages.map(message => {
           const mine = message.sender_id === currentUserId;
           return <article key={message.id} style={{
@@ -37,18 +41,18 @@ export default function SupportChat({
             border: "1px solid var(--border, #e5e5e5)",
             overflowWrap: "anywhere"
           }}>
-            <strong style={{ fontSize: 12 }}>{mine ? "Wewe" : adminMode ? "Muuzaji" : "Admin"}</strong>
+            <strong style={{ fontSize: 12 }}>{mine ? (en ? "You" : "Wewe") : adminMode ? (en ? "Seller" : "Muuzaji") : "Admin"}</strong>
             <p style={{ margin: "5px 0", whiteSpace: "pre-wrap" }}>{message.body}</p>
-            <small className="muted">{new Date(message.created_at).toLocaleString("sw-TZ")}</small>
+            <small className="muted">{new Date(message.created_at).toLocaleString(en ? "en-GB" : "sw-TZ")}</small>
           </article>;
         })}
       </div>
       <form action={sendSupportMessage} style={{ display: "grid", gap: 10 }}>
         <input type="hidden" name="seller_id" value={sellerId}/>
-        <label htmlFor="support-body">Andika ujumbe</label>
+        <label htmlFor="support-body">{en ? "Write a message" : "Andika ujumbe"}</label>
         <textarea id="support-body" name="body" required maxLength={5000} rows={4}
-          placeholder="Andika swali, ombi au maelezo ya tatizo..." />
-        <button className="btn" type="submit">Tuma ujumbe</button>
+          placeholder={en ? "Write your question, request or issue details..." : "Andika swali, ombi au maelezo ya tatizo..."} />
+        <button className="btn" type="submit">{en ? "Send message" : "Tuma ujumbe"}</button>
       </form>
     </div>
   </section>;

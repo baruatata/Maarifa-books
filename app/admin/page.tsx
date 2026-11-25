@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { reviewBook, reviewSeller, removeBookFromLibrary, promoteMaarifabooksAdmin } from "@/app/admin/actions";
 import { signOut } from "@/app/auth/actions";
+import { LanguageText } from "@/components/language-provider";
 
 type MemberProfile = { id: string; full_name: string | null; email: string | null; phone: string | null; role: string; created_at: string };
 type SellerApplication = { id: string; user_id: string; store_name: string; bio: string | null; phone_number: string; status: string; created_at: string };
@@ -94,15 +95,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   return <main className="admin-console">
     <aside className="admin-sidebar">
       <Link href="/" className="admin-brand"><img src="/maarifabooks-logo.svg" alt="MaarifaBooks"/></Link>
-      <p className="admin-side-label">USIMAMIZI</p>
+      <p className="admin-side-label"><LanguageText sw="USIMAMIZI" en="ADMINISTRATION"/></p>
       <Link className={`admin-side-link ${tab === "overview" ? "active" : ""}`} href="/admin?tab=overview"><span>⌂</span> Dashboard</Link>
-      <Link className={`admin-side-link ${tab === "sellers" ? "active" : ""}`} href="/admin?tab=sellers"><span>♙</span> Maombi ya wauzaji <b>{sellerRows.length}</b></Link>
-      <Link className={`admin-side-link ${tab === "books" ? "active" : ""}`} href="/admin?tab=books"><span>▤</span> Vitabu vya kukagua <b>{bookRows.length}</b></Link>
-      <Link className={`admin-side-link ${tab === "library" ? "active" : ""}`} href="/admin?tab=library"><span>▣</span> Maktaba ya vitabu <b>{libraryRows.length}</b></Link>
-      <Link className={`admin-side-link ${tab === "buyers" ? "active" : ""}`} href="/admin?tab=buyers"><span>♙</span> Wanunuzi <b>{buyerRows.length}</b></Link>
-      <Link className={`admin-side-link ${tab === "members" ? "active" : ""}`} href="/admin?tab=members"><span>♧</span> Wanachama</Link>
-      <Link className="admin-side-link" href="/admin/malalamiko"><span>⚑</span> Malalamiko ya wateja <b>↗</b></Link>
-      <Link className="admin-side-link" href="/admin/mawasiliano"><span>✉</span> Mawasiliano <b>↗</b></Link>
+      <Link className={`admin-side-link ${tab === "sellers" ? "active" : ""}`} href="/admin?tab=sellers"><span>♙</span> <LanguageText sw="Maombi ya wauzaji" en="Seller applications"/> <b>{sellerRows.length}</b></Link>
+      <Link className={`admin-side-link ${tab === "books" ? "active" : ""}`} href="/admin?tab=books"><span>▤</span> <LanguageText sw="Vitabu vya kukagua" en="Books to review"/> <b>{bookRows.length}</b></Link>
+      <Link className={`admin-side-link ${tab === "library" ? "active" : ""}`} href="/admin?tab=library"><span>▣</span> <LanguageText sw="Maktaba ya vitabu" en="Book library"/> <b>{libraryRows.length}</b></Link>
+      <Link className={`admin-side-link ${tab === "buyers" ? "active" : ""}`} href="/admin?tab=buyers"><span>♙</span> <LanguageText sw="Wanunuzi" en="Buyers"/> <b>{buyerRows.length}</b></Link>
+      <Link className={`admin-side-link ${tab === "members" ? "active" : ""}`} href="/admin?tab=members"><span>♧</span> <LanguageText sw="Wanachama" en="Members"/></Link>
+      <Link className="admin-side-link" href="/admin/malalamiko"><span>⚑</span> <LanguageText sw="Malalamiko ya wateja" en="Customer complaints"/> <b>↗</b></Link>
+      <Link className="admin-side-link" href="/admin/mawasiliano"><span>✉</span> <LanguageText sw="Mawasiliano" en="Messages"/> <b>↗</b></Link>
       <div className="admin-side-bottom">
         <div className="admin-side-user"><span className="admin-avatar">{(me.full_name || user.email || "A").slice(0,1).toUpperCase()}</span><div><strong>{me.full_name || "Msimamizi"}</strong><small>Administrator</small></div></div>
         <form action={signOut}><button className="admin-logout"><span>⇥</span> Toka kwenye akaunti</button></form>
@@ -111,40 +112,40 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
     <section className="admin-workspace" id="overview">
       <header className="admin-toolbar">
-        <div><span className="admin-toolbar-kicker">LUMBWA DIGITAL / MAARIFABOOKS</span><h1>Dashboard ya Msimamizi</h1></div>
+        <div><span className="admin-toolbar-kicker">LUMBWA DIGITAL / MAARIFABOOKS</span><h1><LanguageText sw="Dashboard ya Msimamizi" en="Administrator dashboard"/></h1></div>
         <div className="admin-toolbar-right"><span className="admin-status-pill">● Akaunti ya Admin</span><form action={signOut}><button className="admin-logout-mobile">Toka</button></form></div>
       </header>
       {params.error && <p className="message">{params.error}</p>}{params.success && <p className="notice">{params.success}</p>}
       {tab === "overview" && <><section className="admin-welcome">
-        <div><p className="admin-gold-kicker">KARIBU TENA</p><h2>{me.full_name || user.email}</h2><p>Dhibiti maombi ya wauzaji na pitia vitabu kabla havijaonekana kwenye maktaba ya MaarifaBooks.</p></div>
+        <div><p className="admin-gold-kicker"><LanguageText sw="KARIBU TENA" en="WELCOME BACK"/></p><h2>{me.full_name || user.email}</h2><p><LanguageText sw="Dhibiti maombi ya wauzaji na pitia vitabu kabla havijaonekana kwenye maktaba ya MaarifaBooks." en="Manage seller applications and review books before they appear in the MaarifaBooks library."/></p></div>
         <div className="admin-welcome-mark">MB</div>
       </section>
 
       <section className="admin-metric-grid" id="members">
-        <article className="admin-metric"><span className="metric-icon">♙</span><p>Jumla ya wanachama</p><strong>{memberCount ?? 0}</strong><small>Wauzaji na wasimamizi</small></article>
-        <article className="admin-metric"><span className="metric-icon">♧</span><p>Maombi ya wauzaji</p><strong>{sellerCount ?? 0}</strong><small>Yanasubiri uamuzi</small></article>
-        <article className="admin-metric"><span className="metric-icon">▤</span><p>Vitabu vya kukagua</p><strong>{bookCount ?? 0}</strong><small>Vinasubiri idhini</small></article>
+        <article className="admin-metric"><span className="metric-icon">♙</span><p><LanguageText sw="Jumla ya wanachama" en="Total members"/></p><strong>{memberCount ?? 0}</strong><small><LanguageText sw="Wauzaji na wasimamizi" en="Sellers and administrators"/></small></article>
+        <article className="admin-metric"><span className="metric-icon">♧</span><p><LanguageText sw="Maombi ya wauzaji" en="Seller applications"/></p><strong>{sellerCount ?? 0}</strong><small><LanguageText sw="Yanasubiri uamuzi" en="Awaiting decision"/></small></article>
+        <article className="admin-metric"><span className="metric-icon">▤</span><p><LanguageText sw="Vitabu vya kukagua" en="Books to review"/></p><strong>{bookCount ?? 0}</strong><small><LanguageText sw="Vinasubiri idhini" en="Awaiting approval"/></small></article>
       </section></>}
 
-      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "buyers" ? "Wanunuzi wa vitabu" : tab === "members" ? "Wanachama (wauzaji na wasimamizi)" : tab === "sellers" ? "Maombi ya wauzaji" : tab === "books" ? "Vitabu vya kukagua" : "Maktaba ya vitabu"}</h1></div></header>}
+      {tab !== "overview" && <header className="admin-toolbar" style={{ marginTop: 8 }}><div><span className="admin-toolbar-kicker">USIMAMIZI / MAARIFABOOKS</span><h1>{tab === "buyers" ? <LanguageText sw="Wanunuzi wa vitabu" en="Book buyers"/> : tab === "members" ? <LanguageText sw="Wanachama (wauzaji na wasimamizi)" en="Members (sellers and administrators)"/> : tab === "sellers" ? <LanguageText sw="Maombi ya wauzaji" en="Seller applications"/> : tab === "books" ? <LanguageText sw="Vitabu vya kukagua" en="Books to review"/> : <LanguageText sw="Maktaba ya vitabu" en="Book library"/>}</h1></div></header>}
       <div className="admin-content-grid">
         <div className="admin-main-column">
           {tab === "members" && <section className="admin-panel" id="all-members">
-            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2>Wanachama wote</h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
-            <p className="admin-description">Orodha hii ina akaunti za wauzaji na wasimamizi pekee. Taarifa za wanunuzi zimetenganishwa kwenye sehemu maalumu ya Wanunuzi ya Admin.</p>
-            {memberRows.length === 0 ? <div className="admin-empty">Bado hakuna akaunti zilizosajiliwa.</div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">USIMAMIZI WA AKAUNTI</span><h2><LanguageText sw="Wanachama wote" en="All members"/></h2></div><span className="admin-count">{memberRows.length} akaunti</span></div>
+            <p className="admin-description"><LanguageText sw="Orodha hii ina akaunti za wauzaji na wasimamizi pekee. Taarifa za wanunuzi zimetenganishwa kwenye sehemu maalumu ya Wanunuzi ya Admin." en="This list contains seller and administrator accounts only. Buyer information is shown separately in the Admin Buyers section."/></p>
+            {memberRows.length === 0 ? <div className="admin-empty"><LanguageText sw="Bado hakuna akaunti zilizosajiliwa." en="No accounts have been registered yet."/></div> : <div className="admin-review-list">{memberRows.map(member => <article className="admin-review-card" key={member.id}>
               <div className="admin-review-top"><div><h3>{member.full_name || "Jina halijawekwa"}</h3><p><strong>Email:</strong> {member.email || "Email haipo kwenye wasifu"}</p><p><strong>Simu:</strong> {member.phone || "Haijawekwa"}</p><small>Alijiunga: {new Date(member.created_at).toLocaleDateString("sw-TZ")}</small></div><span className={member.role === "admin" ? "admin-pending" : "admin-count"}>{member.role === "admin" ? "Admin" : member.role === "seller" ? "Seller" : "Buyer"}</span></div>{member.email?.toLowerCase() === "maarifabooks55@gmail.com" && member.role !== "admin" && <form action={promoteMaarifabooksAdmin} className="admin-review-form"><input type="hidden" name="user_id" value={member.id}/><button className="btn" type="submit">Muweke Admin</button></form>}
             </article>)}</div>}
           </section>}
           {tab === "buyers" && <section className="admin-panel" id="buyer-list">
-            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">TAARIFA ZA WATEJA</span><h2>Wanunuzi waliothibitisha malipo</h2></div><span className="admin-count">{buyerRows.length} wanunuzi</span></div>
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">TAARIFA ZA WATEJA</span><h2><LanguageText sw="Wanunuzi waliothibitisha malipo" en="Buyers with confirmed payments"/></h2></div><span className="admin-count">{buyerRows.length} wanunuzi</span></div>
             <p className="admin-description">Sehemu hii inaonekana kwa Admin pekee. Inaonyesha wateja ambao malipo yao yamethibitishwa na muuzaji au oda zao zimewekwa kuwa zimelipwa. Maombi ambayo bado hayajathibitishwa hayahesabiwi kama ununuzi.</p>
-            {buyerRows.length === 0 ? <div className="admin-empty">Bado hakuna mteja aliyethibitishwa kununua kitabu.</div> : <div className="admin-review-list">{buyerRows.map(buyer => <article className="admin-review-card" key={buyer.id}>
+            {buyerRows.length === 0 ? <div className="admin-empty"><LanguageText sw="Bado hakuna mteja aliyethibitishwa kununua kitabu." en="No customer has been confirmed as having purchased a book yet."/></div> : <div className="admin-review-list">{buyerRows.map(buyer => <article className="admin-review-card" key={buyer.id}>
               <div className="admin-review-top"><div><h3>{buyer.name}</h3><p><strong>Namba ya simu:</strong> {buyer.phone}</p><p><strong>Vitabu alivyonunua:</strong> {[...buyer.books].join(", ") || "Haijatajwa"}</p><small>Ununuzi wa mwisho: {new Date(buyer.lastPurchase).toLocaleString("sw-TZ")}</small></div><span className="admin-count">{buyer.books.size} vitabu</span></div>
             </article>)}</div>}
           </section>}
           {tab === "sellers" && <section className="admin-panel" id="seller-review">
-            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">UKAGUZI WA WAUZAJI</span><h2>Maombi ya wauzaji</h2></div><span className="admin-count">{sellerRows.length} yanasubiri</span></div>
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">UKAGUZI WA WAUZAJI</span><h2><LanguageText sw="Maombi ya wauzaji" en="Seller applications"/></h2></div><span className="admin-count">{sellerRows.length} yanasubiri</span></div>
             {sellerRows.length === 0 ? <div className="admin-empty">Hakuna ombi la muuzaji linalosubiri kwa sasa.</div> : <div className="admin-review-list">{sellerRows.map(application => { const profile = profileMap.get(application.user_id); return <article className="admin-review-card" key={application.id}>
               <div className="admin-review-top"><div><h3>{application.store_name}</h3><p>{profile?.full_name || "Jina halipo"} · {profile?.email || "Email haipo"}</p><p>WhatsApp ya kupokea oda: {application.phone_number}{profile?.phone ? " · Simu ya akaunti: " + profile.phone : ""}</p>{application.bio && <p className="admin-description">{application.bio}</p>}<small>Ametuma: {new Date(application.created_at).toLocaleDateString("sw-TZ")}</small></div><span className="admin-pending">Inasubiri</span></div>
               <form action={reviewSeller} className="admin-review-form"><input type="hidden" name="application_id" value={application.id}/><input type="hidden" name="user_id" value={application.user_id}/><input name="review_note" placeholder="Maoni (hiari)" aria-label="Maoni ya ukaguzi"/><button className="btn" name="decision" value="approved">Idhinisha</button><button className="btn btn-danger" name="decision" value="rejected">Kataa</button></form>
@@ -160,8 +161,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </section>}
 
           {tab === "library" && <section className="admin-panel" id="book-library">
-            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">MAKTABA NZIMA</span><h2>Maktaba ya vitabu</h2></div><span className="admin-count">{libraryRows.length} vitabu</span></div>
-            {libraryRows.length === 0 ? <div className="admin-empty">Bado hakuna vitabu kwenye maktaba.</div> : <div className="admin-review-list">{libraryRows.map(book => { const profile = profileMap.get(book.seller_id); return <article className="admin-review-card" key={book.id}>
+            <div className="admin-panel-heading"><div><span className="admin-gold-kicker">MAKTABA NZIMA</span><h2><LanguageText sw="Maktaba ya vitabu" en="Book library"/></h2></div><span className="admin-count">{libraryRows.length} vitabu</span></div>
+            {libraryRows.length === 0 ? <div className="admin-empty"><LanguageText sw="Bado hakuna vitabu kwenye maktaba." en="There are no books in the library yet."/></div> : <div className="admin-review-list">{libraryRows.map(book => { const profile = profileMap.get(book.seller_id); return <article className="admin-review-card" key={book.id}>
               <div className="admin-review-top"><div><h3>{book.title}</h3><p>{book.author_name || "Mwandishi hajatajwa"} · {book.format.toUpperCase()} · {book.language.toUpperCase()}</p><p>Muuzaji: {profile?.full_name || profile?.email || book.seller_id}</p><p className="admin-description">Bei: {book.price_tzs > 0 ? "TSh " + money(book.price_tzs) : "BURE"} · Hali: {book.status === "approved" ? "Kimeidhinishwa" : book.status === "pending" ? "Kinasubiri" : book.status === "rejected" ? "Kimekataliwa" : book.status === "archived" ? "Kimeondolewa maktabani" : book.status}</p><div className="admin-file-links">{bookLinks.get(book.id)?.coverUrl && <a href={bookLinks.get(book.id)?.coverUrl ?? "#"} target="_blank" rel="noreferrer">Fungua jalada</a>}{bookLinks.get(book.id)?.fileUrl && <a href={bookLinks.get(book.id)?.fileUrl ?? "#"} target="_blank" rel="noreferrer">Fungua faili</a>}</div></div></div>
               <form action={removeBookFromLibrary} className="admin-review-form"><input type="hidden" name="book_id" value={book.id}/><button className="btn btn-danger" type="submit">Ondoa kwenye maktaba</button></form>
             </article>; })}</div>}
