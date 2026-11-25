@@ -83,7 +83,7 @@ export async function saveGeneratedSellerBookPreview(bookId:string,previewPath:s
   if(!user) return {ok:false,error:"Ingia tena ili kuendelea."};
   const prefix=user.id+"/"+bookId+"/";
   if(!previewPath.startsWith(prefix)||!/^.+\\.(pdf|epub)$/i.test(previewPath)) return {ok:false,error:"Njia ya sampuli si sahihi."};
-  const {data:book,error:bookError}=await supabase.from("books").select("id,price_tzs,preview_path,format").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  const {data:book,error:bookError}=await supabase.from("books").select("id,price_tzs,preview_path,format,status").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
   if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
   if(book.price_tzs<=0||book.preview_path) return {ok:false,error:"Sampuli haihitaji kubadilishwa."};
   const expectedExtension=book.format==="epub"?"epub":"pdf";
@@ -94,7 +94,7 @@ export async function saveGeneratedSellerBookPreview(bookId:string,previewPath:s
   if(listError||!file) return {ok:false,error:"Sampuli iliyotengenezwa haijapatikana kwenye hifadhi."};
   const size=Number(file.metadata?.size??file.metadata?.contentLength??0);
   if(size<=0||size>35*1024*1024) return {ok:false,error:"Sampuli lazima iwe na ukubwa kati ya 1 byte na MB 35."};
-  const {error}=await supabase.from("books").update({preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id).is("preview_path",null);
+  const {error}=await supabase.from("books").update({preview_path:previewPath,status:book.status==="approved"?"pending":book.status}).eq("id",bookId).eq("seller_id",user.id).is("preview_path",null);
   if(error) return {ok:false,error:"Imeshindikana kuhifadhi sampuli ya bure."};
   return {ok:true};
 }
