@@ -7,14 +7,11 @@ export type Language = "sw" | "en";
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; en: boolean };
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("sw");
+export function LanguageProvider({ children, initialLanguage = "sw" }: { children: ReactNode; initialLanguage?: Language }) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
   useEffect(() => {
-    const saved = document.cookie.split("; ").find((part) => part.startsWith("maarifa-language="))?.split("=")[1];
-    const initial: Language = saved === "en" ? "en" : "sw";
-    setLanguageState(initial);
-    document.documentElement.lang = initial;
-  }, []);
+    document.documentElement.lang = language;
+  }, [language]);
   const setLanguage = (next: Language) => {
     setLanguageState(next);
     document.cookie = `maarifa-language=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
