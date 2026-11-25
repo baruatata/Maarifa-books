@@ -6,6 +6,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { MobileAppNav } from "@/components/mobile-app-nav";
 import { LanguageProvider } from "@/components/language-provider";
+import { createClient } from "@/lib/supabase/server";
 
 const siteUrl = "https://maarifabooks.vercel.app";
 
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountHref = user ? "/dashboard" : "/ingia?next=%2Fdashboard";
   const initialLanguage = cookieStore.get("maarifa-language")?.value === "en" ? "en" : "sw";
   return (
     <html lang="sw">
@@ -31,7 +35,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <LanguageProvider initialLanguage={initialLanguage}>
           <SiteHeader />
           {children}
-          <MobileAppNav />
+          <MobileAppNav accountHref={accountHref} />
         </LanguageProvider>
         <Analytics />
         <SpeedInsights />
