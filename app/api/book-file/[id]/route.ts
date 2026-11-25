@@ -16,6 +16,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const { id } = await params;
   const search = new URL(request.url).searchParams;
   const asset = search.get("asset");
+  const asDownload = search.get("download") === "1";
   const supabase = await createClient();
 
   const [{ data: book, error: bookError }, { data: { session } }] = await Promise.all([
@@ -95,7 +96,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const responseHeaders = new Headers({
     "Cache-Control": "private, no-store, max-age=0",
     "X-Content-Type-Options": "nosniff",
-    "Content-Disposition": "inline",
+    "Content-Disposition": asDownload ? "attachment" : "inline",
   });
   for (const name of ["content-type", "content-length", "content-range", "accept-ranges", "etag", "last-modified"]) {
     const value = upstream.headers.get(name);
