@@ -53,7 +53,7 @@ export function AutoGeneratePaidBookPreview({ bookId, format }: { bookId: string
         uploadedPath = null;
         if (!cancelled) {
           setStatus("done");
-          setMessage(en ? "The system has generated and saved the free Chapter One preview. You can now save your book details." : "Mfumo umetengeneza na kuhifadhi sampuli ya bure ya Sura ya Kwanza. Sasa unaweza kuhifadhi taarifa za kitabu.");
+          setMessage(en ? "The system has generated and saved the free Chapter One preview. You can now save your book details; the book will remain subject to administrator review." : "Mfumo umetengeneza na kuhifadhi sampuli ya bure ya Sura ya Kwanza. Sasa unaweza kuhifadhi taarifa za kitabu; kitabu kitaendelea kwa ukaguzi wa Admin.");
         }
       } catch (error) {
         if (uploadedPath) await supabase.storage.from("book-files").remove([uploadedPath]);
