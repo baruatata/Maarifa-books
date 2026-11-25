@@ -6,12 +6,15 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "maarifabooks",
+    "ios": {
+      "bundleIdentifier": "com.maarifabooks.app",
+      "supportsTablet": false,
+      "buildNumber": "1"
+    },
     "android": {
       "package": "com.maarifabooks.app",
       "versionCode": 1,
-      "permissions": [
-        "INTERNET"
-      ],
+      "permissions": ["INTERNET"],
       "allowBackup": false
     },
     "splash": {
