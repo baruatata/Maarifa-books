@@ -1,0 +1,37 @@
+name: Build MaarifaBooks Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Android app
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-expo-shell
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: TypeScript check
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+      - name: Build Android APK with EAS
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli@latest build --platform android --profile preview --non-interactive
