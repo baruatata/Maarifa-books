@@ -65,18 +65,18 @@ export function AudiobookUploadForm(){
     <div className="field"><label>{en ? "Audiobook title" : "Jina la audiobook"}</label><input name="title" required maxLength={180}/></div>
     <div className="field"><label>{en ? "Author" : "Mwandishi"}</label><input name="author_name" maxLength={160}/></div>
     <div className="field"><label>{en ? "Description" : "Maelezo"}</label><textarea name="description" maxLength={3000}/></div>
-    <div className="field"><label>{en ? "Category" : "Kategoria"}</label><select name="category"><option value="elimu">Elimu</option><option value="biashara">Biashara</option><option value="maendeleo-binafsi">Maendeleo binafsi</option><option value="hadithi">Hadithi na fasihi</option><option value="dini">Dini</option><option value="teknolojia">Teknolojia</option><option value="nyingine">Nyingine</option></select></div>
+    <div className="field"><label>{en ? "Category" : "Kategoria"}</label><select name="category"><option value="elimu">{en ? "Education" : "Elimu"}</option><option value="biashara">{en ? "Business" : "Biashara"}</option><option value="maendeleo-binafsi">Maendeleo binafsi</option><option value="hadithi">Hadithi na fasihi</option><option value="dini">{en ? "Religion" : "Dini"}</option><option value="teknolojia">{en ? "Technology" : "Teknolojia"}</option><option value="nyingine">Nyingine</option></select></div>
     <div className="field"><label>{en ? "Language" : "Lugha"}</label><select name="language"><option value="sw">Kiswahili</option><option value="en">English</option><option value="other">Nyingine</option></select></div>
     <div className="field"><label>{en ? "Price (TZS)" : "Bei (TZS)"}</label><input name="price_tzs" type="number" min="0" max="100000000" step="1" defaultValue="0" required/></div>
     <div className="field"><label>{en ? "Cover (JPG, PNG, WebP; up to 8 MB)" : "Jalada (JPG, PNG, WebP; hadi MB 8)"}</label><input name="cover_file" type="file" accept="image/jpeg,image/png,image/webp" required/></div>
     <h3>{en ? "Audiobook chapters" : "Sura za audiobook"}</h3>
     {chapters.map((chapter,index)=><section key={index} className="notice" style={{marginBottom:12}}>
-      <div className="field"><label>{en ? "Chapter title {index+1}" : "Jina la sura {index+1}"}</label><input value={chapter.title} onChange={e=>patch(index,{title:e.target.value})} required maxLength={180}/></div>
+      <div className="field"><label>{en ? `Chapter title ${index+1}` : `Jina la sura ${index+1}`}</label><input value={chapter.title} onChange={e=>patch(index,{title:e.target.value})} required maxLength={180}/></div>
       <div className="field"><label>{en ? "Audio file (MP3/M4A; up to 100 MB)" : "Faili la sauti (MP3/M4A; hadi MB 100)"}</label><input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" onChange={e=>patch(index,{file:e.target.files?.[0]||null})} required/></div>
       <label style={{display:"flex",gap:8,alignItems:"center"}}><input type="checkbox" checked={chapter.isPreview} onChange={e=>patch(index,{isPreview:e.target.checked})}/> {en ? "Make this chapter a free preview" : "Ruhusu sura hii kuwa sampuli ya bure"}</label>
       {chapters.length>1&&<button type="button" className="btn btn-outline" onClick={()=>setChapters(current=>current.filter((_,i)=>i!==index))}>{en ? "Remove chapter" : "Ondoa sura hii"}</button>}
     </section>)}
-    <button type="button" className="btn btn-outline" onClick={()=>setChapters(current=>[...current,{title:"Sura ya "+["Pili","Tatu","Nne","Tano"][Math.min(current.length-1,4)]||"Ziada",file:null,isPreview:false}])}>{en ? "+ Add chapter" : "+ Ongeza sura"}</button>
+    <button type="button" className="btn btn-outline" onClick={()=>setChapters(current=>[...current,{title:en ? `Chapter ${current.length+1}` : ("Sura ya "+(["Pili","Tatu","Nne","Tano"][Math.min(current.length-1,3)]||"Ziada")),file:null,isPreview:false}])}>{en ? "+ Add chapter" : "+ Ongeza sura"}</button>
     {progress&&<p className="muted" role="status">{progress}</p>}
     {message&&<p className={message.startsWith("Audiobook imewasilishwa")?"notice":"message"} role="status">{message}</p>}
     <button className="btn" disabled={busy}>{busy?(en?"Processing...":"Inachakata..."):(en?"Submit audiobook for review":"Wasilisha audiobook kwa ukaguzi")}</button>
