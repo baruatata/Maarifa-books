@@ -5,14 +5,14 @@ import { signOut } from "@/app/auth/actions";
 import { createCustomerTicket, replyToCustomerTicket, updateCustomerProfile } from "./actions";
 import { LanguageText } from "@/components/language-provider";
 
-const categoryLabels: Record<string, string> = {
+const categoryLabels: Record<string, { sw: string; en: string }> = {
   payment: { sw: "Tatizo la malipo", en: "Payment issue" },
   book_access: { sw: "Kitabu hakifunguki / sijakipata", en: "Book will not open / not received" },
   book_quality: { sw: "Kurasa au ubora wa kitabu", en: "Book pages or quality" },
   account: { sw: "Akaunti yangu", en: "My account" },
   other: { sw: "Jambo lingine", en: "Other" },
 };
-const statusLabels: Record<string, string> = {
+const statusLabels: Record<string, { sw: string; en: string }> = {
   received: { sw: "Limepokelewa", en: "Received" },
   in_progress: { sw: "Linafanyiwa kazi", en: "In progress" },
   resolved: { sw: "Limetatuliwa", en: "Resolved" },
