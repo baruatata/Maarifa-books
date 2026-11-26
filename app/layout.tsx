@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <LanguageProvider initialLanguage={initialLanguage}>
           <SiteHeader />
           {children}
-          <MobileAppNav />
+          <MobileAppNav accountHref="/ingia?next=%2Fdashboard" />
         </LanguageProvider>
         <Analytics />
         <SpeedInsights />
