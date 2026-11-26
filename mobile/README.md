@@ -1,36 +1,36 @@
-# MaarifaBooks Mobile App (Android + iPhone)
+# MaarifaBooks Native App
 
-This Expo / React Native app shell opens the existing MaarifaBooks website in a controlled WebView. It reuses the current Supabase authentication, catalogue, reading, audio, seller and coupon workflows; it does not duplicate backend business logic.
+This is the native Expo / React Native application. It does not embed the website in a WebView.
 
-## Platforms
-- Android: preview profile builds an installable APK.
-- iPhone: production profile builds an iOS App Store-compatible IPA for TestFlight submission.
-- iOS bundle identifier: `com.maarifabooks.app`.
+## Configuration
 
-## iPhone / TestFlight requirements
-An Apple Developer Program membership is required for a physical-device App Store/TestFlight build.
+Set these public client values in the Expo/EAS environment used for the app:
 
-1. Confirm access to the Apple Developer account that will own the app.
-2. From `mobile/`, sign in with `npx eas-cli login`.
-3. Run `npx eas-cli credentials --platform ios` and configure the Apple Distribution certificate and provisioning profile, or allow EAS to manage them after signing in with the authorized Apple account.
-4. Build the IPA with `npx eas-cli build --platform ios --profile production`.
-5. Submit the build to App Store Connect/TestFlight with `npx eas-cli submit --platform ios` after App Store Connect access is configured.
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
-Do not share Apple passwords or private keys in chat or commit them to GitHub. Use EAS-managed credentials / secure environment variables.
+Use the same Supabase project as the MaarifaBooks website. The publishable key is intended for client use; never put a Supabase service-role key or database password in the app. See `.env.example`.
 
-## Android build
-1. Run `npm install` from this directory.
-2. Build: `npx eas-cli build --platform android --profile preview`.
-3. Download and install the APK from the EAS build page.
+## Current native milestone
+
+- Loads approved books directly from the live `books` table.
+- Searches by book title or author and filters by categories returned by Supabase.
+- Loads signed cover URLs from the existing `book-files` Storage bucket.
+- Shows native book details and uses the existing `get_seller_whatsapp` RPC for direct seller contact.
+- Keeps seller-direct payment and the existing coupon-request workflow unchanged. The official book detail page opens externally for the existing sample and coupon-request steps.
+- Does not invent cart, checkout gateway, author directory, community, or sample book data.
+
+The mobile client relies on existing Supabase RLS and the public publishable key. No database schema, RLS policy, payment workflow, or Production deployment is changed by this milestone.
 
 ## Local development
-1. Install Node.js 20 or newer.
-2. Run `cd mobile && npm install`.
-3. Run `npx expo start`.
-4. Open with Expo Go or an emulator/simulator.
 
-## Scope and safety
-- No Supabase service-role key or other secret is included in the app.
-- The website remains responsible for authentication and authorization.
-- No database schema, RLS policy, payment workflow, or production website setting is changed by this app.
-- This is a WebView-based mobile shell, not a native rewrite. OTP delivery, downloads, PDF/audio playback, navigation and iOS safe-area behavior must be tested on real devices before public release.
+1. Configure the two Expo public environment variables.
+2. From this directory, run `npm install`.
+3. Run `npx expo start` and open the project on a device with Expo Go or an emulator.
+4. Run `npm run typecheck` before submitting changes.
+
+## Builds
+
+- Android preview profile creates an installable APK.
+- Production profiles are reserved for an explicitly approved release.
+- An Apple Developer Program membership is required for iOS store/TestFlight builds.
