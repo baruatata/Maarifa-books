@@ -27,5 +27,7 @@ jobs:
           node-version: 22
       - name: Install mobile dependencies
         run: npm install --no-audit --no-fund
+      - name: Verify Expo SDK dependency compatibility
+        run: npx expo install --check
       - name: Run TypeScript check
         run: npm run typecheck
