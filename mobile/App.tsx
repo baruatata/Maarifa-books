@@ -232,7 +232,7 @@ export default function App() {
       Alert.alert("Ombi halijatumwa", "Taarifa za muuzaji hazipatikani kwa kitabu hiki.");
       return;
     }
-    const phoneDigits = couponPhone.replace(/\\D/g, "");
+    const phoneDigits = couponPhone.replace(/\D/g, "");
     const normalizedPhone = phoneDigits.startsWith("0") ? "255" + phoneDigits.slice(1)
       : phoneDigits.startsWith("255") ? phoneDigits : phoneDigits;
     if (!/^255[67][0-9]{8}$/.test(normalizedPhone)) {
