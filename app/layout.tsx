@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: { type: "website", locale: "sw_TZ", siteName: "MaarifaBooks", title: "MaarifaBooks | Vitabu vya Kidijitali", description: "Soma, sikiliza na gundua vitabu vya kidijitali vya Kiswahili na Kiingereza.", url: siteUrl },
   twitter: { card: "summary", title: "MaarifaBooks | Vitabu vya Kidijitali", description: "Soma, sikiliza na gundua vitabu vya kidijitali vya Kiswahili na Kiingereza." },
   robots: { index: true, follow: true },
-  icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
+  icons: { icon: "/icon.svg", shortcut: "/icon.svg" },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
