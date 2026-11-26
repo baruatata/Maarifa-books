@@ -3,12 +3,19 @@ import JSZip from "jszip";
 const MAX_PREVIEW_BYTES = 35 * 1024 * 1024;
 
 function normalized(value: string) {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/\s+/g, " ");
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    // PDF extraction may split stylized headings into single-character tokens (e.g. "S U R A").
+    .replace(/(?<!\S)(?:[A-Z0-9]\s+){1,}[A-Z0-9](?!\S)/g, (match) => match.replace(/\s+/g, ""))
+    .replace(/\s+/g, " ");
 }
 
 function chapterPattern(number: 1 | 2) {
-  const swahili = number === 1 ? "(?:KWANZA|1|I)" : "(?:PILI|2|II)";
-  const english = number === 1 ? "(?:ONE|1|I)" : "(?:TWO|2|II)";
+  // Supports named headings and numbered styles such as "SURA YA 01" / "SURA YA 02".
+  const swahili = number === 1 ? "(?:KWANZA|0?\\s*1|I)" : "(?:PILI|0?\\s*2|II)";
+  const english = number === 1 ? "(?:ONE|0?\\s*1|I)" : "(?:TWO|0?\\s*2|II)";
   return new RegExp(`\\bSURA\\s+(?:YA\\s+)?${swahili}\\b|\\bCHAPTER\\s+${english}\\b`, "i");
 }
 

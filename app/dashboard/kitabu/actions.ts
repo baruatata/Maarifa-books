@@ -87,6 +87,30 @@ export async function updateSellerBook(bookId:string,formData:FormData):Promise<
 }
 
 
+export async function saveSellerBookPreview(bookId:string,previewPath:string):Promise<{ok:true}|{ok:false;error:string}> {
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return {ok:false,error:"Ingia kwanza."};
+  const {data:application}=await supabase.from("seller_applications").select("status").eq("user_id",user.id).maybeSingle();
+  if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
+  const prefix=user.id+"/"+bookId+"/";
+  if(!previewPath.startsWith(prefix)||!/^preview-generated-\d+\.(pdf|epub)$/i.test(previewPath.split("/").pop()||"")) return {ok:false,error:"Njia ya sampuli si sahihi."};
+  const {data:book,error:bookError}=await supabase.from("books").select("id,price_tzs,format,file_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
+  if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
+  if(book.price_tzs<=0||!["pdf","epub"].includes(book.format)||!book.file_path) return {ok:false,error:"Sampuli ya kiotomatiki inapatikana kwa vitabu vya PDF/EPUB vya kulipia pekee."};
+  const expectedExtension=book.format==="epub"?".epub":".pdf";
+  if(!previewPath.toLowerCase().endsWith(expectedExtension)) return {ok:false,error:"Muundo wa sampuli haulingani na kitabu."};
+  const {data:files,error:listError}=await supabase.storage.from("book-files").list(user.id+"/"+bookId);
+  if(listError) return {ok:false,error:"Imeshindikana kuthibitisha sampuli kwenye hifadhi."};
+  const previewFile=files?.find(file=>file.name===previewPath.split("/").pop());
+  if(!previewFile) return {ok:false,error:"Sampuli mpya haijapatikana kwenye hifadhi."};
+  const size=Number(previewFile.metadata?.size??previewFile.metadata?.contentLength??0);
+  if(size<=0||size>35*1024*1024) return {ok:false,error:"Sampuli lazima iwe na ukubwa unaokubalika hadi MB 35."};
+  const {error}=await supabase.from("books").update({preview_path:previewPath}).eq("id",bookId).eq("seller_id",user.id);
+  if(error) return {ok:false,error:error.message};
+  return {ok:true};
+}
+
 export async function replaceSellerBookPdf(bookId:string,newFilePath:string,newPreviewPath:string|null=null):Promise<{ok:true}|{ok:false;error:string}> {
   const supabase=await createClient();
   const {data:{user}}=await supabase.auth.getUser();
