@@ -6,6 +6,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { MobileAppNav } from "@/components/mobile-app-nav";
 import { LanguageProvider } from "@/components/language-provider";
+import { createClient } from "@/lib/supabase/server";
 
 const siteUrl = "https://maarifabooks.vercel.app";
 
@@ -25,13 +26,31 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const initialLanguage = cookieStore.get("maarifa-language")?.value === "en" ? "en" : "sw";
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let accountHref = "/ingia?next=%2Fdashboard";
+
+  if (user) {
+    const [{ data: profile }, { data: sellerApplication }] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+      supabase.from("seller_applications").select("status").eq("user_id", user.id).maybeSingle(),
+    ]);
+
+    if (profile?.role === "admin") {
+      accountHref = "/admin";
+    } else if (sellerApplication?.status === "approved" || profile?.role === "seller") {
+      accountHref = "/dashboard";
+    }
+  }
+
   return (
     <html lang="sw">
       <body>
         <LanguageProvider initialLanguage={initialLanguage}>
           <SiteHeader />
           {children}
-          <MobileAppNav />
+          <MobileAppNav accountHref={accountHref} />
         </LanguageProvider>
         <Analytics />
         <SpeedInsights />
