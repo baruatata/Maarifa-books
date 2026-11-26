@@ -17,7 +17,7 @@ const SITE_URL = "https://maarifabooks.vercel.app";
 type Book = {
   id: string; title: string; author_name: string | null; description?: string | null;
   language?: string | null; format: string; price_tzs: number;
-  cover_path: string | null; category: string | null; seller_id?: string;
+  cover_path: string | null; category: string | null; seller_id?: string; file_path?: string | null;
 };
 type BookCard = Book & { cover_url: string | null };
 
@@ -49,6 +49,9 @@ function friendlyError(error: unknown) {
 
 export default function App() {
   const [books, setBooks] = useState<BookCard[]>([]);
+  const [libraryBooks, setLibraryBooks] = useState<BookCard[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryError, setLibraryError] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
@@ -59,7 +62,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState<"home" | "search" | "account">("home");
+  const [screen, setScreen] = useState<"home" | "search" | "library" | "account">("home");
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -175,6 +178,67 @@ export default function App() {
     } finally { setDetailBusy(false); }
   };
 
+
+  const loadLibrary = useCallback(async () => {
+    if (!authUser) {
+      setLibraryBooks([]);
+      setLibraryError("Ingia kwenye akaunti yako kuona vitabu ulivyonunua.");
+      return;
+    }
+    setLibraryLoading(true);
+    setLibraryError("");
+    try {
+      const client = getSupabase();
+      // RLS limits this query to entitlements belonging to the signed-in buyer.
+      const { data: grants, error: grantsError } = await client
+        .from("book_entitlements").select("book_id").eq("buyer_id", authUser.id);
+      if (grantsError) throw grantsError;
+      const ids = Array.from(new Set((grants ?? []).map(row => row.book_id).filter(Boolean)));
+      if (!ids.length) {
+        setLibraryBooks([]);
+        return;
+      }
+      const { data, error: booksError } = await client.from("books")
+        .select("id,title,author_name,description,language,format,price_tzs,cover_path,category,seller_id,file_path")
+        .in("id", ids).order("title", { ascending: true });
+      if (booksError) throw booksError;
+      const rows = (data ?? []) as Book[];
+      const paths = rows.flatMap(book => book.cover_path ? [book.cover_path] : []);
+      const { data: signed, error: coverError } = paths.length
+        ? await client.storage.from("book-files").createSignedUrls(paths, 3600)
+        : { data: [], error: null };
+      if (coverError) throw coverError;
+      const coverMap = new Map((signed ?? []).flatMap(item =>
+        item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : []
+      ));
+      setLibraryBooks(rows.map(book => ({ ...book, cover_url: book.cover_path ? coverMap.get(book.cover_path) ?? null : null })));
+    } catch (err) {
+      setLibraryError(friendlyError(err));
+    } finally {
+      setLibraryLoading(false);
+    }
+  }, [authUser]);
+
+  const openOwnedBook = async (book: BookCard) => {
+    if (!book.file_path) {
+      Alert.alert("Kitabu hakipatikani", "Faili la kitabu halijaunganishwa kwenye mfumo kwa sasa.");
+      return;
+    }
+    try {
+      const { data, error: signedError } = await getSupabase().storage
+        .from("book-files").createSignedUrl(book.file_path, 900);
+      if (signedError) throw signedError;
+      if (!data?.signedUrl) throw new Error("Kiungo salama cha kitabu hakikupatikana.");
+      await Linking.openURL(data.signedUrl);
+    } catch (err) {
+      Alert.alert("Imeshindikana kufungua kitabu", friendlyError(err));
+    }
+  };
+
+  useEffect(() => {
+    if (screen === "library") void loadLibrary();
+  }, [screen, authUser, loadLibrary]);
+
   const visibleBooks = useMemo(() => books, [books]);
   const renderBook = ({ item }: { item: BookCard }) => (
     <Pressable style={styles.bookCard} onPress={() => void openBook(item)} accessibilityRole="button" accessibilityLabel={`Maelezo ya ${item.title}`}>
@@ -199,10 +263,46 @@ export default function App() {
       <View style={styles.tabs}>
         <Pressable onPress={() => { setScreen("home"); setSearch(""); setSearchInput(""); setSelectedCategory(null); }} style={[styles.tab, screen === "home" && styles.tabActive]}><Text style={[styles.tabText, screen === "home" && styles.tabTextActive]}>Mwanzo</Text></Pressable>
         <Pressable onPress={() => setScreen("search")} style={[styles.tab, screen === "search" && styles.tabActive]}><Text style={[styles.tabText, screen === "search" && styles.tabTextActive]}>Tafuta vitabu</Text></Pressable>
+        <Pressable onPress={() => setScreen("library")} style={[styles.tab, screen === "library" && styles.tabActive]}><Text style={[styles.tabText, screen === "library" && styles.tabTextActive]}>Maktaba</Text></Pressable>
         <Pressable onPress={() => setScreen("account")} style={[styles.tab, screen === "account" && styles.tabActive]}><Text style={[styles.tabText, screen === "account" && styles.tabTextActive]}>Akaunti</Text></Pressable>
       </View>
       <View style={styles.content}>
-        {screen === "account" ? (
+        {screen === "library" ? (
+          <View style={{ flex: 1 }}>
+            <Text style={styles.kicker}>VITABU VYAKO</Text>
+            <Text style={styles.heading}>Maktaba yangu</Text>
+            <Text style={styles.intro}>Vitabu vilivyofunguliwa kwa akaunti yako kupitia mfumo wa MaarifaBooks.</Text>
+            {!authUser ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>Ingia kuona maktaba yako</Text>
+                <Text style={styles.stateText}>Vitabu vyako vitaonekana hapa baada ya kuingia kwenye akaunti iliyotumika kununua.</Text>
+                <Pressable style={styles.primaryButton} onPress={() => setScreen("account")}><Text style={styles.primaryButtonText}>Ingia kwenye akaunti</Text></Pressable>
+              </View>
+            ) : libraryLoading ? (
+              <View style={styles.center}><ActivityIndicator size="large" color={GOLD} /><Text style={styles.stateText}>Inapakia maktaba yako...</Text></View>
+            ) : libraryError ? (
+              <View style={styles.empty}><Text style={styles.emptyTitle}>Imeshindikana kufungua maktaba</Text><Text style={styles.stateText}>{libraryError}</Text><Pressable style={styles.primaryButton} onPress={() => void loadLibrary()}><Text style={styles.primaryButtonText}>Jaribu tena</Text></Pressable></View>
+            ) : libraryBooks.length === 0 ? (
+              <View style={styles.empty}><Text style={styles.emptyTitle}>Maktaba bado haina vitabu</Text><Text style={styles.stateText}>Vitabu ulivyonunua na kufunguliwa kwa akaunti hii vitaonekana hapa.</Text><Pressable style={styles.secondaryButton} onPress={() => setScreen("home")}><Text style={styles.secondaryButtonText}>Tafuta vitabu</Text></Pressable></View>
+            ) : (
+              <FlatList data={libraryBooks} keyExtractor={item => item.id} contentContainerStyle={styles.bookList}
+                refreshControl={<RefreshControl refreshing={libraryLoading} onRefresh={() => void loadLibrary()} tintColor={GOLD} />}
+                renderItem={({item}) => (
+                  <View style={[styles.bookCard,{flexDirection:"row",gap:12,marginBottom:12}]}>
+                    <View style={[styles.coverWrap,{width:82,height:112}]}>
+                      {item.cover_url ? <Image source={{uri:item.cover_url}} style={styles.cover} resizeMode="cover"/> : <View style={styles.coverFallback}><Text style={styles.coverFallbackTitle} numberOfLines={4}>{item.title}</Text></View>}
+                    </View>
+                    <View style={{flex:1,justifyContent:"center"}}>
+                      <Text style={styles.bookTitle}>{item.title}</Text>
+                      <Text style={styles.bookAuthor}>{item.author_name || "Mwandishi hajatajwa"}</Text>
+                      <Text style={styles.format}>{(item.format || "").toUpperCase()}</Text>
+                      <Pressable style={[styles.primaryButton,{marginTop:9,alignSelf:"flex-start"}]} onPress={() => void openOwnedBook(item)}><Text style={styles.primaryButtonText}>Fungua kitabu</Text></Pressable>
+                    </View>
+                  </View>
+                )}/>
+            )}
+          </View>
+        ) : screen === "account" ? (
           <ScrollView contentContainerStyle={styles.accountContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.kicker}>AKAUNTI YA MAARIFABOOKS</Text>
             <Text style={styles.heading}>Akaunti yako</Text>
