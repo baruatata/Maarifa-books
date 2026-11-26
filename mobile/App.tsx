@@ -59,6 +59,12 @@ export default function App() {
   const [selectedBook, setSelectedBook] = useState<BookCard | null>(null);
   const [detailBusy, setDetailBusy] = useState(false);
   const [whatsapp, setWhatsapp] = useState<string | null>(null);
+  const [couponFormOpen, setCouponFormOpen] = useState(false);
+  const [couponName, setCouponName] = useState("");
+  const [couponPhone, setCouponPhone] = useState("");
+  const [couponReference, setCouponReference] = useState("");
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponNotice, setCouponNotice] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -163,7 +169,7 @@ export default function App() {
   };
 
   const openBook = async (book: BookCard) => {
-    setSelectedBook(book); setWhatsapp(null); setDetailBusy(true);
+    setSelectedBook(book); setWhatsapp(null); setDetailBusy(true); setCouponFormOpen(false); setCouponNotice(""); setCouponName(""); setCouponPhone(""); setCouponReference("");
     try {
       if (book.price_tzs > 0 && book.seller_id) {
         const { data, error: rpcError } = await getSupabase().rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
@@ -218,6 +224,45 @@ export default function App() {
       setLibraryLoading(false);
     }
   }, [authUser]);
+
+
+  const submitCouponRequest = async () => {
+    if (!selectedBook?.seller_id) {
+      Alert.alert("Ombi halijatumwa", "Taarifa za muuzaji hazipatikani kwa kitabu hiki.");
+      return;
+    }
+    const phoneDigits = couponPhone.replace(/\\D/g, "");
+    const normalizedPhone = phoneDigits.startsWith("0") ? "255" + phoneDigits.slice(1)
+      : phoneDigits.startsWith("255") ? phoneDigits : phoneDigits;
+    if (!/^255[67][0-9]{8}$/.test(normalizedPhone)) {
+      Alert.alert("Namba si sahihi", "Weka namba ya Tanzania, mfano 07XXXXXXXX au 2557XXXXXXXX.");
+      return;
+    }
+    if (couponReference.trim().length < 3 || couponReference.trim().length > 100) {
+      Alert.alert("Taarifa hazijakamilika", "Weka kumbukumbu ya muamala yenye herufi au namba 3 hadi 100.");
+      return;
+    }
+    setCouponBusy(true);
+    setCouponNotice("");
+    try {
+      const { error: requestError } = await getSupabase().from("book_coupon_requests").insert({
+        book_id: selectedBook.id,
+        seller_id: selectedBook.seller_id,
+        customer_user_id: authUser?.id ?? null,
+        customer_name: couponName.trim() || null,
+        customer_phone: normalizedPhone,
+        transaction_reference: couponReference.trim(),
+      });
+      if (requestError) throw requestError;
+      setCouponNotice("Ombi lako limetumwa kwa muuzaji. Atathibitisha malipo na kukutumia coupon kupitia mfumo.");
+      setCouponFormOpen(false);
+      setCouponName(""); setCouponPhone(""); setCouponReference("");
+    } catch (err) {
+      Alert.alert("Ombi halijatumwa", friendlyError(err));
+    } finally {
+      setCouponBusy(false);
+    }
+  };
 
   const openOwnedBook = async (book: BookCard) => {
     if (!book.file_path) {
@@ -382,7 +427,19 @@ export default function App() {
               <Text style={styles.detailPrice}>{money(selectedBook.price_tzs)}</Text>
               <Text style={styles.paymentNote}>Lipa moja kwa moja kwa muuzaji kupitia WhatsApp. Baada ya muuzaji kuthibitisha kupokea fedha, omba coupon kupitia mfumo ili kufungua kitabu kizima.</Text>
               {detailBusy ? <ActivityIndicator color={GOLD} /> : whatsapp ? <Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(whatsapp)}><Text style={styles.primaryButtonText}>Wasiliana na muuzaji WhatsApp</Text></Pressable> : <Text style={styles.stateText}>Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</Text>}
-              <Pressable style={styles.secondaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/kitabu/${selectedBook.id}`)}><Text style={styles.secondaryButtonText}>Sampuli na ombi la coupon</Text></Pressable>
+              <Pressable style={styles.secondaryButton} onPress={() => setCouponFormOpen(value => !value)}><Text style={styles.secondaryButtonText}>{couponFormOpen ? "Funga ombi la coupon" : "Nimelipa — omba coupon"}</Text></Pressable>
+              {!!couponNotice && <Text style={styles.authNotice}>{couponNotice}</Text>}
+              {couponFormOpen && <View style={styles.authPanel}>
+                <Text style={styles.authTitle}>Tuma ombi la coupon</Text>
+                <Text style={styles.authHint}>Jaza taarifa baada ya kulipa muuzaji moja kwa moja. Muuzaji ndiye atakayethibitisha kupokea fedha.</Text>
+                <Text style={styles.authLabel}>Jina lako (hiari)</Text>
+                <TextInput value={couponName} onChangeText={setCouponName} style={styles.authInput} placeholder="Jina kamili" placeholderTextColor="#98A2B3" />
+                <Text style={styles.authLabel}>Namba ya simu</Text>
+                <TextInput value={couponPhone} onChangeText={setCouponPhone} style={styles.authInput} placeholder="07XXXXXXXX" placeholderTextColor="#98A2B3" keyboardType="phone-pad" />
+                <Text style={styles.authLabel}>Namba ya kumbukumbu ya muamala</Text>
+                <TextInput value={couponReference} onChangeText={setCouponReference} style={styles.authInput} placeholder="Weka transaction reference" placeholderTextColor="#98A2B3" autoCapitalize="characters" />
+                <Pressable style={styles.primaryButton} disabled={couponBusy} onPress={() => void submitCouponRequest()}><Text style={styles.primaryButtonText}>{couponBusy ? "Inatuma ombi..." : "Tuma ombi kwa muuzaji"}</Text></Pressable>
+              </View>
             </> : <><Text style={styles.freeLabel}>Kitabu hiki kinapatikana bure.</Text><Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/soma/${selectedBook.id}`)}><Text style={styles.primaryButtonText}>Soma / Sikiliza kitabu</Text></Pressable></>}
           </ScrollView>
         </SafeAreaView>}
