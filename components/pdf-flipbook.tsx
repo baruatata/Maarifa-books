@@ -106,7 +106,6 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -139,13 +138,6 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
       pdfRef.current = null;
     };
   }, [url]);
-
-  useEffect(() => {
-    const updateVisibility = () => setShowBackToTop(window.scrollY > 400);
-    updateVisibility();
-    window.addEventListener("scroll", updateVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", updateVisibility);
-  }, []);
 
   const markVisible = useCallback((page: number) => {
     setCurrentPage((previous) => previous === page ? previous : page);
@@ -188,8 +180,7 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
           </div>
         ) : null}
       </div>
-      {showBackToTop && (
-        <button
+      <button
           type="button"
           className="reader-back-to-top"
           onClick={backToTop}
@@ -198,8 +189,7 @@ export default function PdfFlipbook({ url, title, closeHref }: Props) {
         >
           <span aria-hidden="true">↑</span>
           <span className="reader-back-to-top-label">Juu</span>
-        </button>
-      )}
+      </button>
     </>
   );
 }

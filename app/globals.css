@@ -949,3 +949,11 @@ body{background:#f7f8fb}
   .site-header .brand{width:auto;justify-content:flex-start}
   .site-header .language-toggle{grid-column:2;grid-row:1}
 }
+
+/* Keep the reader return-to-top control above the fixed mobile app navigation */
+@media(max-width:640px){
+  .reader-back-to-top{
+    bottom:calc(88px + env(safe-area-inset-bottom));
+    z-index:1200;
+  }
+}
