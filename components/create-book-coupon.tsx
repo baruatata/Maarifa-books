@@ -6,7 +6,7 @@ import { useLanguage } from "@/components/language-provider";
 
 const initialState: CouponActionState = {};
 
-export function CreateBookCoupon({ bookId, requestId }: { bookId: string; requestId?: string }) {
+export function CreateBookCoupon({ bookId, requestId }: { bookId: string; requestId: string }) {
   const { en } = useLanguage();
   const [state, action, pending] = useActionState(createBookAccessCoupon, initialState);
   const [copied, setCopied] = useState(false);
@@ -23,8 +23,9 @@ export function CreateBookCoupon({ bookId, requestId }: { bookId: string; reques
 
   return <div className="coupon-maker">
     <form action={action}>
-      <input type="hidden" name="book_id" value={bookId}/>{requestId && <input type="hidden" name="request_id" value={requestId}/>}
-      <button className="btn" disabled={pending}>{pending ? (en ? "Creating..." : "Inatengeneza...") : (en ? "Create new coupon" : "Tengeneza Coupon mpya")}</button>
+      <input type="hidden" name="book_id" value={bookId} />
+      <input type="hidden" name="request_id" value={requestId} />
+      <button className="btn" disabled={pending}>{pending ? (en ? "Creating..." : "Inatengeneza...") : (en ? "Create coupon for this request" : "Tengeneza Coupon ya ombi hili")}</button>
     </form>
     {state.error && <p className="message" role="status">{state.error}</p>}
     {state.code && <div className="coupon-result">
