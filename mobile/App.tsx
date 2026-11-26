@@ -5,6 +5,7 @@ import {
   StyleSheet, Text, TextInput, View
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import AudioBookPlayer from "./AudioBookPlayer";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const NAVY = "#071B36";
@@ -423,6 +424,7 @@ export default function App() {
             <View style={styles.detailTags}><Text style={styles.tag}>{(selectedBook.format || "").toUpperCase()}</Text>{selectedBook.language && <Text style={styles.tag}>{selectedBook.language === "sw" ? "Kiswahili" : selectedBook.language === "en" ? "Kiingereza" : selectedBook.language}</Text>}{selectedBook.category && <Text style={styles.tag}>{selectedBook.category}</Text>}</View>
             <Text style={styles.detailSection}>Maelezo ya kitabu</Text>
             <Text style={styles.description}>{selectedBook.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</Text>
+            {selectedBook.format === "audiobook" && <AudioBookPlayer bookId={selectedBook.id} userId={authUser?.id ?? null} client={getSupabase()} /> }
             {selectedBook.price_tzs > 0 ? <>
               <Text style={styles.detailPrice}>{money(selectedBook.price_tzs)}</Text>
               <Text style={styles.paymentNote}>Lipa moja kwa moja kwa muuzaji kupitia WhatsApp. Baada ya muuzaji kuthibitisha kupokea fedha, omba coupon kupitia mfumo ili kufungua kitabu kizima.</Text>
@@ -439,7 +441,7 @@ export default function App() {
                 <Text style={styles.authLabel}>Namba ya kumbukumbu ya muamala</Text>
                 <TextInput value={couponReference} onChangeText={setCouponReference} style={styles.authInput} placeholder="Weka transaction reference" placeholderTextColor="#98A2B3" autoCapitalize="characters" />
                 <Pressable style={styles.primaryButton} disabled={couponBusy} onPress={() => void submitCouponRequest()}><Text style={styles.primaryButtonText}>{couponBusy ? "Inatuma ombi..." : "Tuma ombi kwa muuzaji"}</Text></Pressable>
-              </View>
+              </View>}
             </> : <><Text style={styles.freeLabel}>Kitabu hiki kinapatikana bure.</Text><Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/soma/${selectedBook.id}`)}><Text style={styles.primaryButtonText}>Soma / Sikiliza kitabu</Text></Pressable></>}
           </ScrollView>
         </SafeAreaView>}
