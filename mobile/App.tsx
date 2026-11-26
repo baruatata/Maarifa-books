@@ -59,7 +59,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState<"home" | "search">("home");
+  const [screen, setScreen] = useState<"home" | "search" | "account">("home");
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [authPhone, setAuthPhone] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authUser, setAuthUser] = useState<{ id: string; email: string | null } | null>(null);
 
   const loadBooks = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true);
@@ -95,6 +104,60 @@ export default function App() {
   }, [search, selectedCategory]);
 
   useEffect(() => { void loadBooks(); }, [loadBooks]);
+
+  useEffect(() => {
+    let active = true;
+    let subscription: { unsubscribe: () => void } | undefined;
+    try {
+      const client = getSupabase();
+      void client.auth.getSession().then(({ data }) => {
+        if (active) setAuthUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email ?? null } : null);
+      }).catch(() => undefined);
+      const result = client.auth.onAuthStateChange((_event, session) => {
+        if (active) setAuthUser(session?.user ? { id: session.user.id, email: session.user.email ?? null } : null);
+      });
+      subscription = result.data.subscription;
+    } catch {
+      // The catalogue shows the configuration error; account setup can be retried after env vars are added.
+    }
+    return () => { active = false; subscription?.unsubscribe(); };
+  }, []);
+
+  const submitAuth = async () => {
+    setAuthBusy(true); setAuthError(""); setAuthMessage("");
+    try {
+      const client = getSupabase();
+      if (authMode === "signup") {
+        if (authName.trim().length < 2) throw new Error("Weka jina lako kamili.");
+        if (authPassword.length < 8) throw new Error("Nenosiri liwe na angalau herufi 8.");
+        const { data, error: signUpError } = await client.auth.signUp({
+          email: authEmail.trim(),
+          password: authPassword,
+          options: { data: { full_name: authName.trim(), phone: authPhone.trim(), preferred_language: "sw" } },
+        });
+        if (signUpError) throw signUpError;
+        if (data.session?.user) setAuthUser({ id: data.session.user.id, email: data.session.user.email ?? null });
+        else setAuthMessage("Akaunti imeombwa. Angalia barua pepe yako kuthibitisha akaunti kabla ya kuingia.");
+      } else {
+        const { data, error: signInError } = await client.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword });
+        if (signInError) throw signInError;
+        if (data.user) setAuthUser({ id: data.user.id, email: data.user.email ?? null });
+        setAuthMessage("Umeingia kwenye akaunti yako.");
+      }
+    } catch (err) {
+      setAuthError(friendlyError(err));
+    } finally { setAuthBusy(false); }
+  };
+
+  const signOutNative = async () => {
+    try {
+      setAuthBusy(true);
+      const { error: signOutError } = await getSupabase().auth.signOut();
+      if (signOutError) throw signOutError;
+      setAuthUser(null); setAuthMessage("Umetoka kwenye akaunti.");
+    } catch (err) { setAuthError(friendlyError(err)); }
+    finally { setAuthBusy(false); }
+  };
 
   const openBook = async (book: BookCard) => {
     setSelectedBook(book); setWhatsapp(null); setDetailBusy(true);
@@ -136,9 +199,49 @@ export default function App() {
       <View style={styles.tabs}>
         <Pressable onPress={() => { setScreen("home"); setSearch(""); setSearchInput(""); setSelectedCategory(null); }} style={[styles.tab, screen === "home" && styles.tabActive]}><Text style={[styles.tabText, screen === "home" && styles.tabTextActive]}>Mwanzo</Text></Pressable>
         <Pressable onPress={() => setScreen("search")} style={[styles.tab, screen === "search" && styles.tabActive]}><Text style={[styles.tabText, screen === "search" && styles.tabTextActive]}>Tafuta vitabu</Text></Pressable>
-        <Pressable onPress={() => void Linking.openURL(`${SITE_URL}/ingia`)} style={styles.tab}><Text style={styles.tabText}>Akaunti</Text></Pressable>
+        <Pressable onPress={() => setScreen("account")} style={[styles.tab, screen === "account" && styles.tabActive]}><Text style={[styles.tabText, screen === "account" && styles.tabTextActive]}>Akaunti</Text></Pressable>
       </View>
       <View style={styles.content}>
+        {screen === "account" ? (
+          <ScrollView contentContainerStyle={styles.accountContent} keyboardShouldPersistTaps="handled">
+            <Text style={styles.kicker}>AKAUNTI YA MAARIFABOOKS</Text>
+            <Text style={styles.heading}>Akaunti yako</Text>
+            <Text style={styles.intro}>Ingia au fungua akaunti ili kutumia huduma za MaarifaBooks.</Text>
+            {authUser ? (
+              <View style={styles.authPanel}>
+                <Text style={styles.authTitle}>Umeingia kikamilifu</Text>
+                <Text style={styles.authLabel}>Barua pepe</Text>
+                <Text style={styles.authValue}>{authUser.email || "Barua pepe haijaonyeshwa"}</Text>
+                <Text style={styles.authHint}>Akaunti yako imehifadhiwa kwa usalama kwenye kifaa hiki. Huduma za Jihudumie na dashibodi za wauzaji bado zinapatikana kupitia tovuti.</Text>
+                <Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/dashboard/jihudumie`)}><Text style={styles.primaryButtonText}>Fungua Jihudumie</Text></Pressable>
+                <Pressable style={styles.secondaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/muuzaji`)}><Text style={styles.secondaryButtonText}>Dashibodi ya muuzaji</Text></Pressable>
+                <Pressable style={styles.secondaryButton} disabled={authBusy} onPress={() => void signOutNative()}><Text style={styles.secondaryButtonText}>{authBusy ? "Subiri..." : "Toka kwenye akaunti"}</Text></Pressable>
+              </View>
+            ) : (
+              <View style={styles.authPanel}>
+                <View style={styles.authSwitch}>
+                  <Pressable onPress={() => { setAuthMode("login"); setAuthError(""); setAuthMessage(""); }} style={[styles.authSwitchButton, authMode === "login" && styles.authSwitchActive]}><Text style={[styles.authSwitchText, authMode === "login" && styles.authSwitchTextActive]}>Ingia</Text></Pressable>
+                  <Pressable onPress={() => { setAuthMode("signup"); setAuthError(""); setAuthMessage(""); }} style={[styles.authSwitchButton, authMode === "signup" && styles.authSwitchActive]}><Text style={[styles.authSwitchText, authMode === "signup" && styles.authSwitchTextActive]}>Jisajili</Text></Pressable>
+                </View>
+                {authMode === "signup" && <>
+                  <Text style={styles.authLabel}>Jina kamili</Text>
+                  <TextInput value={authName} onChangeText={setAuthName} style={styles.authInput} placeholder="Jina lako kamili" placeholderTextColor="#98A2B3" autoCapitalize="words" />
+                  <Text style={styles.authLabel}>Namba ya simu (hiari)</Text>
+                  <TextInput value={authPhone} onChangeText={setAuthPhone} style={styles.authInput} placeholder="07XXXXXXXX" placeholderTextColor="#98A2B3" keyboardType="phone-pad" />
+                </>}
+                <Text style={styles.authLabel}>Barua pepe</Text>
+                <TextInput value={authEmail} onChangeText={setAuthEmail} style={styles.authInput} placeholder="jina@example.com" placeholderTextColor="#98A2B3" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+                <Text style={styles.authLabel}>Nenosiri</Text>
+                <TextInput value={authPassword} onChangeText={setAuthPassword} style={styles.authInput} placeholder="Angalau herufi 8" placeholderTextColor="#98A2B3" secureTextEntry autoComplete={authMode === "login" ? "current-password" : "new-password"} />
+                {!!authError && <Text style={styles.authError}>{authError}</Text>}
+                {!!authMessage && <Text style={styles.authNotice}>{authMessage}</Text>}
+                <Pressable style={styles.primaryButton} disabled={authBusy} onPress={() => void submitAuth()}><Text style={styles.primaryButtonText}>{authBusy ? "Inashughulikia..." : authMode === "login" ? "Ingia kwenye akaunti" : "Fungua akaunti"}</Text></Pressable>
+                <Text style={styles.authHint}>Kwa sasa kuingia kwa barua pepe na nenosiri kunatumia Supabase Auth iliyopo. OTP ya SMS haitatumwa na skrini hii.</Text>
+              </View>
+            )}
+          </ScrollView>
+        ) : (
+          <>
         <Text style={styles.kicker}>MAKTABA YETU</Text>
         <Text style={styles.heading}>{screen === "search" ? "Tafuta kitabu" : "Vitabu vya kidijitali"}</Text>
         <Text style={styles.intro}>Gundua vitabu vilivyoidhinishwa na vinavyopatikana MaarifaBooks.</Text>
@@ -163,6 +266,7 @@ export default function App() {
           : error ? <View style={styles.empty}><Text style={styles.emptyTitle}>Imeshindikana kupakia vitabu</Text><Text style={styles.stateText}>{error}</Text><Pressable onPress={() => void loadBooks()} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Jaribu tena</Text></Pressable></View>
           : visibleBooks.length === 0 ? <View style={styles.empty}><Text style={styles.emptyTitle}>Hakuna kitabu kilichopatikana</Text><Text style={styles.stateText}>Vitabu vitaonekana hapa baada ya kuwasilishwa na kuidhinishwa na msimamizi.</Text></View>
           : <FlatList data={visibleBooks} keyExtractor={item => item.id} renderItem={renderBook} numColumns={2} columnWrapperStyle={styles.bookRow} contentContainerStyle={styles.bookList} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void loadBooks(true)} tintColor={GOLD} />} />}
+          </>)}
       </View>
       <Modal visible={Boolean(selectedBook)} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedBook(null)}>
         {selectedBook && <SafeAreaView style={styles.modalSafe}>
@@ -194,7 +298,7 @@ const styles = StyleSheet.create({
   sellButton:{borderWidth:1,borderColor:GOLD,borderRadius:9,paddingHorizontal:13,paddingVertical:9},sellText:{color:GOLD,fontWeight:"800",fontSize:12},
   tabs:{flexDirection:"row",backgroundColor:"#FFFFFF",paddingHorizontal:10,borderBottomWidth:1,borderBottomColor:"#E5EAF0"},
   tab:{flex:1,alignItems:"center",paddingVertical:13,borderBottomWidth:2,borderBottomColor:"transparent"},tabActive:{borderBottomColor:GOLD},tabText:{fontSize:13,color:MUTED,fontWeight:"700"},tabTextActive:{color:NAVY},
-  content:{flex:1,paddingHorizontal:16,paddingTop:19},kicker:{fontSize:10,color:"#9A741E",fontWeight:"900",letterSpacing:1.5},heading:{fontSize:24,color:NAVY,fontWeight:"900",marginTop:4},intro:{fontSize:13,color:MUTED,marginTop:5,lineHeight:19},
+  content:{flex:1,paddingHorizontal:16,paddingTop:19},accountContent:{paddingBottom:28},authPanel:{backgroundColor:"#FFFFFF",borderRadius:14,padding:16,marginTop:18,borderWidth:1,borderColor:"#E6EAF0"},authTitle:{fontSize:17,color:NAVY,fontWeight:"900"},authSwitch:{flexDirection:"row",backgroundColor:"#F0F3F7",padding:4,borderRadius:10,marginBottom:18},authSwitchButton:{flex:1,alignItems:"center",paddingVertical:10,borderRadius:8},authSwitchActive:{backgroundColor:NAVY},authSwitchText:{fontSize:13,fontWeight:"800",color:MUTED},authSwitchTextActive:{color:"#FFFFFF"},authLabel:{fontSize:12,fontWeight:"800",color:NAVY,marginBottom:7,marginTop:12},authInput:{borderWidth:1,borderColor:"#DCE2EA",borderRadius:9,paddingHorizontal:12,paddingVertical:12,color:NAVY,fontSize:14,backgroundColor:"#FFFFFF"},authError:{color:"#B42318",fontSize:12,lineHeight:18,marginTop:12},authNotice:{color:"#18794E",fontSize:12,lineHeight:18,marginTop:12},authValue:{fontSize:14,color:NAVY,fontWeight:"700",marginTop:4},authHint:{fontSize:12,color:MUTED,lineHeight:19,marginTop:14},kicker:{fontSize:10,color:"#9A741E",fontWeight:"900",letterSpacing:1.5},heading:{fontSize:24,color:NAVY,fontWeight:"900",marginTop:4},intro:{fontSize:13,color:MUTED,marginTop:5,lineHeight:19},
   searchBox:{flexDirection:"row",marginTop:15,backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#DCE2EA",borderRadius:11,padding:5,alignItems:"center"},searchInput:{flex:1,paddingHorizontal:10,paddingVertical:9,color:NAVY,fontSize:13},searchButton:{backgroundColor:NAVY,borderRadius:8,paddingHorizontal:15,paddingVertical:11},searchButtonText:{color:"#FFFFFF",fontWeight:"800",fontSize:12},
   chips:{gap:8,paddingVertical:12},chip:{paddingHorizontal:13,paddingVertical:8,borderRadius:20,backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#E1E6ED"},chipActive:{backgroundColor:NAVY,borderColor:NAVY},chipText:{fontSize:11,color:MUTED,fontWeight:"700"},chipTextActive:{color:"#FFFFFF"},
   sectionHead:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginTop:6,marginBottom:10},sectionTitle:{fontSize:16,color:NAVY,fontWeight:"900"},count:{fontSize:11,color:MUTED},
