@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform } from "react-native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import * as SecureStore from "expo-secure-store";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -53,7 +53,9 @@ export default function AudioBookPlayer({ bookId, userId, client }: Props) {
       if (error) throw error;
       if (!data?.signedUrl) throw new Error("Kiungo salama cha sauti hakikupatikana.");
       const key = `maarifa-audio:${userId ?? "guest"}:${bookId}:${chapter.id}`;
-      const saved = await SecureStore.getItemAsync(key);
+      const saved = Platform.OS === "web"
+        ? (typeof window !== "undefined" ? window.localStorage.getItem(key) : null)
+        : await SecureStore.getItemAsync(key);
       player.pause();
       player.replace(data.signedUrl);
       if (saved) {
@@ -75,7 +77,12 @@ export default function AudioBookPlayer({ bookId, userId, client }: Props) {
   useEffect(() => {
     if (!selected || !playback.isLoaded || playback.currentTime <= 0) return;
     const key = `maarifa-audio:${userId ?? "guest"}:${bookId}:${selected.id}`;
-    void SecureStore.setItemAsync(key, String(Math.floor(playback.currentTime))).catch(() => undefined);
+    const value = String(Math.floor(playback.currentTime));
+    if (Platform.OS === "web") {
+      try { if (typeof window !== "undefined") window.localStorage.setItem(key, value); } catch { /* Browser storage may be unavailable. */ }
+    } else {
+      void SecureStore.setItemAsync(key, value).catch(() => undefined);
+    }
   }, [bookId, playback.currentTime, playback.isLoaded, selected, userId]);
 
   const changeSpeed = () => {
