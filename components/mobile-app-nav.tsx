@@ -6,16 +6,14 @@ import { useLanguage } from "@/components/language-provider";
 
 type MobileAppNavProps = {
   accountHref: string;
-  accountLabelSw: string;
-  accountLabelEn: string;
 };
 
-export function MobileAppNav({ accountHref, accountLabelSw, accountLabelEn }: MobileAppNavProps) {
+export function MobileAppNav({ accountHref }: MobileAppNavProps) {
   const pathname = usePathname();
   const { en } = useLanguage();
   const items = [
     { href: "/", sw: "Mwanzo", en: "Home", icon: "⌂", exact: true },
-    { href: accountHref, sw: accountLabelSw, en: accountLabelEn, icon: "▣" },
+    { href: "/dashboard/jihudumie", sw: "Jihudumie", en: "My account", icon: "▣" },
     { href: "/mafunzo", sw: "Muongozo", en: "Guide", icon: "◇" },
     { href: accountHref, sw: "Akaunti", en: "Account", icon: "○" },
   ];
