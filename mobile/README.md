@@ -17,10 +17,11 @@ Use the same Supabase project as the MaarifaBooks website. The publishable key i
 - Searches by book title or author and filters by categories returned by Supabase.
 - Loads signed cover URLs from the existing `book-files` Storage bucket.
 - Shows native book details and uses the existing `get_seller_whatsapp` RPC for direct seller contact.
+- Provides native email/password sign-in and registration through the existing Supabase Auth project, with session persistence using Expo SecureStore.
 - Keeps seller-direct payment and the existing coupon-request workflow unchanged. The official book detail page opens externally for the existing sample and coupon-request steps.
 - Does not invent cart, checkout gateway, author directory, community, or sample book data.
 
-The mobile client relies on existing Supabase RLS and the public publishable key. No database schema, RLS policy, payment workflow, or Production deployment is changed by this milestone.
+The mobile client relies on existing Supabase RLS and the public publishable key. SMS OTP is not triggered by the native email/password account screen. No database schema, RLS policy, payment workflow, or Production deployment is changed by this milestone.
 
 ## Local development
 
