@@ -30,8 +30,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const { data: { user } } = await supabase.auth.getUser();
 
   let accountHref = "/ingia?next=%2Fdashboard";
-  let accountLabelSw = "Akaunti";
-  let accountLabelEn = "Account";
 
   if (user) {
     const [{ data: profile }, { data: sellerApplication }] = await Promise.all([
@@ -41,16 +39,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
     if (profile?.role === "admin") {
       accountHref = "/admin";
-      accountLabelSw = "Dashibodi";
-      accountLabelEn = "Dashboard";
     } else if (sellerApplication?.status === "approved" || profile?.role === "seller") {
       accountHref = "/dashboard";
-      accountLabelSw = "Dashibodi";
-      accountLabelEn = "Dashboard";
-    } else {
-      accountHref = "/dashboard/jihudumie";
-      accountLabelSw = "Jihudumie";
-      accountLabelEn = "My account";
     }
   }
 
@@ -60,7 +50,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <LanguageProvider initialLanguage={initialLanguage}>
           <SiteHeader />
           {children}
-          <MobileAppNav accountHref={accountHref} accountLabelSw={accountLabelSw} accountLabelEn={accountLabelEn} />
+          <MobileAppNav accountHref={accountHref} />
         </LanguageProvider>
         <Analytics />
         <SpeedInsights />
