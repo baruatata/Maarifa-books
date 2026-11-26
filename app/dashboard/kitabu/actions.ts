@@ -94,7 +94,7 @@ export async function saveSellerBookPreview(bookId:string,previewPath:string):Pr
   const {data:application}=await supabase.from("seller_applications").select("status").eq("user_id",user.id).maybeSingle();
   if(application?.status!=="approved") return {ok:false,error:"Akaunti ya muuzaji haijaidhinishwa."};
   const prefix=user.id+"/"+bookId+"/";
-  if(!previewPath.startsWith(prefix)||!/^preview-generated-\\d+\\.(pdf|epub)$/i.test(previewPath.split("/").pop()||"")) return {ok:false,error:"Njia ya sampuli si sahihi."};
+  if(!previewPath.startsWith(prefix)||!/^preview-generated-\d+\.(pdf|epub)$/i.test(previewPath.split("/").pop()||"")) return {ok:false,error:"Njia ya sampuli si sahihi."};
   const {data:book,error:bookError}=await supabase.from("books").select("id,price_tzs,format,file_path").eq("id",bookId).eq("seller_id",user.id).maybeSingle();
   if(bookError||!book) return {ok:false,error:"Kitabu hakijapatikana."};
   if(book.price_tzs<=0||!["pdf","epub"].includes(book.format)||!book.file_path) return {ok:false,error:"Sampuli ya kiotomatiki inapatikana kwa vitabu vya PDF/EPUB vya kulipia pekee."};
