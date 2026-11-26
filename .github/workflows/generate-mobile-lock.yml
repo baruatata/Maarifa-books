@@ -1,0 +1,36 @@
+name: Generate mobile preview lockfile
+on:
+  push:
+    branches:
+      - feature/maarifabooks-online-preview
+    paths:
+      - "mobile/package.json"
+      - ".github/workflows/generate-mobile-lock.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  lockfile:
+    if: "!contains(github.event.head_commit.message, '[skip-lockfile]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/maarifabooks-online-preview
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Yarn Classic
+        run: npm install --global yarn@1.22.22
+      - name: Generate deterministic lockfile
+        working-directory: mobile
+        run: yarn install --ignore-scripts --non-interactive
+      - name: Commit lockfile
+        run: |
+          if [ -f mobile/yarn.lock ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add mobile/yarn.lock
+            git diff --cached --quiet || git commit -m "chore: lock mobile preview dependencies [skip-lockfile]"
+            git push
+          fi
