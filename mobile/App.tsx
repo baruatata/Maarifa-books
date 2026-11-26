@@ -131,17 +131,15 @@ export default function App() {
     switch (section) {
       case "store":
         setActiveTab("home");
-        navigateToUrl(`${HOME_URL}/#vitabu`);
+        navigateToUrl(HOME_URL);
         break;
       case "search":
         setActiveTab("home");
-        navigateToUrl(HOME_URL);
-        Alert.alert("Tafuta vitabu", "Tumia sehemu ya utafutaji na vichujio vya kategoria kwenye ukurasa wa Mwanzo.");
+        navigateToUrl(`${HOME_URL}/?q=`);
         break;
       case "book":
         setActiveTab("books");
-        navigateToUrl(`${HOME_URL}/#vitabu`);
-        Alert.alert("Maelezo ya kitabu", "Chagua kitabu kwenye orodha ili kufungua ukurasa wake wa maelezo na utaratibu wa malipo.");
+        navigateToUrl(`${HOME_URL}/kitabu/8f8f3d92-b4cd-4c51-a494-c7cd2b93f766`);
         break;
       case "authors":
         navigateToUrl(`${HOME_URL}/wauzaji`);
@@ -151,15 +149,15 @@ export default function App() {
         navigateToUrl(`${HOME_URL}/dashboard/jihudumie`);
         break;
       case "community":
-        Alert.alert("Jamii ya Maarifa", "Sehemu hii bado haina mfumo wa jumuiya uliounganishwa. Haijawezeshwa ili kuepuka kuonyesha mazungumzo au taarifa za kubuni.");
+        Alert.alert("Jamii ya Maarifa", "Muundo wa Stitch umehifadhiwa kama rejea ya muonekano. Kipengele hiki hakijaunganishwa kwa sababu bado hakuna mfumo halisi wa jumuiya.");
         break;
       case "cart":
-        Alert.alert("Kikapu cha vitabu", "Kikapu hakijaunganishwa kwa sasa. Unaweza kuchagua kitabu na kufuata utaratibu rasmi wa kulipa moja kwa moja kwa muuzaji.");
+        Alert.alert("Kikapu cha vitabu", "Muundo wa kikapu umehifadhiwa kama rejea tu. Kwa sasa chagua kitabu kimoja na ufuate malipo ya moja kwa moja kwa muuzaji.");
         break;
       case "checkout":
-        Alert.alert("Malipo ya vitabu", "Lipa moja kwa moja kwa muuzaji. Muuzaji akithibitisha kupokea fedha, omba coupon kupitia mfumo; muuzaji atakutumia coupon ya kufungua kitabu.");
+        Alert.alert("Malipo ya vitabu", "Ukurasa huu wa mfano hauchukui malipo. Lipa moja kwa moja kwa muuzaji kupitia maelezo ya kitabu. Muuzaji akithibitisha fedha, omba coupon kupitia mfumo.");
+        navigateToUrl(`${HOME_URL}/kitabu/8f8f3d92-b4cd-4c51-a494-c7cd2b93f766`);
         setActiveTab("books");
-        navigateToUrl(`${HOME_URL}/#vitabu`);
         break;
       default:
         break;
