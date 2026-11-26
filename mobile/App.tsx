@@ -42,6 +42,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
+  const navigateToUrl = useCallback((url: string) => {
+    setCurrentUrl(url);
+    setLoading(true);
+    setFailed(false);
+    webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(url)}; true;`);
+  }, []);
+
   const navigateToTab = useCallback((tab: (typeof TABS)[number]) => {
     if (tab.key === activeTab && tab.url === currentUrl) {
       webViewRef.current?.injectJavaScript("window.scrollTo({ top: 0, behavior: 'smooth' }); true;");
@@ -123,7 +130,14 @@ export default function App() {
           <Text style={styles.brand}>Maarifa<Text style={styles.brandGold}>Books</Text></Text>
           <Text style={styles.tagline}>Soma. Sikiliza. Jifunze.</Text>
         </View>
-        <View style={styles.onlineMark}><View style={styles.onlineDot} /><Text style={styles.onlineText}>Vitabu vya kidijitali</Text></View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Omba kujiunga kama muuzaji"
+          onPress={() => navigateToUrl(`${HOME_URL}/wauzaji`)}
+          style={styles.sellerShortcut}
+        >
+          <Text style={styles.sellerShortcutText}>Uza vitabu</Text>
+        </Pressable>
       </View>
 
       <View style={styles.content}>
@@ -220,9 +234,8 @@ const styles = StyleSheet.create({
   brand: { color: "#FFFFFF", fontSize: 20, fontWeight: "800", letterSpacing: -0.6 },
   brandGold: { color: "#D5A642" },
   tagline: { color: "#DCE4EF", fontSize: 10, fontWeight: "500", marginTop: 1 },
-  onlineMark: { flexDirection: "row", alignItems: "center", gap: 6 },
-  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#55C58A" },
-  onlineText: { color: "#DCE4EF", fontSize: 10 },
+  sellerShortcut: { minHeight: 36, justifyContent: "center", paddingHorizontal: 13, borderRadius: 18, borderWidth: 1, borderColor: "#D5A642" },
+  sellerShortcutText: { color: "#F1D18B", fontSize: 12, fontWeight: "700" },
   content: { flex: 1, backgroundColor: "#FFFFFF" },
   webview: { flex: 1, backgroundColor: "#FFFFFF" },
   webviewLoading: { opacity: 0 },
