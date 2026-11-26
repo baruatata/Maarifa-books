@@ -139,7 +139,7 @@ export default function App() {
         break;
       case "book":
         setActiveTab("books");
-        navigateToUrl(`${HOME_URL}/kitabu/8f8f3d92-b4cd-4c51-a494-c7cd2b93f766`);
+        navigateToUrl(`${HOME_URL}/#vitabu`);
         break;
       case "authors":
         navigateToUrl(`${HOME_URL}/wauzaji`);
@@ -156,7 +156,7 @@ export default function App() {
         break;
       case "checkout":
         Alert.alert("Malipo ya vitabu", "Ukurasa huu wa mfano hauchukui malipo. Lipa moja kwa moja kwa muuzaji kupitia maelezo ya kitabu. Muuzaji akithibitisha fedha, omba coupon kupitia mfumo.");
-        navigateToUrl(`${HOME_URL}/kitabu/8f8f3d92-b4cd-4c51-a494-c7cd2b93f766`);
+        navigateToUrl(`${HOME_URL}/#vitabu`);
         setActiveTab("books");
         break;
       default:
@@ -214,7 +214,7 @@ export default function App() {
                 { id: "store", title: "Duka kuu la MaarifaBooks", description: "Tazama vitabu vilivyopo sokoni", icon: "▤", status: "Inapatikana" },
                 { id: "search", title: "Tafuta na kategoria", description: "Tafuta kitabu kwa jina au kategoria", icon: "⌕", status: "Inapatikana" },
                 { id: "book", title: "Maelezo ya kitabu na malipo", description: "Chagua kitabu kuona maelezo na njia ya kulipia", icon: "▣", status: "Inapatikana" },
-                { id: "authors", title: "Waandishi na wachapishaji", description: "Fungua maombi ya kujiunga kama muuzaji", icon: "✎", status: "Inapatikana" },
+                { id: "authors", title: "Waandishi na wachapishaji", description: "Omba kujiunga kama muuzaji; orodha ya waandishi bado haijaunganishwa", icon: "✎", status: "Maombi ya wauzaji" },
                 { id: "library", title: "Maktaba ya vitabu", description: "Fungua maktaba yako na vitabu ulivyopata", icon: "▥", status: "Inapatikana" },
                 { id: "community", title: "Jamii ya Maarifa", description: "Jumuiya bado haijaunganishwa na mfumo", icon: "♧", status: "Inatayarishwa", disabled: true },
                 { id: "cart", title: "Kikapu cha vitabu", description: "Hakuna kikapu halisi kwa sasa", icon: "🛒", status: "Inatayarishwa", disabled: true },
