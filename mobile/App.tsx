@@ -1,403 +1,207 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  BackHandler,
-  Linking,
-  Modal,
-  Platform,
-  ScrollView,
-  Alert,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
+  ActivityIndicator, Alert, FlatList, Image, Keyboard, Linking, Modal,
+  Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar,
+  StyleSheet, Text, TextInput, View
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import WebView, { WebViewNavigation } from "react-native-webview";
+import * as SecureStore from "expo-secure-store";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const HOME_URL = "https://maarifabooks.vercel.app";
-const ALLOWED_HOST = "maarifabooks.vercel.app";
+const NAVY = "#071B36";
+const NAVY_LIGHT = "#102B4D";
+const GOLD = "#D5A642";
+const PAPER = "#F5F7FA";
+const MUTED = "#667085";
+const SITE_URL = "https://maarifabooks.vercel.app";
 
-type TabKey = "home" | "books" | "library" | "account";
+type Book = {
+  id: string; title: string; author_name: string | null; description?: string | null;
+  language?: string | null; format: string; price_tzs: number;
+  cover_path: string | null; category: string | null; seller_id?: string;
+};
+type BookCard = Book & { cover_url: string | null };
 
-const TABS: { key: TabKey; label: string; icon: string; url: string }[] = [
-  { key: "home", label: "Mwanzo", icon: "⌂", url: HOME_URL },
-  { key: "books", label: "Vitabu", icon: "▤", url: `${HOME_URL}/#vitabu` },
-  { key: "library", label: "Maktaba", icon: "▥", url: `${HOME_URL}/dashboard/jihudumie` },
-  { key: "account", label: "Akaunti", icon: "◉", url: `${HOME_URL}/dashboard` },
-];
+let supabase: SupabaseClient | null = null;
+function getSupabase() {
+  if (supabase) return supabase;
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) throw new Error("Mipangilio ya Supabase haijawekwa. Weka EXPO_PUBLIC_SUPABASE_URL na EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY kwenye mazingira ya Expo.");
+  supabase = createClient(url, key, {
+    auth: {
+      storage: {
+        getItem: (key) => SecureStore.getItemAsync(key),
+        setItem: (key, value) => SecureStore.setItemAsync(key, value),
+        removeItem: (key) => SecureStore.deleteItemAsync(key),
+      },
+      autoRefreshToken: true, persistSession: true, detectSessionInUrl: false,
+    },
+  });
+  return supabase;
+}
 
-function isInternalUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && url.hostname === ALLOWED_HOST;
-  } catch {
-    return value.startsWith("about:blank");
-  }
+function money(value: number) {
+  return value > 0 ? "TSh " + new Intl.NumberFormat("sw-TZ").format(value) : "BURE";
+}
+function friendlyError(error: unknown) {
+  return error instanceof Error ? error.message : "Kumetokea hitilafu. Tafadhali jaribu tena.";
 }
 
 export default function App() {
-  const webViewRef = useRef<WebView>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("home");
-  const [currentUrl, setCurrentUrl] = useState(HOME_URL);
-  const [canGoBack, setCanGoBack] = useState(false);
+  const [books, setBooks] = useState<BookCard[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedBook, setSelectedBook] = useState<BookCard | null>(null);
+  const [detailBusy, setDetailBusy] = useState(false);
+  const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
-  const [sectionsVisible, setSectionsVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [screen, setScreen] = useState<"home" | "search">("home");
 
-  const navigateToUrl = useCallback((url: string) => {
-    setCurrentUrl(url);
-    setLoading(true);
-    setFailed(false);
-    webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(url)}; true;`);
-  }, []);
-
-  const navigateToTab = useCallback((tab: (typeof TABS)[number]) => {
-    if (tab.key === activeTab && tab.url === currentUrl) {
-      webViewRef.current?.injectJavaScript("window.scrollTo({ top: 0, behavior: 'smooth' }); true;");
-      return;
-    }
-    setActiveTab(tab.key);
-    setCurrentUrl(tab.url);
-    setLoading(true);
-    setFailed(false);
-    webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(tab.url)}; true;`);
-  }, [activeTab, currentUrl]);
-
-  const handleNavigation = useCallback((request: WebViewNavigation) => {
-    const url = request.url;
-    if (url.startsWith("about:blank")) return true;
-    if (isInternalUrl(url)) return true;
-
+  const loadBooks = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true); else setLoading(true);
+    setError("");
     try {
-      const parsed = new URL(url);
-      if (["tel:", "mailto:", "sms:", "whatsapp:"].includes(parsed.protocol)) {
-        void Linking.openURL(url);
-        return false;
+      const client = getSupabase();
+      let query = client.from("books")
+        .select("id,title,author_name,description,language,format,price_tzs,cover_path,category,seller_id")
+        .eq("status", "approved").order("created_at", { ascending: false }).limit(60);
+      if (search.trim()) {
+        const safe = search.trim().replace(/[%,()]/g, "").slice(0, 80);
+        if (safe) query = query.or(`title.ilike.%${safe}%,author_name.ilike.%${safe}%`);
       }
-      if (parsed.protocol === "https:") {
-        void Linking.openURL(url);
+      if (selectedCategory) query = query.eq("category", selectedCategory);
+      const { data, error: queryError } = await query;
+      if (queryError) throw queryError;
+      const rows = (data ?? []) as Book[];
+      const paths = rows.flatMap(book => book.cover_path ? [book.cover_path] : []);
+      const { data: signed, error: coverError } = paths.length
+        ? await client.storage.from("book-files").createSignedUrls(paths, 86400)
+        : { data: [], error: null };
+      if (coverError) throw coverError;
+      const coverMap = new Map((signed ?? []).flatMap(item =>
+        item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : []
+      ));
+      setBooks(rows.map(book => ({ ...book, cover_url: book.cover_path ? coverMap.get(book.cover_path) ?? null : null })));
+      setCategories(Array.from(new Set(rows.map(book => book.category).filter((v): v is string => Boolean(v)))));
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setLoading(false); setRefreshing(false);
+    }
+  }, [search, selectedCategory]);
+
+  useEffect(() => { void loadBooks(); }, [loadBooks]);
+
+  const openBook = async (book: BookCard) => {
+    setSelectedBook(book); setWhatsapp(null); setDetailBusy(true);
+    try {
+      if (book.price_tzs > 0 && book.seller_id) {
+        const { data, error: rpcError } = await getSupabase().rpc("get_seller_whatsapp", { p_seller_id: book.seller_id });
+        if (rpcError) throw rpcError;
+        if (data) {
+          const message = `Habari, nahitaji kununua kitabu "${book.title}" cha ${money(book.price_tzs)} kupitia MaarifaBooks. Naomba maelekezo ya malipo.`;
+          setWhatsapp(`https://wa.me/${data}?text=${encodeURIComponent(message)}`);
+        }
       }
     } catch {
-      // Ignore unsupported or malformed navigation targets.
-    }
-    return false;
-  }, []);
-
-  const handleNewWindow = useCallback((event: { nativeEvent: { targetUrl: string } }) => {
-    const target = event.nativeEvent.targetUrl;
-    if (isInternalUrl(target)) {
-      setCurrentUrl(target);
-      setLoading(true);
-      setFailed(false);
-      webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(target)}; true;`);
-      return;
-    }
-    try {
-      const parsed = new URL(target);
-      if (["https:", "tel:", "mailto:", "sms:", "whatsapp:"].includes(parsed.protocol)) {
-        void Linking.openURL(target);
-      }
-    } catch {
-      // Ignore malformed popup URLs.
-    }
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") return;
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (canGoBack) {
-        webViewRef.current?.goBack();
-        return true;
-      }
-      if (activeTab !== "home") {
-        navigateToTab(TABS[0]);
-        return true;
-      }
-      return false;
-    });
-    return () => subscription.remove();
-  }, [activeTab, canGoBack, navigateToTab]);
-
-  const retry = () => {
-    setFailed(false);
-    setLoading(true);
-    webViewRef.current?.reload();
+      setWhatsapp(null);
+    } finally { setDetailBusy(false); }
   };
 
-  const openSection = (section: string) => {
-    setSectionsVisible(false);
-    switch (section) {
-      case "store":
-        setActiveTab("home");
-        navigateToUrl(HOME_URL);
-        break;
-      case "search":
-        setActiveTab("home");
-        navigateToUrl(`${HOME_URL}/?q=`);
-        break;
-      case "book":
-        setActiveTab("books");
-        navigateToUrl(`${HOME_URL}/#vitabu`);
-        break;
-      case "authors":
-        navigateToUrl(`${HOME_URL}/wauzaji`);
-        break;
-      case "library":
-        setActiveTab("library");
-        navigateToUrl(`${HOME_URL}/dashboard/jihudumie`);
-        break;
-      case "community":
-        Alert.alert("Jamii ya Maarifa", "Muundo wa Stitch umehifadhiwa kama rejea ya muonekano. Kipengele hiki hakijaunganishwa kwa sababu bado hakuna mfumo halisi wa jumuiya.");
-        break;
-      case "cart":
-        Alert.alert("Kikapu cha vitabu", "Muundo wa kikapu umehifadhiwa kama rejea tu. Kwa sasa chagua kitabu kimoja na ufuate malipo ya moja kwa moja kwa muuzaji.");
-        break;
-      case "checkout":
-        Alert.alert("Malipo ya vitabu", "Ukurasa huu wa mfano hauchukui malipo. Lipa moja kwa moja kwa muuzaji kupitia maelezo ya kitabu. Muuzaji akithibitisha fedha, omba coupon kupitia mfumo.");
-        navigateToUrl(`${HOME_URL}/#vitabu`);
-        setActiveTab("books");
-        break;
-      default:
-        break;
-    }
-  };
+  const visibleBooks = useMemo(() => books, [books]);
+  const renderBook = ({ item }: { item: BookCard }) => (
+    <Pressable style={styles.bookCard} onPress={() => void openBook(item)} accessibilityRole="button" accessibilityLabel={`Maelezo ya ${item.title}`}>
+      <View style={styles.coverWrap}>
+        {item.cover_url
+          ? <Image source={{ uri: item.cover_url }} style={styles.cover} resizeMode="cover" />
+          : <View style={styles.coverFallback}><Text style={styles.coverBrand}>MAARIFABOOKS</Text><Text style={styles.coverFallbackTitle} numberOfLines={4}>{item.title}</Text><Text style={styles.coverAuthor} numberOfLines={2}>{item.author_name || "Mwandishi"}</Text></View>}
+      </View>
+      <Text style={styles.bookTitle} numberOfLines={2}>{item.title}</Text>
+      <Text style={styles.bookAuthor} numberOfLines={1}>{item.author_name || "Mwandishi hajatajwa"}</Text>
+      <View style={styles.bookMeta}><Text style={styles.format}>{(item.format || "").toUpperCase()}</Text><Text style={styles.price}>{money(item.price_tzs)}</Text></View>
+    </Pressable>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar style="light" backgroundColor="#071B36" />
-      <View style={styles.topBar}>
-        <View>
-          <Text style={styles.brand}>Maarifa<Text style={styles.brandGold}>Books</Text></Text>
-          <Text style={styles.tagline}>Soma. Sikiliza. Jifunze.</Text>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Omba kujiunga kama muuzaji"
-          onPress={() => navigateToUrl(`${HOME_URL}/wauzaji`)}
-          style={styles.sellerShortcut}
-        >
-          <Text style={styles.sellerShortcutText}>Uza vitabu</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Fungua sehemu zote za MaarifaBooks"
-          onPress={() => setSectionsVisible(true)}
-          style={styles.menuShortcut}
-        >
-          <Text style={styles.menuShortcutText}>Sehemu</Text>
-        </Pressable>
+      <StatusBar barStyle="light-content" backgroundColor={NAVY} />
+      <View style={styles.header}>
+        <View><Text style={styles.brand}>Maarifa<Text style={styles.brandGold}>Books</Text></Text><Text style={styles.tagline}>Soma. Sikiliza. Jifunze.</Text></View>
+        <Pressable style={styles.sellButton} onPress={() => void Linking.openURL(`${SITE_URL}/wauzaji`)}><Text style={styles.sellText}>Uza vitabu</Text></Pressable>
       </View>
-
-      <Modal
-        visible={sectionsVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSectionsVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <Pressable style={styles.modalDismiss} onPress={() => setSectionsVisible(false)} accessibilityLabel="Funga menyu" />
-          <View style={styles.sectionsSheet}>
-            <View style={styles.sheetHandle} />
-            <View style={styles.sheetHeading}>
-              <View>
-                <Text style={styles.sheetTitle}>Sehemu za MaarifaBooks</Text>
-                <Text style={styles.sheetSubtitle}>Chagua huduma unayotaka kufungua</Text>
-              </View>
-              <Pressable onPress={() => setSectionsVisible(false)} accessibilityRole="button" accessibilityLabel="Funga">
-                <Text style={styles.closeText}>✕</Text>
-              </Pressable>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {[
-                { id: "store", title: "Duka kuu la MaarifaBooks", description: "Tazama vitabu vilivyopo sokoni", icon: "▤", status: "Inapatikana" },
-                { id: "search", title: "Tafuta na kategoria", description: "Tafuta kitabu kwa jina au kategoria", icon: "⌕", status: "Inapatikana" },
-                { id: "book", title: "Maelezo ya kitabu na malipo", description: "Chagua kitabu kuona maelezo na njia ya kulipia", icon: "▣", status: "Inapatikana" },
-                { id: "authors", title: "Waandishi na wachapishaji", description: "Omba kujiunga kama muuzaji; orodha ya waandishi bado haijaunganishwa", icon: "✎", status: "Maombi ya wauzaji" },
-                { id: "library", title: "Maktaba ya vitabu", description: "Fungua maktaba yako na vitabu ulivyopata", icon: "▥", status: "Inapatikana" },
-                { id: "community", title: "Jamii ya Maarifa", description: "Jumuiya bado haijaunganishwa na mfumo", icon: "♧", status: "Inatayarishwa", disabled: true },
-                { id: "cart", title: "Kikapu cha vitabu", description: "Hakuna kikapu halisi kwa sasa", icon: "🛒", status: "Inatayarishwa", disabled: true },
-                { id: "checkout", title: "Malipo ya vitabu", description: "Fuata utaratibu rasmi wa malipo na coupon", icon: "✓", status: "Mwongozo wa malipo" },
-              ].map((item) => (
-                <Pressable
-                  key={item.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: Boolean(item.disabled) }}
-                  disabled={Boolean(item.disabled)}
-                  onPress={() => openSection(item.id)}
-                  style={[styles.sectionRow, item.disabled && styles.sectionRowDisabled]}
-                >
-                  <View style={styles.sectionIcon}><Text style={styles.sectionIconText}>{item.icon}</Text></View>
-                  <View style={styles.sectionCopy}>
-                    <Text style={styles.sectionTitle}>{item.title}</Text>
-                    <Text style={styles.sectionDescription}>{item.description}</Text>
-                    <Text style={[styles.sectionStatus, item.disabled && styles.sectionStatusDisabled]}>{item.status}</Text>
-                  </View>
-                  <Text style={styles.sectionChevron}>{item.disabled ? "…" : "›"}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
+      <View style={styles.tabs}>
+        <Pressable onPress={() => { setScreen("home"); setSearch(""); setSearchInput(""); setSelectedCategory(null); }} style={[styles.tab, screen === "home" && styles.tabActive]}><Text style={[styles.tabText, screen === "home" && styles.tabTextActive]}>Mwanzo</Text></Pressable>
+        <Pressable onPress={() => setScreen("search")} style={[styles.tab, screen === "search" && styles.tabActive]}><Text style={[styles.tabText, screen === "search" && styles.tabTextActive]}>Tafuta vitabu</Text></Pressable>
+        <Pressable onPress={() => void Linking.openURL(`${SITE_URL}/ingia`)} style={styles.tab}><Text style={styles.tabText}>Akaunti</Text></Pressable>
+      </View>
       <View style={styles.content}>
-        <WebView
-          ref={webViewRef}
-          source={{ uri: currentUrl }}
-          style={[styles.webview, loading && styles.webviewLoading]}
-          originWhitelist={["https://*"]}
-          onShouldStartLoadWithRequest={handleNavigation}
-          onOpenWindow={handleNewWindow}
-          onNavigationStateChange={(state) => setCanGoBack(state.canGoBack)}
-          onLoadStart={() => { setLoading(true); setFailed(false); }}
-          onLoadEnd={() => setLoading(false)}
-          onError={() => { setLoading(false); setFailed(true); }}
-          onHttpError={(event) => {
-            if (event.nativeEvent.statusCode >= 500) {
-              setLoading(false);
-              setFailed(true);
-            }
-          }}
-          javaScriptEnabled
-          domStorageEnabled
-          sharedCookiesEnabled
-          thirdPartyCookiesEnabled
-          allowsBackForwardNavigationGestures
-          pullToRefreshEnabled
-          setSupportMultipleWindows
-          javaScriptCanOpenWindowsAutomatically
-          allowsInlineMediaPlayback
-          mediaPlaybackRequiresUserAction={false}
-          mixedContentMode="never"
-          allowFileAccess={false}
-          allowUniversalAccessFromFileURLs={false}
-          cacheEnabled
-          incognito={false}
-          onFileDownload={({ nativeEvent }) => {
-            if (nativeEvent.downloadUrl.startsWith("https://")) {
-              void Linking.openURL(nativeEvent.downloadUrl);
-            }
-          }}
-        />
-        {loading && !failed && (
-          <View style={styles.loading}>
-            <ActivityIndicator size="large" color="#D5A642" />
-            <Text style={styles.loadingText}>Inafungua MaarifaBooks...</Text>
-          </View>
+        <Text style={styles.kicker}>MAKTABA YETU</Text>
+        <Text style={styles.heading}>{screen === "search" ? "Tafuta kitabu" : "Vitabu vya kidijitali"}</Text>
+        <Text style={styles.intro}>Gundua vitabu vilivyoidhinishwa na vinavyopatikana MaarifaBooks.</Text>
+        <View style={styles.searchBox}>
+          <TextInput
+            value={searchInput} onChangeText={setSearchInput}
+            onSubmitEditing={() => { setSearch(searchInput); Keyboard.dismiss(); }}
+            placeholder="Tafuta jina la kitabu au mwandishi..." placeholderTextColor="#98A2B3"
+            returnKeyType="search" style={styles.searchInput}
+            accessibilityLabel="Tafuta jina la kitabu au mwandishi"
+          />
+          <Pressable style={styles.searchButton} onPress={() => { setSearch(searchInput); Keyboard.dismiss(); }}><Text style={styles.searchButtonText}>Tafuta</Text></Pressable>
+        </View>
+        {categories.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            <Pressable onPress={() => setSelectedCategory(null)} style={[styles.chip, !selectedCategory && styles.chipActive]}><Text style={[styles.chipText, !selectedCategory && styles.chipTextActive]}>Vyote</Text></Pressable>
+            {categories.map(category => <Pressable key={category} onPress={() => setSelectedCategory(category)} style={[styles.chip, selectedCategory === category && styles.chipActive]}><Text style={[styles.chipText, selectedCategory === category && styles.chipTextActive]}>{category}</Text></Pressable>)}
+          </ScrollView>
         )}
-        {failed && (
-          <View style={styles.error}>
-            <Text style={styles.errorTitle}>Imeshindikana kufungua MaarifaBooks</Text>
-            <Text style={styles.errorText}>Angalia muunganisho wa intaneti kisha ujaribu tena.</Text>
-            <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}>
-              <Text style={styles.retryText}>Jaribu tena</Text>
-            </Pressable>
-          </View>
-        )}
+        <View style={styles.sectionHead}><Text style={styles.sectionTitle}>{search ? "Matokeo ya utafutaji" : selectedCategory || "Vitabu vipya"}</Text><Text style={styles.count}>{books.length} vitabu</Text></View>
+        {loading ? <View style={styles.center}><ActivityIndicator size="large" color={GOLD} /><Text style={styles.stateText}>Inapakia vitabu...</Text></View>
+          : error ? <View style={styles.empty}><Text style={styles.emptyTitle}>Imeshindikana kupakia vitabu</Text><Text style={styles.stateText}>{error}</Text><Pressable onPress={() => void loadBooks()} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Jaribu tena</Text></Pressable></View>
+          : visibleBooks.length === 0 ? <View style={styles.empty}><Text style={styles.emptyTitle}>Hakuna kitabu kilichopatikana</Text><Text style={styles.stateText}>Vitabu vitaonekana hapa baada ya kuwasilishwa na kuidhinishwa na msimamizi.</Text></View>
+          : <FlatList data={visibleBooks} keyExtractor={item => item.id} renderItem={renderBook} numColumns={2} columnWrapperStyle={styles.bookRow} contentContainerStyle={styles.bookList} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void loadBooks(true)} tintColor={GOLD} />} />}
       </View>
-
-      <View style={styles.bottomNav} accessibilityRole="tablist">
-        {TABS.map((tab) => {
-          const active = activeTab === tab.key;
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={tab.label}
-              testID={`tab-${tab.key}`}
-              onPress={() => navigateToTab(tab)}
-              style={styles.tab}
-            >
-              <Text style={[styles.tabIcon, active && styles.tabIconActive]}>{tab.icon}</Text>
-              <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-              {active && <View style={styles.activeIndicator} />}
-            </Pressable>
-          );
-        })}
-      </View>
+      <Modal visible={Boolean(selectedBook)} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedBook(null)}>
+        {selectedBook && <SafeAreaView style={styles.modalSafe}>
+          <View style={styles.modalHeader}><Text style={styles.modalHeaderTitle}>Maelezo ya kitabu</Text><Pressable onPress={() => setSelectedBook(null)}><Text style={styles.close}>✕</Text></Pressable></View>
+          <ScrollView contentContainerStyle={styles.detailContent}>
+            <View style={styles.detailCoverWrap}>{selectedBook.cover_url ? <Image source={{ uri: selectedBook.cover_url }} style={styles.detailCover} resizeMode="contain" /> : <View style={[styles.coverFallback, styles.detailFallback]}><Text style={styles.coverFallbackTitle}>{selectedBook.title}</Text></View>}</View>
+            <Text style={styles.detailTitle}>{selectedBook.title}</Text>
+            <Text style={styles.detailAuthor}>Na {selectedBook.author_name || "Mwandishi hajatajwa"}</Text>
+            <View style={styles.detailTags}><Text style={styles.tag}>{(selectedBook.format || "").toUpperCase()}</Text>{selectedBook.language && <Text style={styles.tag}>{selectedBook.language === "sw" ? "Kiswahili" : selectedBook.language === "en" ? "Kiingereza" : selectedBook.language}</Text>}{selectedBook.category && <Text style={styles.tag}>{selectedBook.category}</Text>}</View>
+            <Text style={styles.detailSection}>Maelezo ya kitabu</Text>
+            <Text style={styles.description}>{selectedBook.description || "Maelezo ya kitabu hiki hayajawekwa bado."}</Text>
+            {selectedBook.price_tzs > 0 ? <>
+              <Text style={styles.detailPrice}>{money(selectedBook.price_tzs)}</Text>
+              <Text style={styles.paymentNote}>Lipa moja kwa moja kwa muuzaji kupitia WhatsApp. Baada ya muuzaji kuthibitisha kupokea fedha, omba coupon kupitia mfumo ili kufungua kitabu kizima.</Text>
+              {detailBusy ? <ActivityIndicator color={GOLD} /> : whatsapp ? <Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(whatsapp)}><Text style={styles.primaryButtonText}>Wasiliana na muuzaji WhatsApp</Text></Pressable> : <Text style={styles.stateText}>Namba ya WhatsApp ya muuzaji haipatikani kwa sasa.</Text>}
+              <Pressable style={styles.secondaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/kitabu/${selectedBook.id}`)}><Text style={styles.secondaryButtonText}>Sampuli na ombi la coupon</Text></Pressable>
+            </> : <><Text style={styles.freeLabel}>Kitabu hiki kinapatikana bure.</Text><Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(`${SITE_URL}/soma/${selectedBook.id}`)}><Text style={styles.primaryButtonText}>Soma / Sikiliza kitabu</Text></Pressable></>}
+          </ScrollView>
+        </SafeAreaView>}
+      </Modal>
+      <View style={styles.footer}><Text style={styles.footerText}>MaarifaBooks · Sehemu ya Lumbwa Digital</Text></View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#071B36" },
-  topBar: {
-    minHeight: 62,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#071B36",
-  },
-  brand: { color: "#FFFFFF", fontSize: 20, fontWeight: "800", letterSpacing: -0.6 },
-  brandGold: { color: "#D5A642" },
-  tagline: { color: "#DCE4EF", fontSize: 10, fontWeight: "500", marginTop: 1 },
-  sellerShortcut: { minHeight: 36, justifyContent: "center", paddingHorizontal: 13, borderRadius: 18, borderWidth: 1, borderColor: "#D5A642" },
-  sellerShortcutText: { color: "#F1D18B", fontSize: 12, fontWeight: "700" },
-
-  menuShortcut: { minHeight: 36, justifyContent: "center", paddingHorizontal: 12, borderRadius: 18, backgroundColor: "#D5A642" },
-  menuShortcutText: { color: "#071B36", fontSize: 12, fontWeight: "800" },
-  modalBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(3, 12, 25, 0.55)" },
-  modalDismiss: { flex: 1 },
-  sectionsSheet: { maxHeight: "82%", paddingHorizontal: 18, paddingTop: 10, paddingBottom: 22, borderTopLeftRadius: 24, borderTopRightRadius: 24, backgroundColor: "#FFFFFF" },
-  sheetHandle: { alignSelf: "center", width: 42, height: 4, borderRadius: 2, backgroundColor: "#D5DCE5", marginBottom: 16 },
-  sheetHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  sheetTitle: { color: "#071B36", fontSize: 18, fontWeight: "800" },
-  sheetSubtitle: { color: "#667386", fontSize: 12, marginTop: 4 },
-  closeText: { color: "#526174", fontSize: 22, paddingHorizontal: 8 },
-  sectionRow: { minHeight: 76, flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E5EAF0" },
-  sectionRowDisabled: { opacity: 0.58 },
-  sectionIcon: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", backgroundColor: "#F4F0E7", marginRight: 12 },
-  sectionIconText: { color: "#9B7225", fontSize: 21, fontWeight: "700" },
-  sectionCopy: { flex: 1 },
-  sectionTitle: { color: "#071B36", fontSize: 13, fontWeight: "800" },
-  sectionDescription: { color: "#667386", fontSize: 11, marginTop: 3 },
-  sectionStatus: { color: "#28724E", fontSize: 10, fontWeight: "700", marginTop: 5 },
-  sectionStatusDisabled: { color: "#8A6A2A" },
-  sectionChevron: { color: "#9B7225", fontSize: 25, paddingLeft: 8 },
-  content: { flex: 1, backgroundColor: "#FFFFFF" },
-  webview: { flex: 1, backgroundColor: "#FFFFFF" },
-  webviewLoading: { opacity: 0 },
-  loading: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-  },
-  loadingText: { marginTop: 12, color: "#071B36", fontSize: 14 },
-  error: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 3,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 28,
-    backgroundColor: "#FFFFFF",
-  },
-  errorTitle: { color: "#071B36", fontSize: 18, fontWeight: "700", textAlign: "center" },
-  errorText: { color: "#526174", fontSize: 14, textAlign: "center", marginTop: 8, lineHeight: 21 },
-  retry: { marginTop: 20, paddingHorizontal: 24, paddingVertical: 13, borderRadius: 10, backgroundColor: "#D5A642", minHeight: 44, justifyContent: "center" },
-  retryText: { color: "#071B36", fontWeight: "700" },
-  bottomNav: {
-    minHeight: 66,
-    paddingTop: 6,
-    paddingBottom: Platform.OS === "ios" ? 7 : 5,
-    paddingHorizontal: 8,
-    flexDirection: "row",
-    alignItems: "stretch",
-    justifyContent: "space-around",
-    backgroundColor: "#FFFFFF",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#DCE2EA",
-  },
-  tab: { flex: 1, minHeight: 52, alignItems: "center", justifyContent: "center", gap: 2 },
-  tabIcon: { color: "#7B8798", fontSize: 21, lineHeight: 25 },
-  tabIconActive: { color: "#B78628" },
-  tabLabel: { color: "#667386", fontSize: 10, fontWeight: "600" },
-  tabLabelActive: { color: "#071B36", fontWeight: "800" },
-  activeIndicator: { position: "absolute", top: -6, width: 22, height: 3, borderRadius: 2, backgroundColor: "#D5A642" },
+  safe:{flex:1,backgroundColor:PAPER},header:{backgroundColor:NAVY,paddingHorizontal:18,paddingTop:12,paddingBottom:14,flexDirection:"row",alignItems:"center",justifyContent:"space-between"},
+  brand:{fontSize:24,fontWeight:"900",color:"#FFFFFF",letterSpacing:-0.7},brandGold:{color:GOLD},tagline:{color:"#D7DFEA",fontSize:11,marginTop:2,letterSpacing:0.4},
+  sellButton:{borderWidth:1,borderColor:GOLD,borderRadius:9,paddingHorizontal:13,paddingVertical:9},sellText:{color:GOLD,fontWeight:"800",fontSize:12},
+  tabs:{flexDirection:"row",backgroundColor:"#FFFFFF",paddingHorizontal:10,borderBottomWidth:1,borderBottomColor:"#E5EAF0"},
+  tab:{flex:1,alignItems:"center",paddingVertical:13,borderBottomWidth:2,borderBottomColor:"transparent"},tabActive:{borderBottomColor:GOLD},tabText:{fontSize:13,color:MUTED,fontWeight:"700"},tabTextActive:{color:NAVY},
+  content:{flex:1,paddingHorizontal:16,paddingTop:19},kicker:{fontSize:10,color:"#9A741E",fontWeight:"900",letterSpacing:1.5},heading:{fontSize:24,color:NAVY,fontWeight:"900",marginTop:4},intro:{fontSize:13,color:MUTED,marginTop:5,lineHeight:19},
+  searchBox:{flexDirection:"row",marginTop:15,backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#DCE2EA",borderRadius:11,padding:5,alignItems:"center"},searchInput:{flex:1,paddingHorizontal:10,paddingVertical:9,color:NAVY,fontSize:13},searchButton:{backgroundColor:NAVY,borderRadius:8,paddingHorizontal:15,paddingVertical:11},searchButtonText:{color:"#FFFFFF",fontWeight:"800",fontSize:12},
+  chips:{gap:8,paddingVertical:12},chip:{paddingHorizontal:13,paddingVertical:8,borderRadius:20,backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#E1E6ED"},chipActive:{backgroundColor:NAVY,borderColor:NAVY},chipText:{fontSize:11,color:MUTED,fontWeight:"700"},chipTextActive:{color:"#FFFFFF"},
+  sectionHead:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginTop:6,marginBottom:10},sectionTitle:{fontSize:16,color:NAVY,fontWeight:"900"},count:{fontSize:11,color:MUTED},
+  bookList:{paddingBottom:16},bookRow:{gap:12,marginBottom:15},bookCard:{flex:1,backgroundColor:"#FFFFFF",borderRadius:12,padding:9,borderWidth:1,borderColor:"#E9EDF2"},
+  coverWrap:{height:170,backgroundColor:"#E8EDF3",borderRadius:8,overflow:"hidden"},cover:{width:"100%",height:"100%"},coverFallback:{flex:1,backgroundColor:NAVY,alignItems:"center",justifyContent:"center",padding:12},coverBrand:{color:GOLD,fontSize:8,fontWeight:"900",letterSpacing:1.4,marginBottom:12},coverFallbackTitle:{color:"#FFFFFF",fontSize:14,fontWeight:"900",textAlign:"center"},coverAuthor:{color:"#D7DFEA",fontSize:10,marginTop:12,textAlign:"center"},
+  bookTitle:{color:NAVY,fontWeight:"800",fontSize:13,marginTop:9,minHeight:34},bookAuthor:{color:MUTED,fontSize:11,marginTop:3},bookMeta:{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginTop:9},format:{fontSize:9,color:MUTED,fontWeight:"800"},price:{fontSize:11,color:"#98701B",fontWeight:"900"},
+  center:{alignItems:"center",justifyContent:"center",paddingVertical:50},stateText:{fontSize:12,color:MUTED,textAlign:"center",lineHeight:18,marginTop:9},empty:{alignItems:"center",paddingHorizontal:18,paddingVertical:35},emptyTitle:{fontSize:16,color:NAVY,fontWeight:"900",textAlign:"center"},primaryButton:{backgroundColor:NAVY,borderRadius:10,paddingHorizontal:18,paddingVertical:13,alignItems:"center,marginTop:16},primaryButtonText:{color:"#FFFFFF",fontWeight:"800",fontSize:13},
+  secondaryButton:{borderWidth:1,borderColor:NAVY,borderRadius:10,paddingHorizontal:18,paddingVertical:13,alignItems:"center",marginTop:10},secondaryButtonText:{color:NAVY,fontWeight:"800",fontSize:12},
+  modalSafe:{flex:1,backgroundColor:PAPER},modalHeader:{paddingHorizontal:18,paddingVertical:14,backgroundColor:"#FFFFFF",borderBottomWidth:1,borderBottomColor:"#E5EAF0",flexDirection:"row",justifyContent:"space-between",alignItems:"center"},modalHeaderTitle:{fontSize:15,color:NAVY,fontWeight:"900"},close:{fontSize:22,color:MUTED,paddingHorizontal:5},detailContent:{padding:20,paddingBottom:40},detailCoverWrap:{height:220,alignItems:"center",justifyContent:"center",marginBottom:18},detailCover:{width:155,height:220},detailFallback:{width:155,height:220,borderRadius:9},detailTitle:{fontSize:23,color:NAVY,fontWeight:"900",lineHeight:29},detailAuthor:{fontSize:13,color:MUTED,marginTop:5},detailTags:{flexDirection:"row",flexWrap:"wrap",gap:7,marginTop:13},tag:{fontSize:10,color:NAVY,backgroundColor:"#E7EDF4",paddingHorizontal:9,paddingVertical:6,borderRadius:6,fontWeight:"700"},detailSection:{fontSize:15,color:NAVY,fontWeight:"900",marginTop:20},description:{fontSize:13,color:"#475467",lineHeight:21,marginTop:7},detailPrice:{fontSize:22,color:"#98701B",fontWeight:"900",marginTop:20},paymentNote:{fontSize:13,color:"#475467",lineHeight:20,marginTop:8},freeLabel:{fontSize:14,color:"#18794E",fontWeight:"800",marginTop:20},footer:{backgroundColor:"#FFFFFF",paddingVertical:8,alignItems:"center",borderTopWidth:1,borderTopColor:"#E5EAF0"},footerText:{fontSize:10,color:MUTED}
 });
