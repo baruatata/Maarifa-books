@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator, Alert, FlatList, Image, Keyboard, Linking, Modal,
   Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar,
-  StyleSheet, Text, TextInput, View
+  StyleSheet, Text, TextInput, View, Platform
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import AudioBookPlayer from "./AudioBookPlayer";
@@ -31,9 +31,23 @@ function getSupabase() {
   supabase = createClient(url, key, {
     auth: {
       storage: {
-        getItem: (key) => SecureStore.getItemAsync(key),
-        setItem: (key, value) => SecureStore.setItemAsync(key, value),
-        removeItem: (key) => SecureStore.deleteItemAsync(key),
+        getItem: async (key) => Platform.OS === "web"
+          ? (typeof window !== "undefined" ? window.localStorage.getItem(key) : null)
+          : SecureStore.getItemAsync(key),
+        setItem: async (key, value) => {
+          if (Platform.OS === "web") {
+            if (typeof window !== "undefined") window.localStorage.setItem(key, value);
+            return;
+          }
+          await SecureStore.setItemAsync(key, value);
+        },
+        removeItem: async (key) => {
+          if (Platform.OS === "web") {
+            if (typeof window !== "undefined") window.localStorage.removeItem(key);
+            return;
+          }
+          await SecureStore.deleteItemAsync(key);
+        },
       },
       autoRefreshToken: true, persistSession: true, detectSessionInUrl: false,
     },
