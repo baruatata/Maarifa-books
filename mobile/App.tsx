@@ -22,7 +22,7 @@ const TABS: { key: TabKey; label: string; icon: string; url: string }[] = [
   { key: "home", label: "Mwanzo", icon: "⌂", url: HOME_URL },
   { key: "books", label: "Vitabu", icon: "▤", url: `${HOME_URL}/#vitabu` },
   { key: "library", label: "Maktaba", icon: "▥", url: `${HOME_URL}/dashboard/jihudumie` },
-  { key: "account", label: "Akaunti", icon: "◉", url: `${HOME_URL}/ingia?next=%2Fdashboard` },
+  { key: "account", label: "Akaunti", icon: "◉", url: `${HOME_URL}/dashboard` },
 ];
 
 function isInternalUrl(value: string) {
@@ -51,6 +51,7 @@ export default function App() {
     setCurrentUrl(tab.url);
     setLoading(true);
     setFailed(false);
+    webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(tab.url)}; true;`);
   }, [activeTab, currentUrl]);
 
   const handleNavigation = useCallback((request: WebViewNavigation) => {
@@ -79,6 +80,7 @@ export default function App() {
       setCurrentUrl(target);
       setLoading(true);
       setFailed(false);
+      webViewRef.current?.injectJavaScript(`window.location.href = ${JSON.stringify(target)}; true;`);
       return;
     }
     try {
@@ -126,7 +128,6 @@ export default function App() {
 
       <View style={styles.content}>
         <WebView
-          key={currentUrl}
           ref={webViewRef}
           source={{ uri: currentUrl }}
           style={[styles.webview, loading && styles.webviewLoading]}
