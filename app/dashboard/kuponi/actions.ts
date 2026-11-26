@@ -15,6 +15,7 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
   const bookId = String(formData.get("book_id") ?? "");
   const requestId = String(formData.get("request_id") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(bookId)) return { error: "Kitabu hakijatambulika." };
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { error: "Coupon haiwezi kutengenezwa bila ombi halali la mteja." };
 
   const { data: application } = await supabase.from("seller_applications")
     .select("status").eq("user_id", user.id).maybeSingle();
@@ -26,30 +27,32 @@ export async function createBookAccessCoupon(_previous: CouponActionState, formD
     return { error: "Coupon inaweza kutengenezwa kwa kitabu cha kulipia kilichoidhinishwa pekee." };
   }
 
-  let request: { id: string } | null = null;
-  if (requestId) {
-    const { data } = await supabase.from("book_coupon_requests").select("id,book_id,seller_id,status,payment_status")
-      .eq("id", requestId).eq("book_id", bookId).eq("seller_id", user.id).eq("status", "pending").eq("payment_status", "received").maybeSingle();
-    if (!data) return { error: "Thibitisha malipo ya ombi hili kabla ya kutengeneza coupon." };
-    request = { id: data.id };
-  }
+  const { data: request } = await supabase.from("book_coupon_requests").select("id")
+    .eq("id", requestId).eq("book_id", bookId).eq("seller_id", user.id)
+    .eq("status", "pending").eq("payment_status", "received").maybeSingle();
+  if (!request) return { error: "Ombi hili halipo, limeshahudumiwa au malipo yake hayajathibitishwa." };
 
   const raw = randomBytes(12).toString("hex").toUpperCase();
   const code = raw.match(/.{1,6}/g)?.join("-") ?? raw;
   const normalized = raw.replace(/[^A-Z0-9]/g, "");
   const codeHash = createHash("sha256").update(normalized).digest("hex");
 
-  const { error } = await supabase.from("book_access_codes").insert({
+  const { error: insertError } = await supabase.from("book_access_codes").insert({
     book_id: book.id,
     seller_id: user.id,
     code_hash: codeHash,
-    request_id: request?.id ?? null,
+    request_id: request.id,
   });
-  if (error) return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
+  if (insertError) {
+    if (insertError.code === "23505") return { error: "Ombi hili tayari lina coupon. Hakikisha hutengenezi nyingine." };
+    return { error: "Imeshindikana kutengeneza coupon. Tafadhali jaribu tena." };
+  }
 
-  if (request) {
-    const { error: requestError } = await supabase.from("book_coupon_requests").update({ status: "fulfilled", fulfilled_at: new Date().toISOString() }).eq("id", request.id).eq("seller_id", user.id).eq("status", "pending");
-    if (requestError) return { error: "Coupon imetengenezwa lakini hali ya ombi haikuhifadhiwa. Wasiliana na msaada kabla ya kutengeneza nyingine." };
+  const { error: requestError } = await supabase.from("book_coupon_requests")
+    .update({ status: "fulfilled", fulfilled_at: new Date().toISOString() })
+    .eq("id", request.id).eq("seller_id", user.id).eq("status", "pending");
+  if (requestError) {
+    return { code, error: "Coupon imetengenezwa. Hifadhi msimbo huu; hali ya ombi haikuweza kusasishwa, hivyo usitengeneze nyingine." };
   }
 
   return { code };
