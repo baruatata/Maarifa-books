@@ -14,7 +14,9 @@
     "android": {
       "package": "com.maarifabooks.app",
       "versionCode": 1,
-      "permissions": ["INTERNET"],
+      "permissions": [
+        "INTERNET"
+      ],
       "allowBackup": false
     },
     "splash": {
@@ -29,6 +31,10 @@
       "eas": {
         "projectId": "74e04001-4c03-43b5-91d3-c35a44816c4e"
       }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
     }
   }
 }
